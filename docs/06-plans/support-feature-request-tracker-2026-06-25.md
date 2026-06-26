@@ -1,6 +1,6 @@
 # Support Feature Request Tracker - 2026-06-25
 
-Last updated: 2026-06-25
+Last updated: 2026-06-26
 
 ## Purpose
 
@@ -14,13 +14,15 @@ It exists so we can:
 
 ## Current Feature Request Queue
 
-| Ticket                                 | Title                                                                        | Theme                          | Notes                                                                                                          | Tracking status                        |
-| -------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------ | -------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
-| `da87107d-304b-4ef5-8857-91374ad2d35d` | AI Coach Access to Workout Library                                           | AI coaching / workout planning | Product request for broader workout-library awareness rather than a defect in current behavior.                | Logged here, bug ticket can be closed. |
-| `25b50490-1753-4090-99cb-7249ffeb9144` | Option to filter all cycling activities combined                             | Analytics / filtering          | Feature request for new aggregate filtering behavior.                                                          | Logged here, bug ticket can be closed. |
-| `592855b1-7725-4849-8c3a-8ed6c1ac5cd0` | Integrate Workout Energy Expenditure (kJ) into Daily Nutrition Analysis Goal | Nutrition / analytics          | Product enhancement request rather than a broken existing calculation.                                         | Logged here, bug ticket can be closed. |
-| `c7fb0210-2535-4995-b01d-c2f540962cd0` | Map-Linking & Free-form Selection for Power Statistics                       | Analytics UX                   | New chart interaction and selection capability request.                                                        | Logged here, bug ticket can be closed. |
-| `36e8f7b5-eb20-44ae-942e-029466a8cce6` | Map-Linking und Sub-Metriken für Peak-Power Statistiken fehlt                | Analytics UX                   | Closely related to `c7fb0210-2535-4995-b01d-c2f540962cd0`; likely same product theme for future consolidation. | Logged here, bug ticket can be closed. |
+| Ticket                                 | Title                                                                             | Theme                                | Notes                                                                                                                                                | Tracking status                        |
+| -------------------------------------- | --------------------------------------------------------------------------------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| `da87107d-304b-4ef5-8857-91374ad2d35d` | AI Coach Access to Workout Library                                                | AI coaching / workout planning       | Product request for broader workout-library awareness rather than a defect in current behavior.                                                      | Logged here, bug ticket can be closed. |
+| `25b50490-1753-4090-99cb-7249ffeb9144` | Option to filter all cycling activities combined                                  | Analytics / filtering                | Feature request for new aggregate filtering behavior.                                                                                                | Logged here, bug ticket can be closed. |
+| `592855b1-7725-4849-8c3a-8ed6c1ac5cd0` | Integrate Workout Energy Expenditure (kJ) into Daily Nutrition Analysis Goal      | Nutrition / analytics                | Product enhancement request rather than a broken existing calculation.                                                                               | Logged here, bug ticket can be closed. |
+| `539f2504-dc14-45f8-9f06-126738060117` | Problème de calibration des cibles (Allure vs HR/Puissance) pour la course à pied | Training targets / run pacing        | Request to systematically prefer pace-based run targets for future sessions rather than a current data-quality defect.                               | Logged here, bug ticket can be closed. |
+| `3c6b08b7-8969-41be-a346-7d1319f5968e` | Problème affichage Puissance (Vélo) et priorité FC (Course) - Athlète Mau         | Training targets / metric preference | Current bike-power display symptom no longer reproduces cleanly; remaining request is to prefer heart rate rather than power for future run targets. | Logged here, bug ticket can be closed. |
+| `c7fb0210-2535-4995-b01d-c2f540962cd0` | Map-Linking & Free-form Selection for Power Statistics                            | Analytics UX                         | New chart interaction and selection capability request.                                                                                              | Logged here, bug ticket can be closed. |
+| `36e8f7b5-eb20-44ae-942e-029466a8cce6` | Map-Linking und Sub-Metriken für Peak-Power Statistiken fehlt                     | Analytics UX                         | Closely related to `c7fb0210-2535-4995-b01d-c2f540962cd0`; likely same product theme for future consolidation.                                       | Logged here, bug ticket can be closed. |
 
 ## Operational / Support-Only Closures
 

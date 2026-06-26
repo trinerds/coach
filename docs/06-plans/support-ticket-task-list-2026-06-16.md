@@ -1,6 +1,6 @@
 # Support Ticket Bug Tracker - 2026-06-16
 
-Last updated: 2026-06-25
+Last updated: 2026-06-26 (third pass)
 
 ## Purpose
 
@@ -87,23 +87,26 @@ Related tickets likely affected:
 - `0686046e-ac48-4411-b7fe-0783ee13e410`
 - `e4812fc8-7053-4fc4-ac2b-92aa39d69479`
 
-2026-06-25 spot-check:
+2026-06-25 spot-check, with 2026-06-26 follow-up:
 
-| Ticket                                 | Current production state                                                                                                                                                                  | Backlog disposition                                                                                                                     |
-| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `221c609f-ae1c-4020-b4cc-d61d059d39e9` | The reported 2026-06-11 workout now exists in the app as an Intervals workout. This ticket is about planned-workout export to Intervals rather than missing completed activity ingestion. | Exclude from the current sweep because it touches workout-generation and publishing triggers, which are paused for now.                 |
-| `fd7c42ec-19f1-4a15-bde9-4ffd223af28d` | No Intervals workout exists on 2026-06-06, but a Strava ride for that date now exists in the app.                                                                                         | Likely stale or source-specific. Keep only if support confirms the missing activity still reproduces through the active ingestion path. |
-| `8f567102-c948-4039-8e73-5fe60f9f9047` | The reported 2026-05-26 and 2026-05-28 workouts now exist in the app.                                                                                                                     | Closed on 2026-06-25 after adding internal findings and a public duplicate/stale response.                                              |
-| `85182d74-4ba2-469b-bd89-1f56857f6a51` | Intervals is connected, but the user's newest imported Intervals workout is still only 2026-01-19 despite a later sync marker.                                                            | Keep in the engineering backlog. This is the strongest remaining candidate for a real historical-import or source-filtering bug.        |
-| `d46cdb78-c9d3-427d-9bb1-289debbaca35` | The reported 2026-05-14 workout exists, and the user has many newer Intervals workouts through 2026-06-24.                                                                                | Closed on 2026-06-25 after adding internal findings and a public duplicate/stale response.                                              |
-| `8d59d539-0021-4530-8dc8-e13161d752c0` | The reported 2026-04-25 workout exists from Intervals, and the same day also has Strava and fit-file entries. The user currently has no active integration row.                           | Closed on 2026-06-25 as historical/stale after adding internal findings and a public response.                                          |
-| `0686046e-ac48-4411-b7fe-0783ee13e410` | Garmin integration is currently in `FAILED` state, but Garmin-source workouts are present through 2026-06-25. Existing ticket comments already point to reconnecting Garmin.              | Closed on 2026-06-25 as an operational/support follow-up rather than an active core ingestion bug.                                      |
-| `e4812fc8-7053-4fc4-ac2b-92aa39d69479` | Activities are present throughout the reported 2026-03-24 to 2026-04-06 window, primarily via Strava, and newer workouts continue past the ticket date.                                   | Closed on 2026-06-25 after adding internal findings and a public duplicate/stale response.                                              |
+| Ticket                                 | Current production state                                                                                                                                                                                                                | Backlog disposition                                                                                                     |
+| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `221c609f-ae1c-4020-b4cc-d61d059d39e9` | The reported 2026-06-11 workout now exists in the app as an Intervals workout. This ticket is about planned-workout export to Intervals rather than missing completed activity ingestion.                                               | Exclude from the current sweep because it touches workout-generation and publishing triggers, which are paused for now. |
+| `fd7c42ec-19f1-4a15-bde9-4ffd223af28d` | No Intervals workout exists on 2026-06-06, but a Strava ride for that date exists in the app and newer Intervals workouts continue through 2026-06-22.                                                                                  | Closed on 2026-06-26 after adding internal findings and a public stale/source-specific response.                        |
+| `8f567102-c948-4039-8e73-5fe60f9f9047` | The reported 2026-05-26 and 2026-05-28 workouts now exist in the app.                                                                                                                                                                   | Closed on 2026-06-25 after adding internal findings and a public duplicate/stale response.                              |
+| `85182d74-4ba2-469b-bd89-1f56857f6a51` | Intervals ingestion had been disabled on the integration row. After re-enabling `ingestWorkouts` and running a historical activity import on 2026-06-26, Intervals workouts increased from 52 to 187 and now extend through 2026-06-24. | Resolved on 2026-06-26 after re-enabling ingestion and backfilling historical Intervals activities.                     |
+| `d46cdb78-c9d3-427d-9bb1-289debbaca35` | The reported 2026-05-14 workout exists, and the user has many newer Intervals workouts through 2026-06-24.                                                                                                                              | Closed on 2026-06-25 after adding internal findings and a public duplicate/stale response.                              |
+| `8d59d539-0021-4530-8dc8-e13161d752c0` | The reported 2026-04-25 workout exists from Intervals, and the same day also has Strava and fit-file entries. The user currently has no active integration row.                                                                         | Closed on 2026-06-25 as historical/stale after adding internal findings and a public response.                          |
+| `0686046e-ac48-4411-b7fe-0783ee13e410` | Garmin integration is currently in `FAILED` state, but Garmin-source workouts are present through 2026-06-25. Existing ticket comments already point to reconnecting Garmin.                                                            | Closed on 2026-06-25 as an operational/support follow-up rather than an active core ingestion bug.                      |
+| `e4812fc8-7053-4fc4-ac2b-92aa39d69479` | Activities are present throughout the reported 2026-03-24 to 2026-04-06 window, primarily via Strava, and newer workouts continue past the ticket date.                                                                                 | Closed on 2026-06-25 after adding internal findings and a public duplicate/stale response.                              |
+| `fec5b9ae-5a3b-46af-af24-507efdcb0abd` | The cited 2026-05-28 Strava run now exists in production as `1831b8bc` (Afternoon Run).                                                                                                                                                 | Closed on 2026-06-26 as stale after fresh production validation.                                                        |
+| `65aa4f0a-9f0d-450d-ac81-83dcd14cea4c` | The cited 2026-05-31 workouts still exist in production, but the user reports they remain invisible in the app.                                                                                                                         | Moved to `NEED_MORE_INFO` on 2026-06-26; visibility follow-up folded under `d1f6ddbd-90b6-4bc6-aac7-7b87771bfa34`.      |
 
 Implementation note:
 
 - the ticket system currently does not expose a `DUPLICATE` status through `cw:cli`; the available close states are `OPEN`, `IN_PROGRESS`, `NEED_MORE_INFO`, `RESOLVED`, and `CLOSED`
 - for these stale duplicate-style cases, the ticket record now carries the duplicate rationale in an internal note and the ticket itself was closed with status `CLOSED`
+- `pnpm cw:cli debug workout ... --prod` currently fails against production because of Prisma/schema drift, so direct `cw:cli db sql` checks were used for the 2026-06-26 validation pass
 
 ### 2. Workout Access Hardening
 
@@ -171,9 +174,8 @@ Next steps:
 - finish runtime verification now that targeted Vitest runs are working again
 - decide on the Dzmitry master ticket and link related IDs with internal notes
 - split source-specific incidents if Garmin, Hammerhead, Strava, cadence, or planned-workout publishing still fail independently
-- treat `85182d74-4ba2-469b-bd89-1f56857f6a51` as the best remaining low-risk sync investigation in this subset
 - deprioritize `221c609f-ae1c-4020-b4cc-d61d059d39e9` until workout-generation and publish-trigger work is back in scope
-- close or internally mark the stale-looking tickets once support confirms they no longer reproduce
+- continue closing or internally marking the stale-looking tickets once support confirms they no longer reproduce
 
 ### 2. Activity Tab And Workout Rendering
 
@@ -190,16 +192,17 @@ Scope:
 Anchor tickets:
 
 - `d1f6ddbd-90b6-4bc6-aac7-7b87771bfa34`
-- `eeccc4ba-554c-4475-a457-72dfcbba8f73`
-- `fcc8048a-e902-4d8f-a99a-902c0cb08442`
-- `2963ef72-0fe5-4439-8984-3fe2647f1034`
-- `99e9b58a-ac01-44f2-bd61-11b22a3876fc`
+- `0d62fa04-884d-4fcd-a328-2226f2eb4ad5`
 
 Current findings:
 
 - the production data does not point to a total calendar API outage for the reported users
 - several affected planned workouts contain a `structuredWorkout` object with descriptive guidance but no renderable `steps`
 - the activities page was still attempting mini-chart previews for any truthy `structuredWorkout`, even when there was nothing previewable to draw
+- `eeccc4ba-554c-4475-a457-72dfcbba8f73` was closed on 2026-06-26 as a same-day duplicate-style follow-up of `d1f6ddbd-90b6-4bc6-aac7-7b87771bfa34`
+- `99e9b58a-ac01-44f2-bd61-11b22a3876fc` was closed on 2026-06-26 after fresh production validation showed recent activities present again for that user
+- `fcc8048a-e902-4d8f-a99a-902c0cb08442` was closed on 2026-06-26 after fresh production validation showed recent activities present and no evidence of an ongoing data absence behind the older mobile-display report
+- `2963ef72-0fe5-4439-8984-3fe2647f1034` was closed on 2026-06-26 after fresh production validation showed current workouts present again, making the older interval-display report look stale or source-shifted
 
 Applied in code:
 
@@ -218,7 +221,7 @@ Next steps:
 
 Status:
 
-- queued
+- in progress
 
 Why this moved up:
 
@@ -228,13 +231,23 @@ Anchor tickets:
 
 - `0d62fa04-884d-4fcd-a328-2226f2eb4ad5`
 - `a232e0ab-245e-4e95-ac37-e03fa7db6e37`
-- `0eb3e1a5-101d-4746-91b3-0e9529195072`
-- `d3512b30-86a2-493d-beff-ab6fdb66378d`
 - `10565730-46cd-4422-bef3-edf8b16d7df7`
-- `17ee0ba8-5355-46b0-a67a-875c6d015036`
 - `094c9607-f15f-49ff-b713-11f66cfcde15`
 - `5b04e4cb-04f7-4fdf-999f-a94f049b9340`
-- `f36c3ca5-31c3-4e6c-9a52-3fe683effccd`
+
+Current findings:
+
+- Dzmitry's specific June 12, June 14, and June 20 examples now have real structured steps in production, so the exact records cited in `0d62fa04-884d-4fcd-a328-2226f2eb4ad5` no longer reproduce as originally described
+- Dzmitry still has other planned workouts where `structuredWorkout` exists but `step_count = 0`, so the broader persistence/rendering defect family remains active on that account
+- Philippe's cited May 8 workout in `0eb3e1a5-101d-4746-91b3-0e9529195072` now has 6 steps and that ticket was closed on 2026-06-26
+- Philippe's other anchor ticket, `a232e0ab-245e-4e95-ac37-e03fa7db6e37`, could not be revalidated on the exact original workout because that workout ID no longer exists, but the same account still has a large active zero-step pattern across multiple workout types
+- current zero-step structured-workout counts on Philippe's account include WeightTraining: 53, Ride: 35, MountainBikeRide: 24, Run: 2
+- Dzmitry's update/sync-specific ticket `d3512b30-86a2-493d-beff-ab6fdb66378d` was closed on 2026-06-26 because the exact original planned workout no longer exists and the remaining nearby zero-step issue is better tracked under `0d62fa04-884d-4fcd-a328-2226f2eb4ad5`
+- Billy Rusk's cited workout in `17ee0ba8-5355-46b0-a67a-875c6d015036` now has structure again and that ticket was closed on 2026-06-26
+- Billy's broader active structure family is now anchored by `10565730-46cd-4422-bef3-edf8b16d7df7`, because nearby records in the same training block still show empty or missing structures and many future planned workouts on that account still have `has_structure = false`
+- Benoit Naturel's ticket `094c9607-f15f-49ff-b713-11f66cfcde15` was moved to `IN_PROGRESS` on 2026-06-26 because the account still shows many recent planned workouts with missing structure data, including repeated `has_structure = false` and `step_count = 0` cases from 2026-06-12 onward
+- Joe's cited workout in `5b04e4cb-04f7-4fdf-999f-a94f049b9340` now has structure again (`has_structure = true`, `step_count = 1`), but the same account still shows a broad active pattern of missing structure across many later records from early May through late June, so that ticket was also moved to `IN_PROGRESS` on 2026-06-26 as the Joe-side anchor
+- `f36c3ca5-31c3-4e6c-9a52-3fe683effccd` was closed on 2026-06-26 as a stale, source-specific Intervals sync report after validation showed the cited workout exists in Coach Wattz as a Strava workout and the user still had newer Intervals workouts after the report date
 
 Useful historical references already resolved:
 
@@ -253,7 +266,7 @@ Next steps:
 
 Status:
 
-- queued
+- in progress
 
 Scope:
 
@@ -264,19 +277,27 @@ Scope:
 Representative tickets:
 
 - `c5e9c90d-195e-4cad-aa8e-49f9148bfe57`
-- `539f2504-dc14-45f8-9f06-126738060117`
 - `605032e8-4bfc-4b2d-bc4f-fdfd6515638d`
-- `e94d9003-69f5-454f-b35b-9b296100e797`
-- `2e217b37-abeb-4b92-bc82-b8b7f01e7637`
-- `d2563a93-06a7-4477-87de-18f462c3dca7`
 - `61d438f4-2d8a-430e-ab24-8d2c57fa7b07`
-- `66b474a5-7a39-43a9-a8ef-11da0db5a9ca`
-- `ee4e6641-c4f6-4382-9210-ae8556025145`
 - `6f933f13-4d8e-426c-8eb9-b4239a95346c`
-- `3c6b08b7-8969-41be-a346-7d1319f5968e`
+
+Current findings:
+
+- `c5e9c90d-195e-4cad-aa8e-49f9148bfe57` was moved to `IN_PROGRESS` on 2026-06-26 after production validation confirmed a real workout-metrics data-quality issue: stored workout `114a2ffd-b1d2-4f51-a856-1c1a383957e3` currently has `elevationGain = 318`, while the raw Intervals payload contains obviously corrupted altitude values around `19963-20019` and inconsistent elevation totals for what the user reported as a flat run. A second pass on 2026-06-26 nulled corrupt elevation gain on the cited workout plus one adjacent Intervals record for the same user and added code/backfill guards for absurd altitude metadata beyond the existing `-500` sentinel check. Ticket remains open pending deploy of the ingestion guard.
+- `605032e8-4bfc-4b2d-bc4f-fdfd6515638d` was moved to `IN_PROGRESS` on 2026-06-26 after production validation confirmed the sedentary setting is stored correctly (`activityLevel = SEDENTARY`, `bmr = 1600`, `targetAdjustmentPercent = -15`), but rest-day nutrition rows can still resolve to inflated calorie goals because the rest-day fueling path falls back to macro-calorie totals instead of preserving the lower sedentary energy target. A second pass on 2026-06-26 confirmed the 2026-06-22 rest day still shows `caloriesGoal = 2604` despite breakdown fields `baseCalories = 1920` and `adjustmentCalories = -288` (expected `1632`). Code fix now uses the energy breakdown total on zero-activity days; ticket remains open pending deploy and fueling-plan refresh.
+- `e94d9003-69f5-454f-b35b-9b296100e797` was resolved on 2026-06-26 after production revalidation showed the duplicate cluster normalized to canonical Intervals workout `d33a5771-b2b9-4aa9-94b6-5cd09661dcda` with correct power/energy metrics; Garmin and Strava duplicates remain marked `isDuplicate = true` but no longer drive primary UX
+- `539f2504-dc14-45f8-9f06-126738060117` was closed on 2026-06-26 and moved out of the bug queue because it is a product request to prefer pace-based run targeting for future workouts, not a current data-quality or deduplication defect
+- `d2563a93-06a7-4477-87de-18f462c3dca7` was closed on 2026-06-26 as stale after production validation could no longer reproduce the cited weekly plan state; the named workouts no longer exist in that week and matching titles only appear on unrelated legacy/template-like dates or later plan dates
+- `2e217b37-abeb-4b92-bc82-b8b7f01e7637` was closed on 2026-06-26 as a duplicate-style Intervals planned-workout publish/update report and folded into the deferred out-of-scope publish-trigger family alongside `221c609f-ae1c-4020-b4cc-d61d059d39e9`
+- `66b474a5-7a39-43a9-a8ef-11da0db5a9ca` was closed on 2026-06-26 after production validation showed the reported 2026-04-28 triplicate workout case is already normalized in current data, with two workouts marked as duplicates of canonical workout `1df4cfc0-2504-42b4-b259-517cdbf630f1`
+- `ee4e6641-c4f6-4382-9210-ae8556025145` was closed on 2026-06-26 as stale after production validation found the account timezone stored correctly as `America/Winnipeg` and could not match the older report to a current future-dated backend workout or metric-history row
+- `3c6b08b7-8969-41be-a346-7d1319f5968e` was closed on 2026-06-26 and moved out of the bug queue because the current bike-power display symptom no longer reproduces cleanly and the remaining run-side request is a product preference to use heart rate instead of power for future targets
+- `61d438f4-2d8a-430e-ab24-8d2c57fa7b07` and `6f933f13-4d8e-426c-8eb9-b4239a95346c` were intentionally left untouched in this pass because they center on AI/readiness interpretation rather than the low-risk non-generative bug cleanup currently in scope
 
 Next steps:
 
+- deploy the sedentary rest-day calorie fix and refresh affected nutrition rows for Josué
+- deploy the extended Intervals altitude validation and run broader elevation backfill if needed
 - split ingestion-caused bad data from calculation/aggregation defects
 - group duplicate-workout bugs together rather than leaving them mixed with sync issues
 - prioritize defects that change user-visible numbers over cosmetic analytics requests
@@ -296,15 +317,20 @@ Scope:
 
 Representative tickets:
 
-- `ef97261b-9371-4404-8e53-014f4fc92b17`
-- `c2ffb483-4f97-47c4-99f0-afb454c81536`
-- `027da730-6d37-4683-9637-a8c0d595bdb3`
 - `83aa04e3-9acc-452c-9d3d-9aa411125efd`
+
+Current findings:
+
+- `ef97261b-9371-4404-8e53-014f4fc92b17` was closed on 2026-06-26 as an operational/support issue because it is a Huawei Health app-opening troubleshooting request rather than a Coach Wattz backend defect
+- `c2ffb483-4f97-47c4-99f0-afb454c81536` was closed on 2026-06-26 as a setup/reconnect support issue after production validation found no active Yazio integration on the account
+- `027da730-6d37-4683-9637-a8c0d595bdb3` was closed on 2026-06-26 as a source/setup mismatch support case after production validation found wellness rows on the account but no dedicated Health Sync integration row
+- `83aa04e3-9acc-452c-9d3d-9aa411125efd` was closed on 2026-06-26 as stale after production validation showed current Intervals wellness data present again through 2026-06-22, including sleepScore, HRV, and restingHr values
+- `b73a0d10-558a-4b5b-87fe-277a9d2548e4` was closed on 2026-06-26 after the user confirmed removing Strava resolved duplicate activities; production now shows garmin + intervals only
+- `05613804-5306-49c4-b0f4-73573eecb3db` was closed on 2026-06-26 as a duplicate-style follow-up of `b73a0d10-558a-4b5b-87fe-277a9d2548e4`
 
 Next steps:
 
-- verify whether these are ingestion defects, auth failures, or UI visibility problems
-- keep these separate from the Intervals incident family unless evidence ties them together
+- keep external app-opening, reconnect, and source-mapping cases out of the engineering bug queue unless current production data points to an active ingestion defect
 
 ### 6. Chat Availability And AI Quality
 
@@ -386,6 +412,9 @@ Recommended internal-note targets:
 - `4076711c-d3e5-40fa-823b-f5b6f02081e8` Dzmitry sync master candidate
 - `31cf00a6-f276-456b-aa74-b44b8b2d575e` privacy-risk follow-up
 - `0d62fa04-884d-4fcd-a328-2226f2eb4ad5` structured workout/rendering cluster
+- `10565730-46cd-4422-bef3-edf8b16d7df7` Billy-side structure anchor
+- `094c9607-f15f-49ff-b713-11f66cfcde15` Benoit-side structure anchor
+- `5b04e4cb-04f7-4fdf-999f-a94f049b9340` Joe-side structure anchor
 
 Internal notes should capture:
 
