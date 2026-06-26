@@ -10,6 +10,7 @@ import {
 import { parseFitFile, extractFitStreams, extractFitExtrasMeta } from '../fit'
 import { deduplicateWorkoutsTask } from '../../../trigger/deduplicate-workouts'
 import { shouldAutoDeduplicateWorkoutsAfterIngestion } from '../ingestion-settings'
+import { isTaskRunning } from '../trigger-check'
 import { shouldIngestActivities, shouldIngestWellness } from '../integration-settings'
 import { normalizeGarminActivityType } from '../activity-mapping'
 import { bodyMeasurementService } from './bodyMeasurementService'
@@ -604,15 +605,16 @@ export const GarminService = {
     }
 
     if (data.length > 0 && (await shouldAutoDeduplicateWorkoutsAfterIngestion(userId))) {
-      await deduplicateWorkoutsTask.trigger(
-        { userId, dryRun: false },
-        {
-          concurrencyKey: userId,
-          tags: [`user:${userId}`],
-          idempotencyKey: `deduplicate-workouts:auto:${userId}`,
-          idempotencyKeyTTL: '2m'
-        }
-      )
+      const dedupAlreadyRunning = await isTaskRunning('deduplicate-workouts', userId)
+      if (!dedupAlreadyRunning) {
+        await deduplicateWorkoutsTask.trigger(
+          { userId, dryRun: false },
+          {
+            concurrencyKey: userId,
+            tags: [`user:${userId}`]
+          }
+        )
+      }
     }
   },
 

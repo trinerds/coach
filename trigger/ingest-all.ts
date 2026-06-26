@@ -17,6 +17,7 @@ import { ingestUltrahumanTask } from './ingest-ultrahuman'
 import { generateAthleteProfileTask } from './generate-athlete-profile'
 import { processSyncQueueTask } from './process-sync-queue'
 import { deduplicateWorkoutsTask } from './deduplicate-workouts'
+import { isTaskRunning } from '../server/utils/trigger-check'
 import { recommendTodayActivityTask } from './recommend-today-activity'
 import { analyzeNutritionTask } from './analyze-nutrition'
 import { getUserTimezone } from '../server/utils/date'
@@ -318,19 +319,22 @@ export const ingestAllTask = task({
       console.log('[DEBUG] Triggering Workout Deduplication chain...')
       logger.log('🔄 Chaining: Triggering Workout Deduplication...')
       try {
-        await deduplicateWorkoutsTask.trigger(
-          {
-            userId,
-            dryRun: false
-          },
-          {
-            concurrencyKey: userId,
-            tags: [`user:${userId}`],
-            idempotencyKey: `deduplicate-workouts:auto:${userId}`,
-            idempotencyKeyTTL: '2m'
-          }
-        )
-        logger.log('✅ Triggered deduplicate-workouts')
+        const dedupAlreadyRunning = await isTaskRunning('deduplicate-workouts', userId)
+        if (dedupAlreadyRunning) {
+          logger.log('⏭️ Skipping deduplicate-workouts trigger because a run is already active')
+        } else {
+          await deduplicateWorkoutsTask.trigger(
+            {
+              userId,
+              dryRun: false
+            },
+            {
+              concurrencyKey: userId,
+              tags: [`user:${userId}`]
+            }
+          )
+          logger.log('✅ Triggered deduplicate-workouts')
+        }
       } catch (err) {
         logger.error('❌ Failed to chain deduplicate-workouts', { err })
       }

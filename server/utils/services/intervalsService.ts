@@ -37,6 +37,7 @@ import { triggerReadinessCheckIfNeeded } from './wellness-analysis'
 import { deduplicationService } from './deduplicationService'
 import { deduplicateWorkoutsTask } from '../../../trigger/deduplicate-workouts'
 import { shouldAutoDeduplicateWorkoutsAfterIngestion } from '../ingestion-settings'
+import { isTaskRunning } from '../trigger-check'
 import { shouldIngestWellness } from '../integration-settings'
 import {
   buildRemoteStructureCreateFields,
@@ -1760,15 +1761,16 @@ export const IntervalsService = {
 
         // Trigger deduplication and analysis
         if (await shouldAutoDeduplicateWorkoutsAfterIngestion(userId)) {
-          await deduplicateWorkoutsTask.trigger(
-            { userId, dryRun: false },
-            {
-              concurrencyKey: userId,
-              tags: [`user:${userId}`],
-              idempotencyKey: `deduplicate-workouts:auto:${userId}`,
-              idempotencyKeyTTL: '2m'
-            }
-          )
+          const dedupAlreadyRunning = await isTaskRunning('deduplicate-workouts', userId)
+          if (!dedupAlreadyRunning) {
+            await deduplicateWorkoutsTask.trigger(
+              { userId, dryRun: false },
+              {
+                concurrencyKey: userId,
+                tags: [`user:${userId}`]
+              }
+            )
+          }
         }
         break
       }
