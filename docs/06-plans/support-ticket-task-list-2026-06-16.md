@@ -1,6 +1,6 @@
 # Support Ticket Bug Tracker - 2026-06-16
 
-Last updated: 2026-06-18
+Last updated: 2026-06-25
 
 ## Purpose
 
@@ -17,6 +17,8 @@ Related documents:
 
 - [support-ticket-triage-2026-06-16.md](./support-ticket-triage-2026-06-16.md)
 - [support-ticket-investigation-2026-06-16.md](./support-ticket-investigation-2026-06-16.md)
+- [support-feature-request-tracker-2026-06-25.md](./support-feature-request-tracker-2026-06-25.md)
+- [support-ticket-handoff-2026-06-25.md](./support-ticket-handoff-2026-06-25.md)
 
 ## Working Rules
 
@@ -32,6 +34,7 @@ Current review basis:
 
 - the original 50-ticket triage completed on 2026-06-16
 - an expanded review of the 100 most recent tickets in production on 2026-06-18
+- a production spot-check of eight non-chat sync tickets on 2026-06-25
 
 Key takeaway from the larger sample:
 
@@ -69,7 +72,7 @@ Applied fixes:
 
 Still needed:
 
-- fix the local test/runtime environment so Vitest can run
+- update targeted regression mocks now that the test/runtime environment is working again
 - add regression coverage for queued date hydration and sparse webhook fallback
 - confirm whether source-specific tickets still reproduce after these fixes
 
@@ -83,6 +86,24 @@ Related tickets likely affected:
 - `8d59d539-0021-4530-8dc8-e13161d752c0`
 - `0686046e-ac48-4411-b7fe-0783ee13e410`
 - `e4812fc8-7053-4fc4-ac2b-92aa39d69479`
+
+2026-06-25 spot-check:
+
+| Ticket                                 | Current production state                                                                                                                                                                  | Backlog disposition                                                                                                                     |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `221c609f-ae1c-4020-b4cc-d61d059d39e9` | The reported 2026-06-11 workout now exists in the app as an Intervals workout. This ticket is about planned-workout export to Intervals rather than missing completed activity ingestion. | Exclude from the current sweep because it touches workout-generation and publishing triggers, which are paused for now.                 |
+| `fd7c42ec-19f1-4a15-bde9-4ffd223af28d` | No Intervals workout exists on 2026-06-06, but a Strava ride for that date now exists in the app.                                                                                         | Likely stale or source-specific. Keep only if support confirms the missing activity still reproduces through the active ingestion path. |
+| `8f567102-c948-4039-8e73-5fe60f9f9047` | The reported 2026-05-26 and 2026-05-28 workouts now exist in the app.                                                                                                                     | Closed on 2026-06-25 after adding internal findings and a public duplicate/stale response.                                              |
+| `85182d74-4ba2-469b-bd89-1f56857f6a51` | Intervals is connected, but the user's newest imported Intervals workout is still only 2026-01-19 despite a later sync marker.                                                            | Keep in the engineering backlog. This is the strongest remaining candidate for a real historical-import or source-filtering bug.        |
+| `d46cdb78-c9d3-427d-9bb1-289debbaca35` | The reported 2026-05-14 workout exists, and the user has many newer Intervals workouts through 2026-06-24.                                                                                | Closed on 2026-06-25 after adding internal findings and a public duplicate/stale response.                                              |
+| `8d59d539-0021-4530-8dc8-e13161d752c0` | The reported 2026-04-25 workout exists from Intervals, and the same day also has Strava and fit-file entries. The user currently has no active integration row.                           | Closed on 2026-06-25 as historical/stale after adding internal findings and a public response.                                          |
+| `0686046e-ac48-4411-b7fe-0783ee13e410` | Garmin integration is currently in `FAILED` state, but Garmin-source workouts are present through 2026-06-25. Existing ticket comments already point to reconnecting Garmin.              | Closed on 2026-06-25 as an operational/support follow-up rather than an active core ingestion bug.                                      |
+| `e4812fc8-7053-4fc4-ac2b-92aa39d69479` | Activities are present throughout the reported 2026-03-24 to 2026-04-06 window, primarily via Strava, and newer workouts continue past the ticket date.                                   | Closed on 2026-06-25 after adding internal findings and a public duplicate/stale response.                                              |
+
+Implementation note:
+
+- the ticket system currently does not expose a `DUPLICATE` status through `cw:cli`; the available close states are `OPEN`, `IN_PROGRESS`, `NEED_MORE_INFO`, `RESOLVED`, and `CLOSED`
+- for these stale duplicate-style cases, the ticket record now carries the duplicate rationale in an internal note and the ticket itself was closed with status `CLOSED`
 
 ### 2. Workout Access Hardening
 
@@ -147,9 +168,12 @@ Likely duplicate or adjacent tickets:
 
 Next steps:
 
-- finish runtime verification after the local `better-sqlite3` mismatch is fixed
+- finish runtime verification now that targeted Vitest runs are working again
 - decide on the Dzmitry master ticket and link related IDs with internal notes
 - split source-specific incidents if Garmin, Hammerhead, Strava, cadence, or planned-workout publishing still fail independently
+- treat `85182d74-4ba2-469b-bd89-1f56857f6a51` as the best remaining low-risk sync investigation in this subset
+- deprioritize `221c609f-ae1c-4020-b4cc-d61d059d39e9` until workout-generation and publish-trigger work is back in scope
+- close or internally mark the stale-looking tickets once support confirms they no longer reproduce
 
 ### 2. Activity Tab And Workout Rendering
 
@@ -330,12 +354,21 @@ These should be tracked separately from bug-fix execution:
 - `c7fb0210-2535-4995-b01d-c2f540962cd0` map-linking and free-form power stats
 - `36e8f7b5-eb20-44ae-942e-029466a8cce6` map-linking and sub-metrics for peak-power stats
 
+Tracking:
+
+- feature-request tickets are now mirrored in [support-feature-request-tracker-2026-06-25.md](./support-feature-request-tracker-2026-06-25.md) so they can be removed from the engineering bug backlog without losing product context
+- the above feature-request tickets were closed on 2026-06-25 after internal notes and polite user-facing responses were added
+
 ### Operational Or Support-Only Tasks
 
 These should not sit in the bug backlog:
 
 - `9f3975a4-55fd-40c5-a757-d420a95e9424` account deletion request
 - `b20dbdce-f330-4c1b-ba9e-1b0effad4806` account deactivation request
+
+Status:
+
+- both account-operation tickets above were closed on 2026-06-25 after being reclassified as support/admin workflow items rather than engineering defects
 
 ### Needs Separate Validation Before Bug Routing
 
