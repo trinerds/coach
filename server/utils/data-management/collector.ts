@@ -12,24 +12,37 @@ export class UserUniverseCollector {
     private userId: string
   ) {}
 
+  exportSections() {
+    return [
+      {
+        key: 'metadata',
+        collect: async () => ({
+          userId: this.userId,
+          exportedAt: new Date().toISOString(),
+          version: '1.0.0'
+        })
+      },
+      { key: 'profile', collect: () => this.collectProfile() },
+      { key: 'plans', collect: () => this.collectPlans() },
+      { key: 'activities', collect: () => this.collectActivities() },
+      { key: 'health', collect: () => this.collectHealth() },
+      { key: 'nutrition', collect: () => this.collectNutrition() },
+      { key: 'ai', collect: () => this.collectAI() },
+      { key: 'system', collect: () => this.collectSystem() }
+    ]
+  }
+
   /**
    * Bundles the entire user universe into a structured object.
    */
   async bundle() {
-    return {
-      metadata: {
-        userId: this.userId,
-        exportedAt: new Date().toISOString(),
-        version: '1.0.0'
-      },
-      profile: await this.collectProfile(),
-      plans: await this.collectPlans(),
-      activities: await this.collectActivities(),
-      health: await this.collectHealth(),
-      nutrition: await this.collectNutrition(),
-      ai: await this.collectAI(),
-      system: await this.collectSystem()
+    const bundle: Record<string, unknown> = {}
+
+    for (const section of this.exportSections()) {
+      bundle[section.key] = await section.collect()
     }
+
+    return bundle
   }
 
   async collectProfile() {

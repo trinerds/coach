@@ -30,13 +30,23 @@ vi.mock('../../../../../server/utils/data-management/collector', () => ({
     collectorConstructorMock(prisma, userId)
 
     return {
-      collectProfile: collectProfileMock,
-      collectPlans: collectPlansMock,
-      collectActivities: collectActivitiesMock,
-      collectHealth: collectHealthMock,
-      collectNutrition: collectNutritionMock,
-      collectAI: collectAIMock,
-      collectSystem: collectSystemMock
+      exportSections: () => [
+        {
+          key: 'metadata',
+          collect: async () => ({
+            userId,
+            exportedAt: new Date().toISOString(),
+            version: '1.0.0'
+          })
+        },
+        { key: 'profile', collect: collectProfileMock },
+        { key: 'plans', collect: collectPlansMock },
+        { key: 'activities', collect: collectActivitiesMock },
+        { key: 'health', collect: collectHealthMock },
+        { key: 'nutrition', collect: collectNutritionMock },
+        { key: 'ai', collect: collectAIMock },
+        { key: 'system', collect: collectSystemMock }
+      ]
     }
   })
 }))
