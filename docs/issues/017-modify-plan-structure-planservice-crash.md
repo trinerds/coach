@@ -3,7 +3,7 @@
 **Type:** Bug  
 **Priority:** Critical  
 **Area:** `ai`, `backend`, `planning`  
-**Status:** Open
+**Status:** In Progress — [PR #216](https://github.com/hdkiller/coach/pull/216)
 
 ## Description
 

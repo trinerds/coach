@@ -3,7 +3,7 @@
 **Type:** Bug  
 **Priority:** Critical  
 **Area:** `ui/ux`, `backend`, `infra`  
-**Status:** Open
+**Status:** In Progress — [PR #215](https://github.com/hdkiller/coach/pull/215)
 
 ## Description
 
