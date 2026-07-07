@@ -3,7 +3,7 @@
 **Type:** Bug  
 **Priority:** High  
 **Area:** `ui/ux`, `backend`, `workouts`  
-**Status:** Open
+**Status:** In Progress ([PR #217](https://github.com/hdkiller/coach/pull/217))
 
 ## Description
 
@@ -47,13 +47,13 @@ Chat planning tools **do** include the correct tag (`server/utils/ai-tools/plann
 
 ## Affected Trigger Sites (missing `planned-workout:` tag)
 
-| File | Task |
-|------|------|
-| `server/api/workouts/planned/[id]/generate-structure.post.ts` | `generate-structured-workout` |
-| `server/api/workouts/planned/[id]/adjust.post.ts` | `adjust-structured-workout` |
-| `server/api/recommendations/[id]/accept.post.ts` | `generate-structured-workout` |
-| `trigger/generate-training-block.ts` (~638–643) | `generate-structured-workout` (batch loop) |
-| `trigger/generate-ad-hoc-workout.ts` (~224–232) | `generate-structured-workout` |
+| File                                                          | Task                                       |
+| ------------------------------------------------------------- | ------------------------------------------ |
+| `server/api/workouts/planned/[id]/generate-structure.post.ts` | `generate-structured-workout`              |
+| `server/api/workouts/planned/[id]/adjust.post.ts`             | `adjust-structured-workout`                |
+| `server/api/recommendations/[id]/accept.post.ts`              | `generate-structured-workout`              |
+| `trigger/generate-training-block.ts` (~638–643)               | `generate-structured-workout` (batch loop) |
+| `trigger/generate-ad-hoc-workout.ts` (~224–232)               | `generate-structured-workout`              |
 
 ## Steps to Reproduce
 

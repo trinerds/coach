@@ -3,7 +3,7 @@
 **Type:** Bug  
 **Priority:** Medium  
 **Area:** `ai`, `backend`  
-**Status:** Open  
+**Status:** In Progress ([PR #218](https://github.com/hdkiller/coach/pull/218))  
 **Related:** [013](./013-chat-duplicate-structure-generation-triggers.md)
 
 ## Description
@@ -24,11 +24,11 @@ export function isMutatingChatTool(toolName: string) {
 
 **Not covered:**
 
-| Tool | Prefix | Triggers structure? |
-|------|--------|---------------------|
-| `generate_planned_workout_structure` | `generate_` | Yes (async) |
-| `adjust_planned_workout` | `adjust_` | Yes (async adjust task) |
-| `set_planned_workout_structure` | `set_` | No (sync replace) |
+| Tool                                 | Prefix      | Triggers structure?     |
+| ------------------------------------ | ----------- | ----------------------- |
+| `generate_planned_workout_structure` | `generate_` | Yes (async)             |
+| `adjust_planned_workout`             | `adjust_`   | Yes (async adjust task) |
+| `set_planned_workout_structure`      | `set_`      | No (sync replace)       |
 
 `patch_planned_workout_structure` **is** covered; `set_planned_workout_structure` is not.
 

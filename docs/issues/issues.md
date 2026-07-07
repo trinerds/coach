@@ -1,10 +1,10 @@
 # Workout Details Generation — Issue Tracker
 
-Last reviewed: 2026-07-07 (fourth pass — structure prompt / speed)
+Last reviewed: 2026-07-07 (implementation in progress — see PRs #214–#218)
 
 This tracker documents bugs, UX gaps, and architectural concerns found during a code review of **planned workout structure generation** (the AI pipeline that produces interval steps, strength blocks, coach instructions, and related metadata for the Planned Workout Details page).
 
-No code changes were made as part of this review — only issue documentation.
+Implementation PRs are open as draft — see status column below. Original review was documentation-only.
 
 ## Scope
 
@@ -67,8 +67,8 @@ Anchor support tickets: `0d62fa04-884d-4fcd-a328-2226f2eb4ad5`, `a232e0ab-245e-4
 
 | ID                                                           | Title                                                           | Priority | Type         | Status                                                              |
 | ------------------------------------------------------------ | --------------------------------------------------------------- | -------- | ------------ | ------------------------------------------------------------------- |
-| [001](./001-zero-step-structure-persistence.md)              | Empty structures can persist as successful generation           | Critical | Bug          | Open                                                                |
-| [002](./002-missing-planned-workout-run-tags.md)             | Manual/API triggers missing `planned-workout:` run tags         | High     | Bug          | Open                                                                |
+| [001](./001-zero-step-structure-persistence.md)              | Empty structures can persist as successful generation           | Critical | Bug          | In Progress ([PR #214](https://github.com/hdkiller/coach/pull/214)) |
+| [002](./002-missing-planned-workout-run-tags.md)             | Manual/API triggers missing `planned-workout:` run tags         | High     | Bug          | In Progress ([PR #217](https://github.com/hdkiller/coach/pull/217)) |
 | [003](./003-free-tier-skip-reports-success.md)               | Free-tier skip returns `success: true` → misleading toast       | Medium   | Bug          | Open                                                                |
 | [004](./004-no-task-failure-handling.md)                     | No `onTaskFailed` handler — stuck "Generating..." state         | High     | Bug          | Open                                                                |
 | [005](./005-page-reload-loses-generation-state.md)           | Page reload does not restore in-progress generation UI          | Medium   | Bug          | Open                                                                |
@@ -79,7 +79,7 @@ Anchor support tickets: `0d62fa04-884d-4fcd-a328-2226f2eb4ad5`, `a232e0ab-245e-4
 | [010](./010-batch-generation-loading-state.md)               | Batch week generation clears loading before jobs finish         | Medium   | Bug          | Open                                                                |
 | [011](./011-strength-blocks-validation-gap.md)               | Final validation ignores `blocks`-only strength structures      | Medium   | Bug          | Open                                                                |
 | [012](./012-ai-in-triggers-architecture-rethink.md)          | Rethink AI-in-triggers pattern and timeout strategy             | High     | Architecture | Open                                                                |
-| [013](./013-chat-duplicate-structure-generation-triggers.md) | Chat creates multiple structure generation jobs for one workout | High     | Bug          | Open                                                                |
+| [013](./013-chat-duplicate-structure-generation-triggers.md) | Chat creates multiple structure generation jobs for one workout | High     | Bug          | In Progress ([PR #218](https://github.com/hdkiller/coach/pull/218)) |
 | [014](./014-idempotent-create-skips-structure-retrigger.md)  | Idempotent create replay never re-enqueues structure            | High     | Bug          | Open                                                                |
 | [015](./015-approval-turn-duplicate-workouts.md)             | Approval turns / double-submit create duplicate workouts        | Critical | Bug          | Open                                                                |
 | [016](./016-chat-card-infinite-poll-without-run-id.md)       | Chat card polls forever when enqueue fails without run_id       | Medium   | Bug          | Open                                                                |
@@ -89,16 +89,16 @@ Anchor support tickets: `0d62fa04-884d-4fcd-a328-2226f2eb4ad5`, `a232e0ab-245e-4
 | [020](./020-intervals-publish-before-structure-ready.md)     | Intervals shell published before structure exists               | Medium   | Bug          | Open                                                                |
 | [021](./021-recommend-workout-stub-data.md)                  | `recommend_workout` returns hardcoded stub data                 | Medium   | Bug          | Open                                                                |
 | [022](./022-patch-vs-async-generation-race.md)               | Patch/set vs async generate race (last writer wins)             | Medium   | Bug          | Open                                                                |
-| [023](./023-structure-tools-idempotency-gaps.md)             | `generate_` / `adjust_` / `set_` tools skip chat idempotency    | Medium   | Bug          | Open                                                                |
+| [023](./023-structure-tools-idempotency-gaps.md)             | `generate_` / `adjust_` / `set_` tools skip chat idempotency    | Medium   | Bug          | In Progress ([PR #218](https://github.com/hdkiller/coach/pull/218)) |
 | [024](./024-chat-card-wrong-workout-fallback.md)             | Chat card fuzzy ID fallback attaches wrong workout              | Medium   | Bug          | Open                                                                |
 | [025](./025-planned-workout-details-context-bloat.md)        | `get_planned_workout_details` bloats LLM context                | Low      | Bug          | Open                                                                |
 | [026](./026-structure-tools-missing-preflight.md)            | Generate/adjust tools skip sync workout existence check         | Medium   | Bug          | Open                                                                |
-| [027](./027-cross-user-runs-on-identity-switch.md)           | Monitor shows other user's runs after act-as / impersonation    | Critical | Bug          | Open                                                                |
-| [028](./028-trigger-monitor-stale-run-merge.md)              | Client merge never evicts stale completed runs                  | Medium   | Bug          | Open                                                                |
-| [029](./029-triggers-missing-user-tags.md)                   | Some triggers omit required `user:{userId}` tag                 | High     | Bug          | Open                                                                |
+| [027](./027-cross-user-runs-on-identity-switch.md)           | Monitor shows other user's runs after act-as / impersonation    | Critical | Bug          | In Progress ([PR #215](https://github.com/hdkiller/coach/pull/215)) |
+| [028](./028-trigger-monitor-stale-run-merge.md)              | Client merge never evicts stale completed runs                  | Medium   | Bug          | In Progress ([PR #215](https://github.com/hdkiller/coach/pull/215)) |
+| [029](./029-triggers-missing-user-tags.md)                   | Some triggers omit required `user:{userId}` tag                 | High     | Bug          | In Progress ([PR #217](https://github.com/hdkiller/coach/pull/217)) |
 | [030](./030-library-run-tags-template-owner.md)              | Library jobs tag template owner, not session actor              | Medium   | Bug          | Open                                                                |
 | [031](./031-websocket-not-reauth-on-identity-switch.md)      | WebSocket not re-authenticated on identity switch               | Medium   | Bug          | Open                                                                |
-| [032](./032-trigger-tag-taxonomy-inconsistent.md)            | Inconsistent secondary tags for structure jobs                  | Medium   | Maintenance  | Open                                                                |
+| [032](./032-trigger-tag-taxonomy-inconsistent.md)            | Inconsistent secondary tags for structure jobs                  | Medium   | Maintenance  | In Progress ([PR #217](https://github.com/hdkiller/coach/pull/217)) |
 | [033](./033-retire-legacy-structure-generator.md)            | Retire `legacy_json` generator for ride/run/swim                | Medium   | Performance  | In Progress ([PR #214](https://github.com/hdkiller/coach/pull/214)) |
 | [034](./034-deduplicate-structure-prompt-targeting.md)       | Deduplicate targeting instructions in structure prompts         | Medium   | Performance  | In Progress ([PR #214](https://github.com/hdkiller/coach/pull/214)) |
 | [035](./035-remove-unused-streams-from-structure-context.md) | Remove unused stream fetch from structure context               | Low      | Performance  | In Progress ([PR #214](https://github.com/hdkiller/coach/pull/214)) |

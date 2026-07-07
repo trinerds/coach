@@ -3,7 +3,7 @@
 **Type:** Bug  
 **Priority:** High  
 **Area:** `ai`, `workouts`, `backend`, `ui/ux`  
-**Status:** Open  
+**Status:** In Progress ([PR #218](https://github.com/hdkiller/coach/pull/218))  
 **Reported:** User observed multiple workout-details/structure generation jobs when asking chat to create a running workout.
 
 ## Summary
@@ -18,11 +18,11 @@ The `planning_write` skill exposes **several tools that each trigger structure g
 
 ### Tools that trigger `generate-structured-workout`
 
-| Tool | When it triggers | Default |
-|------|------------------|---------|
-| `create_planned_workout` | After creating the workout shell | **`generate_structure` defaults to `true`** |
-| `update_planned_workout` | After updating metadata | **`generate_structure` omitted → treated as `true`** (`undefined !== false`) |
-| `generate_planned_workout_structure` | Explicit full rebuild | Always triggers |
+| Tool                                 | When it triggers                 | Default                                                                      |
+| ------------------------------------ | -------------------------------- | ---------------------------------------------------------------------------- |
+| `create_planned_workout`             | After creating the workout shell | **`generate_structure` defaults to `true`**                                  |
+| `update_planned_workout`             | After updating metadata          | **`generate_structure` omitted → treated as `true`** (`undefined !== false`) |
+| `generate_planned_workout_structure` | Explicit full rebuild            | Always triggers                                                              |
 
 All three are available together in `server/utils/chat/skills.ts` (`planning_write` tool list).
 

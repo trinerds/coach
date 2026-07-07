@@ -3,7 +3,7 @@
 **Type:** Bug  
 **Priority:** High  
 **Area:** `backend`, `infra`  
-**Status:** Open
+**Status:** In Progress ([PR #217](https://github.com/hdkiller/coach/pull/217))
 
 ## Description
 
@@ -11,13 +11,13 @@ The run monitor and `/api/runs/*` ownership checks rely on every user-scoped run
 
 ## Confirmed examples
 
-| Location | Task | Tags |
-|----------|------|------|
-| `server/api/nutrition/analyze-all.post.ts` | `analyze-nutrition` | **None** (only `concurrencyKey`) |
-| `server/api/chat/rooms/[id]/summarize.post.ts` | `summarize-chat` | **None** |
-| `server/utils/email-service.ts` | `send-email` | **None** |
-| `server/api/stripe/webhook.post.ts` | `send-email` | **None** |
-| `server/api/admin/debug/trigger-test.post.ts` | test tasks | **None** (admin-only; OK) |
+| Location                                       | Task                | Tags                             |
+| ---------------------------------------------- | ------------------- | -------------------------------- |
+| `server/api/nutrition/analyze-all.post.ts`     | `analyze-nutrition` | **None** (only `concurrencyKey`) |
+| `server/api/chat/rooms/[id]/summarize.post.ts` | `summarize-chat`    | **None**                         |
+| `server/utils/email-service.ts`                | `send-email`        | **None**                         |
+| `server/api/stripe/webhook.post.ts`            | `send-email`        | **None**                         |
+| `server/api/admin/debug/trigger-test.post.ts`  | test tasks          | **None** (admin-only; OK)        |
 
 Compare with correct pattern in `server/api/workouts/[id]/analyze.post.ts`:
 

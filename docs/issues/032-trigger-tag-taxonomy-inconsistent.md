@@ -3,7 +3,7 @@
 **Type:** Maintenance  
 **Priority:** Medium  
 **Area:** `backend`, `workouts`, `infra`  
-**Status:** Open  
+**Status:** In Progress ([PR #217](https://github.com/hdkiller/coach/pull/217))  
 **Related:** [002](./002-missing-planned-workout-run-tags.md), [013](./013-chat-duplicate-structure-generation-triggers.md)
 
 ## Description
@@ -12,16 +12,16 @@
 
 ## Tag matrix (`generate-structured-workout`)
 
-| Entry point | Trigger tags | `publishTaskRunStartedEvent` tags |
-|-------------|--------------|-----------------------------------|
-| Chat `create_planned_workout` | `user`, **`planned-workout:{id}`** | Same ✓ |
-| Chat `generate_planned_workout_structure` | `user`, **`planned-workout:{id}`** | Same ✓ |
-| API `generate-structure.post.ts` | **`user` only** | **`user` only** |
-| API `adjust.post.ts` | **`user` only** | **`user` only** |
-| `accept.post.ts` (recommendations) | **`user` only** | Not published |
-| `generate-training-block` loop | **`user` only** | Not published |
-| `generate-ad-hoc-workout` chain | **`user` only** | Not published |
-| Library template API | `user:{templateOwner}`, **`workout-template:{id}`** | Not published |
+| Entry point                               | Trigger tags                                        | `publishTaskRunStartedEvent` tags |
+| ----------------------------------------- | --------------------------------------------------- | --------------------------------- |
+| Chat `create_planned_workout`             | `user`, **`planned-workout:{id}`**                  | Same ✓                            |
+| Chat `generate_planned_workout_structure` | `user`, **`planned-workout:{id}`**                  | Same ✓                            |
+| API `generate-structure.post.ts`          | **`user` only**                                     | **`user` only**                   |
+| API `adjust.post.ts`                      | **`user` only**                                     | **`user` only**                   |
+| `accept.post.ts` (recommendations)        | **`user` only**                                     | Not published                     |
+| `generate-training-block` loop            | **`user` only**                                     | Not published                     |
+| `generate-ad-hoc-workout` chain           | **`user` only**                                     | Not published                     |
+| Library template API                      | `user:{templateOwner}`, **`workout-template:{id}`** | Not published                     |
 
 ## Impact
 
@@ -55,11 +55,11 @@ Use in **both** `tasks.trigger` and `publishTaskRunStartedEvent`.
 
 ## Also missing tags on related tasks
 
-| Task | Suggested extra tag |
-|------|---------------------|
-| `adjust-structured-workout` | `planned-workout:{id}` |
-| `generate-workout-messages` | `planned-workout:{id}` |
-| `generate-ad-hoc-workout` | `planned-workout:{id}` after create |
+| Task                        | Suggested extra tag                 |
+| --------------------------- | ----------------------------------- |
+| `adjust-structured-workout` | `planned-workout:{id}`              |
+| `generate-workout-messages` | `planned-workout:{id}`              |
+| `generate-ad-hoc-workout`   | `planned-workout:{id}` after create |
 
 ## Acceptance Criteria
 
