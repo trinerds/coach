@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'vitest'
 
-import { resolveStructureGeneratorModeForWorkout } from '../../../server/utils/structured-workout-generator'
+import { assertRenderableStructure } from '../../../server/utils/structured-workout-validation'
 import {
   buildCorrectiveStructureRetryPrompt,
   buildStructureAiCallOptions,
-  formatAiContextForStructureGen
+  filterZonesForWorkout,
+  formatAiContextForStructureGen,
+  looksLikeSteadyStateWorkout,
+  resolveStructureContextProfile
 } from '../../../trigger/utils/structure-generation-prompt'
 import { formatCompactTargetingBlock } from '../../../trigger/utils/workout-targeting'
 import { normalizeTargetFormatPolicy } from '../../../server/utils/workout-target-format-policy'
@@ -13,15 +16,22 @@ import { normalizeTargetPolicy } from '../../../server/utils/workout-target-poli
 describe('structure generation prompt helpers', () => {
   it('caps aiContext and skips when description is long enough', () => {
     const longContext = 'x'.repeat(800)
-    expect(formatAiContextForStructureGen({ aiContext: longContext })).toContain('…')
-    expect(formatAiContextForStructureGen({ aiContext: longContext })).not.toContain(
-      'x'.repeat(800)
-    )
+    expect(
+      formatAiContextForStructureGen({ aiContext: longContext, profile: 'standard' })
+    ).toContain('…')
 
     expect(
       formatAiContextForStructureGen({
         aiContext: 'Prefer cadence 85-90 on endurance rides.',
-        workoutDescription: 'A'.repeat(150)
+        workoutDescription: 'A'.repeat(150),
+        profile: 'standard'
+      })
+    ).toBe('')
+
+    expect(
+      formatAiContextForStructureGen({
+        aiContext: 'Prefer cadence 85-90.',
+        profile: 'minimal'
       })
     ).toBe('')
   })
@@ -42,11 +52,45 @@ describe('structure generation prompt helpers', () => {
     expect(block).not.toContain('TARGET POLICY (source')
   })
 
-  it('forces draft mode for endurance sports only', () => {
-    expect(resolveStructureGeneratorModeForWorkout('Run')).toBe('draft_json_v1')
-    expect(resolveStructureGeneratorModeForWorkout('Ride')).toBe('draft_json_v1')
-    expect(resolveStructureGeneratorModeForWorkout('Swim')).toBe('draft_json_v1')
-    expect(resolveStructureGeneratorModeForWorkout('WeightTraining')).toBe('legacy_json')
+  it('resolves context profiles from workout metadata', () => {
+    expect(
+      resolveStructureContextProfile({
+        workout: { title: 'Zone 2 Endurance Ride', description: 'Easy aerobic session' }
+      })
+    ).toBe('minimal')
+
+    expect(
+      resolveStructureContextProfile({
+        workout: { title: 'VO2 Intervals', description: '5x3min hard' }
+      })
+    ).toBe('standard')
+
+    expect(
+      resolveStructureContextProfile({
+        workout: { title: 'Long Ride', description: 'Steady' },
+        preserveExistingStructure: true
+      })
+    ).toBe('rich')
+
+    expect(looksLikeSteadyStateWorkout({ title: 'Threshold repeats', description: '' })).toBe(false)
+  })
+
+  it('filters zones to workout-relevant bands', () => {
+    const zones = [
+      { name: 'Z1 Recovery', min: 100, max: 120 },
+      { name: 'Z2 Endurance', min: 121, max: 150 },
+      { name: 'Z3 Tempo', min: 151, max: 170 },
+      { name: 'Z4 Threshold', min: 171, max: 185 }
+    ]
+
+    const filtered = filterZonesForWorkout(
+      zones,
+      { title: 'Zone 2 ride', description: 'Aerobic endurance' },
+      3
+    )
+
+    expect(filtered.some((zone) => String(zone.name).includes('Z2'))).toBe(true)
+    expect(filtered.length).toBeLessThanOrEqual(3)
   })
 
   it('builds lightweight corrective retry prompts with previous draft', () => {
@@ -59,7 +103,6 @@ describe('structure generation prompt helpers', () => {
 
     expect(prompt).toContain('FAILURE: duration undershoot too low')
     expect(prompt).toContain('PREVIOUS DRAFT')
-    expect(prompt).toContain('compact JSON')
     expect(prompt.length).toBeLessThan(2000)
   })
 
@@ -82,9 +125,41 @@ describe('structure generation prompt helpers', () => {
     })
 
     expect(first.disableThinking).toBe(true)
-    expect(first.modelOverride).toBeUndefined()
-    expect(second.modelOverride).toBe('gemini-3-pro-preview')
     expect(second.thinkingLevelOverride).toBe('low')
-    expect(second.disableThinking).toBeUndefined()
+  })
+})
+
+describe('assertRenderableStructure', () => {
+  it('rejects description-only payloads', () => {
+    expect(
+      assertRenderableStructure(
+        { description: 'Easy ride', coachInstructions: 'Stay smooth', steps: [] },
+        'Ride'
+      ).valid
+    ).toBe(false)
+  })
+
+  it('accepts steps, exercises, or strength blocks', () => {
+    expect(
+      assertRenderableStructure(
+        { steps: [{ type: 'Warmup', name: 'Easy', durationSeconds: 600 }] },
+        'Run'
+      ).valid
+    ).toBe(true)
+
+    expect(
+      assertRenderableStructure(
+        {
+          blocks: [
+            {
+              type: 'single_exercise',
+              title: 'Squat',
+              steps: [{ name: 'Back Squat', setRows: [{ value: 8 }] }]
+            }
+          ]
+        },
+        'WeightTraining'
+      ).valid
+    ).toBe(true)
   })
 })

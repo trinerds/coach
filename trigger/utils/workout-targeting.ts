@@ -949,6 +949,7 @@ export function buildPlannedWorkoutGenerationContext(input: {
   phase?: string
   focus?: string
   persona?: string
+  contextProfile?: string
   adjustments?: any
 }) {
   return {
@@ -971,7 +972,8 @@ export function buildPlannedWorkoutGenerationContext(input: {
       phase: input.phase || null,
       focus: input.focus || null,
       persona: input.persona || null,
-      recentWorkoutsCount: input.recentWorkoutsCount
+      recentWorkoutsCount: input.recentWorkoutsCount,
+      contextProfile: input.contextProfile || null
     },
     targeting: {
       loadPreference: input.loadPreference,

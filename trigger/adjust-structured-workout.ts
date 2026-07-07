@@ -43,8 +43,11 @@ import {
   buildCorrectiveStructureRetryPrompt,
   buildDraftOutputRules,
   buildSportSpecificInstructions,
-  buildStructureAiCallOptions
+  buildStructureAiCallOptions,
+  looksLikeIntervalWorkout,
+  resolveStructureContextProfile
 } from './utils/structure-generation-prompt'
+import { assertRenderableStructure } from '../server/utils/structured-workout-validation'
 import {
   estimateStepDistanceMeters,
   estimateStepDurationSeconds,
@@ -552,11 +555,6 @@ function hasRepeatBlock(steps: any[]): boolean {
   )
 }
 
-function looksLikeIntervalWorkout(workout: any) {
-  const text = `${workout?.title || ''} ${workout?.description || ''}`.toLowerCase()
-  return /\b(vo2|threshold|tempo|interval|repeats?|x\d+|\d+x)\b/.test(text)
-}
-
 function getCoverageBounds(workout: any, plannedDurationSec: number) {
   const workoutType = String(workout?.type || '').toLowerCase()
   if (workoutType.includes('gym') || workoutType.includes('weight')) {
@@ -782,12 +780,20 @@ export const adjustStructuredWorkoutTask = task({
     const timezone = await getUserTimezone(workout.userId)
     logStage('resolved-timezone', { timezone, userAge: userAge || null })
 
-    // Fetch recent workouts for context
-    const recentWorkouts = await workoutRepository.getForUser(workout.userId, {
-      limit: 4,
-      orderBy: { date: 'desc' }
+    const contextProfile = resolveStructureContextProfile({
+      workout,
+      preserveExistingStructure: Boolean(workout.structuredWorkout)
     })
-    logStage('loaded-recent-workouts', { count: recentWorkouts.length })
+    logStage('resolved-context-profile', { contextProfile })
+
+    let recentWorkouts: any[] = []
+    if (contextProfile === 'rich') {
+      recentWorkouts = await workoutRepository.getForUser(workout.userId, {
+        limit: 4,
+        orderBy: { date: 'desc' }
+      })
+    }
+    logStage('loaded-recent-workouts', { count: recentWorkouts.length, contextProfile })
 
     // Resolve Metrics
     const ftp = sportSettings?.ftp || workout.user.ftp || 250
@@ -801,7 +807,9 @@ export const adjustStructuredWorkoutTask = task({
       primaryMetric: targetPolicy.primaryMetric,
       loadPreference,
       ftp,
-      lthr
+      lthr,
+      workout,
+      contextProfile
     })
     const targetingBlock = formatCompactTargetingBlock(
       targetPolicy,
@@ -822,7 +830,8 @@ export const adjustStructuredWorkoutTask = task({
     const durationMinutes = Math.round((workout.durationSec || 3600) / 60)
     const feedback =
       adjustments.feedback || 'Please regenerate with the new duration/intensity parameters.'
-    const recentWorkoutsSummary = buildConciseWorkoutSummary(recentWorkouts, timezone)
+    const recentWorkoutsSummary =
+      contextProfile === 'rich' ? buildConciseWorkoutSummary(recentWorkouts, timezone) : ''
     const sharedAdjustHeader = `ORIGINAL WORKOUT:
 - Title: ${workout.title}
 - Duration: ${durationMinutes} minutes
@@ -843,8 +852,7 @@ ${zoneDefinitions}
 
 ${targetingBlock}
 
-RECENT WORKOUTS (brief):
-${recentWorkoutsSummary}`
+${recentWorkoutsSummary ? `RECENT WORKOUTS (brief):\n${recentWorkoutsSummary}\n` : ''}`
 
     const draftPrompt = `Adjust this structured ${workout.type} workout plan using the compact planning format.
 
@@ -884,6 +892,7 @@ OUTPUT JSON matching the schema.`
     logStage('prompt-built', {
       promptChars: promptForAttempt.length,
       generatorMode,
+      contextProfile,
       targetDurationMinutes: durationMinutes
     })
 
@@ -1299,6 +1308,13 @@ OUTPUT JSON matching the schema.`
       totalTSS: Math.round(totalTSS * 100) / 100
     })
 
+    const renderableValidation = assertRenderableStructure(structure, workout.type)
+    if (!renderableValidation.valid) {
+      throw new Error(
+        `Adjusted structured workout failed renderable validation: ${renderableValidation.reason}`
+      )
+    }
+
     const hasSteps = Array.isArray(structure.steps) && structure.steps.length > 0
     const hasExercises = Array.isArray(structure.exercises) && structure.exercises.length > 0
     if ((hasSteps || hasExercises) && totalDuration <= 0) {
@@ -1331,6 +1347,7 @@ OUTPUT JSON matching the schema.`
       phase: workout.trainingWeek?.block.type || 'General',
       focus: workout.trainingWeek?.block.primaryFocus || 'Fitness',
       persona: workout.user.aiPersona || undefined,
+      contextProfile,
       adjustments
     })
 

@@ -44,8 +44,12 @@ import {
   buildDraftOutputRules,
   buildSportSpecificInstructions,
   buildStructureAiCallOptions,
-  formatAiContextForStructureGen
+  buildStructureGoalContextBlock,
+  formatAiContextForStructureGen,
+  looksLikeIntervalWorkout,
+  resolveStructureContextProfile
 } from './utils/structure-generation-prompt'
+import { assertRenderableStructure } from '../server/utils/structured-workout-validation'
 import {
   estimateStepDistanceMeters,
   estimateStepDurationSeconds,
@@ -626,11 +630,6 @@ function hasRepeatBlock(steps: any[]): boolean {
   )
 }
 
-function looksLikeIntervalWorkout(workout: any) {
-  const text = `${workout?.title || ''} ${workout?.description || ''}`.toLowerCase()
-  return /\b(vo2|threshold|tempo|interval|repeats?|x\d+|\d+x)\b/.test(text)
-}
-
 function getCoverageBounds(workout: any, plannedDurationSec: number, preserveStructure?: boolean) {
   if (preserveStructure) {
     return { minCoverage: 0.95, maxCoverage: 1.05 }
@@ -916,12 +915,21 @@ export const generateStructuredWorkoutTask = task({
     const timezone = await getUserTimezone(workout.userId)
     logStage('resolved-timezone', { timezone })
 
-    // Fetch recent workouts for context (concise summary only — no stream data needed)
-    const recentWorkouts = await workoutRepository.getForUser(workout.userId, {
-      limit: 4,
-      orderBy: { date: 'desc' }
+    const preserveExistingStructure = Boolean(workout.structuredWorkout)
+    const contextProfile = resolveStructureContextProfile({
+      workout,
+      preserveExistingStructure
     })
-    logStage('loaded-recent-workouts', { count: recentWorkouts.length })
+    logStage('resolved-context-profile', { contextProfile })
+
+    let recentWorkouts: any[] = []
+    if (contextProfile === 'rich') {
+      recentWorkouts = await workoutRepository.getForUser(workout.userId, {
+        limit: 4,
+        orderBy: { date: 'desc' }
+      })
+    }
+    logStage('loaded-recent-workouts', { count: recentWorkouts.length, contextProfile })
 
     // Resolve Metrics
     const ftp = sportSettings?.ftp || workout.user.ftp || 250
@@ -930,7 +938,8 @@ export const generateStructuredWorkoutTask = task({
     const thresholdPace = sportSettings?.thresholdPace || 0
     const aiContextBlock = formatAiContextForStructureGen({
       aiContext: workout.user.aiContext,
-      workoutDescription: workout.description
+      workoutDescription: workout.description,
+      profile: contextProfile
     })
 
     // Subscription Limit Check
@@ -958,7 +967,6 @@ export const generateStructuredWorkoutTask = task({
 
     const warmupTime = sportSettings?.warmupTime || 10
     const cooldownTime = sportSettings?.cooldownTime || 5
-    const preserveExistingStructure = Boolean(workout.structuredWorkout)
     const existingStructureSummary = preserveExistingStructure
       ? summarizeStructuredWorkoutForPrompt(workout.structuredWorkout)
       : ''
@@ -968,7 +976,9 @@ export const generateStructuredWorkoutTask = task({
       primaryMetric: targetPolicy.primaryMetric,
       loadPreference,
       ftp,
-      lthr
+      lthr,
+      workout,
+      contextProfile
     })
     const targetingBlock = formatCompactTargetingBlock(
       targetPolicy,
@@ -988,7 +998,15 @@ export const generateStructuredWorkoutTask = task({
     })
     const durationMinutes = Math.round((workout.durationSec || 3600) / 60)
     const language = workout.user.language || 'English'
-    const recentWorkoutsSummary = buildConciseWorkoutSummary(recentWorkouts, timezone)
+    const recentWorkoutsSummary =
+      contextProfile === 'rich' ? buildConciseWorkoutSummary(recentWorkouts, timezone) : ''
+    const goalContextBlock = buildStructureGoalContextBlock({
+      profile: contextProfile,
+      goal,
+      phase,
+      focus,
+      persona
+    })
     const sharedWorkoutHeader = `TITLE: ${workout.title}
 DURATION: ${durationMinutes} minutes
 INTENSITY: ${workout.workIntensity || 'Moderate'}
@@ -998,16 +1016,10 @@ USER LTHR: ${lthr} bpm
 TYPE: ${workout.type}
 PREFERRED LANGUAGE: ${language} (all text fields must use this language)
 
-CONTEXT:
-- Goal: ${goal}
-- Phase: ${phase}
-- Focus: ${focus}
-- Coach Persona: ${persona}
+${goalContextBlock}
 ${aiContextBlock}
 
-RECENT WORKOUTS (brief):
-${recentWorkoutsSummary}
-
+${recentWorkoutsSummary ? `RECENT WORKOUTS (brief):\n${recentWorkoutsSummary}\n` : ''}
 ${preserveExistingStructure ? `EXISTING STRUCTURE TO PRESERVE:\n${existingStructureSummary}\n` : ''}
 ${zoneDefinitions}
 
@@ -1065,6 +1077,7 @@ OUTPUT JSON matching the schema.`
     logStage('prompt-built', {
       promptChars: promptForAttempt.length,
       generatorMode,
+      contextProfile,
       targetDurationMinutes: durationMinutes
     })
 
@@ -1519,6 +1532,13 @@ OUTPUT JSON matching the schema.`
       totalTSS: Math.round(totalTSS * 100) / 100
     })
 
+    const renderableValidation = assertRenderableStructure(structure, workout.type)
+    if (!renderableValidation.valid) {
+      throw new Error(
+        `Generated structured workout failed renderable validation: ${renderableValidation.reason}`
+      )
+    }
+
     const hasSteps = Array.isArray(structure.steps) && structure.steps.length > 0
     const hasExercises = Array.isArray(structure.exercises) && structure.exercises.length > 0
     if ((hasSteps || hasExercises) && totalDuration <= 0) {
@@ -1547,7 +1567,8 @@ OUTPUT JSON matching the schema.`
       goal,
       phase,
       focus,
-      persona
+      persona,
+      contextProfile
     })
 
     const updateData: any = {
