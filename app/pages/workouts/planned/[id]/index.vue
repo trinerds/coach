@@ -625,8 +625,7 @@
           <pre
             v-else
             class="text-xs whitespace-pre-wrap break-words max-h-[60vh] overflow-auto rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-3 text-gray-800 dark:text-gray-100"
-            >{{ intervalsPreviewText || 'No Intervals.icu description available.' }}</pre
-          >
+            >{{ intervalsPreviewText || 'No Intervals.icu description available.' }}</pre>
           <div class="flex justify-end">
             <UButton
               size="xs"
@@ -644,8 +643,7 @@
         <div v-else class="space-y-3">
           <pre
             class="text-xs whitespace-pre-wrap break-words max-h-[60vh] overflow-auto rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-3 text-gray-800 dark:text-gray-100"
-            >{{ plannedWorkoutRawJson }}</pre
-          >
+            >{{ plannedWorkoutRawJson }}</pre>
           <div class="flex justify-end">
             <UButton
               size="xs"
@@ -1109,7 +1107,7 @@
   import SwimView from '~/components/workouts/planned/SwimView.vue'
   import StrengthView from '~/components/workouts/planned/StrengthView.vue'
   import TriggerMonitorButton from '~/components/dashboard/TriggerMonitorButton.vue'
-  import AiFeedback from '~/components/AiFeedback.vue'
+  import { ACTIVE_STATUSES } from '~/composables/useUserRuns'
 
   definePageMeta({
     middleware: 'auth'
@@ -1199,12 +1197,67 @@
 
   // Background Task Monitoring
   const { refresh: refreshRuns } = useUserRuns()
-  const { runs, onTaskCompleted } = useUserRunsState()
+  const { runs, onTaskCompleted, onTaskFailed } = useUserRunsState()
   const upgradeModal = useUpgradeModal()
   const STRUCTURE_TASK_IDENTIFIERS = new Set([
     'generate-structured-workout',
     'adjust-structured-workout'
   ])
+  const STRUCTURE_TERMINAL_FAILURE_STATUSES = new Set([
+    'FAILED',
+    'TIMED_OUT',
+    'CANCELED',
+    'CRASHED',
+    'SYSTEM_FAILURE'
+  ])
+  const structureFailureNotifiedIds = new Set<string>()
+  const pageSetupTime = Date.now()
+
+  function isStructureRunForWorkout(
+    run: { taskIdentifier?: string; tags?: string[] },
+    workoutId?: string | null
+  ) {
+    if (!workoutId) return false
+    return (
+      STRUCTURE_TASK_IDENTIFIERS.has(run.taskIdentifier || '') &&
+      Array.isArray(run.tags) &&
+      run.tags.includes(`planned-workout:${workoutId}`)
+    )
+  }
+
+  function extractStructureRunErrorMessage(run: { status?: string; error?: any }) {
+    const err = run.error
+    if (typeof err === 'string' && err.trim()) return err
+    if (err?.message) return err.message
+    if (run.status === 'TIMED_OUT') {
+      return 'The structure job timed out before it could finish. Try again or simplify the workout.'
+    }
+    if (run.status === 'CANCELED') return 'Structure generation was canceled.'
+    return 'Structure generation failed.'
+  }
+
+  function handleStructureRunFailure(run: {
+    taskIdentifier?: string
+    status?: string
+    error?: any
+  }) {
+    if (run.taskIdentifier === 'adjust-structured-workout') {
+      adjusting.value = false
+      toast.add({
+        title: 'Adjustment Failed',
+        description: extractStructureRunErrorMessage(run),
+        color: 'error'
+      })
+      return
+    }
+
+    generating.value = false
+    toast.add({
+      title: 'Generation Failed',
+      description: extractStructureRunErrorMessage(run),
+      color: 'error'
+    })
+  }
 
   function handleQuotaError(error: any, featureTitle: string, featureDescription: string) {
     if (
@@ -1366,6 +1419,8 @@
   })
 
   onTaskCompleted('adjust-structured-workout', async (run) => {
+    if (!isStructureRunForWorkout(run, workout.value?.id)) return
+
     await fetchWorkout()
     adjusting.value = false
     toast.add({
@@ -1377,6 +1432,8 @@
   })
 
   onTaskCompleted('generate-structured-workout', async (run) => {
+    if (!isStructureRunForWorkout(run, workout.value?.id)) return
+
     await fetchWorkout()
     generating.value = false
 
@@ -1405,6 +1462,43 @@
       icon: 'i-heroicons-check-circle'
     })
   })
+
+  onTaskFailed('adjust-structured-workout', async (run) => {
+    if (!isStructureRunForWorkout(run, workout.value?.id)) return
+    handleStructureRunFailure(run)
+  })
+
+  onTaskFailed('generate-structured-workout', async (run) => {
+    if (!isStructureRunForWorkout(run, workout.value?.id)) return
+    handleStructureRunFailure(run)
+  })
+
+  watch(
+    runs,
+    (newRuns) => {
+      const workoutId = workout.value?.id
+      if (!workoutId) return
+
+      for (const run of newRuns) {
+        if (!isStructureRunForWorkout(run, workoutId)) continue
+        if (run.status === 'FAILED') continue
+        if (!STRUCTURE_TERMINAL_FAILURE_STATUSES.has(run.status)) continue
+        if (structureFailureNotifiedIds.has(run.id)) continue
+
+        const finishedTime = run.finishedAt ? new Date(run.finishedAt).getTime() : 0
+        const isRecentFailure = finishedTime > pageSetupTime - 2000
+        const isLoading = generating.value || adjusting.value
+        if (!isRecentFailure && !isLoading) {
+          structureFailureNotifiedIds.add(run.id)
+          continue
+        }
+
+        structureFailureNotifiedIds.add(run.id)
+        handleStructureRunFailure(run)
+      }
+    },
+    { deep: true }
+  )
 
   const isLocalWorkout = computed(() => {
     if (!workout.value) return false
@@ -1458,12 +1552,28 @@
       runs.value.find((run) => {
         return (
           STRUCTURE_TASK_IDENTIFIERS.has(run.taskIdentifier) &&
+          ACTIVE_STATUSES.includes(run.status) &&
           Array.isArray(run.tags) &&
           run.tags.includes(`planned-workout:${workoutId}`)
         )
       }) || null
     )
   })
+
+  watch(
+    activeStructureRun,
+    (run) => {
+      if (!run) return
+      if (run.taskIdentifier === 'adjust-structured-workout') {
+        adjusting.value = true
+        generating.value = false
+        return
+      }
+      generating.value = true
+      adjusting.value = false
+    },
+    { immediate: true }
+  )
 
   const structureJobStatusLabel = computed(() => {
     const taskIdentifier = activeStructureRun.value?.taskIdentifier
@@ -2547,5 +2657,6 @@
     trackWorkoutViewDetail('planned')
     fetchWorkout()
     fetchIntegrationStatus()
+    refreshRuns()
   })
 </script>
