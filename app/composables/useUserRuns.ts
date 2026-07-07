@@ -295,19 +295,18 @@ export function useUserRuns() {
   if (import.meta.client) {
     watch(
       () => (session.value?.user as any)?.id,
-      (newId) => {
-        if (newId) {
+      (newId, oldId) => {
+        if (newId && newId !== oldId) {
+          cleanupUserRunsConnection()
+          runs.value = []
+          initPromise = null
+          init()
+        } else if (newId) {
           init()
         } else {
-          if (ws) {
-            ws.close()
-            ws = null
-          }
-          isConnected.value = false
-          initPromise = null
-          stopPolling()
-          stopPing()
+          cleanupUserRunsConnection()
           runs.value = []
+          initPromise = null
         }
       }
     )

@@ -625,8 +625,7 @@
           <pre
             v-else
             class="text-xs whitespace-pre-wrap break-words max-h-[60vh] overflow-auto rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-3 text-gray-800 dark:text-gray-100"
-            >{{ intervalsPreviewText || 'No Intervals.icu description available.' }}</pre
-          >
+            >{{ intervalsPreviewText || 'No Intervals.icu description available.' }}</pre>
           <div class="flex justify-end">
             <UButton
               size="xs"
@@ -644,8 +643,7 @@
         <div v-else class="space-y-3">
           <pre
             class="text-xs whitespace-pre-wrap break-words max-h-[60vh] overflow-auto rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-3 text-gray-800 dark:text-gray-100"
-            >{{ plannedWorkoutRawJson }}</pre
-          >
+            >{{ plannedWorkoutRawJson }}</pre>
           <div class="flex justify-end">
             <UButton
               size="xs"
@@ -1381,6 +1379,17 @@
     generating.value = false
 
     const output = run.output as any
+    if (output?.skipped || output?.reason === 'FREE_TIER_LIMIT') {
+      toast.add({
+        title: 'Generation Skipped',
+        description:
+          output?.message ||
+          'Structured workout generation is limited to 4 weeks in advance on the free plan.',
+        color: 'warning',
+        icon: 'i-heroicons-exclamation-triangle'
+      })
+      return
+    }
     if (output?.success === false) {
       if (output.reason === 'QUOTA_EXCEEDED') {
         handleQuotaError(
@@ -2335,7 +2344,7 @@
 
       toast.add({
         title: 'Generation Started',
-        description: 'AI is generating the workout structure. This may take up to 30 seconds.',
+        description: 'AI is generating the workout structure. This may take up to 2 minutes.',
         color: 'success'
       })
     } catch (error: any) {

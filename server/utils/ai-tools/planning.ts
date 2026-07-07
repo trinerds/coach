@@ -42,9 +42,11 @@ import {
 import {
   normalizeStructuredWorkoutForPersistence,
   computeStructuredWorkoutMetrics,
-  getPendingSyncStatus
+  getPendingSyncStatus,
+  hasRenderableStructure
 } from '../structured-workout-persistence'
 import { publishTaskRunStartedEvent } from '../task-run-events'
+import { isPlannedWorkoutStructureJobInFlight } from '../trigger-check'
 
 const STEP_INTENT_VALUES = [
   'warmup',
@@ -619,9 +621,30 @@ export const planningTools = (userId: string, timezone: string, aiSettings: AiSe
 
       if (!workout) return { error: 'Planned workout not found' }
 
+      const week = workout.trainingWeek
       return {
-        ...workout,
-        date: formatDateUTC(workout.date)
+        success: true,
+        workout_id: workout.id,
+        title: workout.title,
+        date: formatDateUTC(workout.date),
+        start_time: workout.startTime,
+        type: workout.type,
+        duration_minutes: workout.durationSec ? Math.round(workout.durationSec / 60) : undefined,
+        tss: workout.tss,
+        description: workout.description,
+        sync_status: workout.syncStatus,
+        completion_status: workout.completionStatus,
+        has_structure: hasRenderableStructure(workout.structuredWorkout),
+        training_context: week
+          ? {
+              plan_name: week.block?.plan?.name,
+              block_name: week.block?.name,
+              week_number: week.weekNumber,
+              focus: week.focus || week.block?.primaryFocus
+            }
+          : undefined,
+        message:
+          'Summary only. Use get_planned_workout_structure for full interval steps or exercises.'
       }
     }
   }),
@@ -680,6 +703,14 @@ export const planningTools = (userId: string, timezone: string, aiSettings: AiSe
       })) as any
 
       if (!existing) return { error: 'Planned workout not found' }
+      if (await isPlannedWorkoutStructureJobInFlight(userId, workout_id)) {
+        return {
+          success: false,
+          structure_job_in_flight: true,
+          error:
+            'Structure generation or adjustment is already running for this workout. Wait for it to finish before replacing the structure directly.'
+        }
+      }
       const sportSettings = await sportSettingsRepository.getForActivityType(
         userId,
         existing.type || ''
@@ -745,6 +776,14 @@ export const planningTools = (userId: string, timezone: string, aiSettings: AiSe
       })) as any
 
       if (!existing) return { error: 'Planned workout not found' }
+      if (await isPlannedWorkoutStructureJobInFlight(userId, workout_id)) {
+        return {
+          success: false,
+          structure_job_in_flight: true,
+          error:
+            'Structure generation or adjustment is already running for this workout. Wait for it to finish before patching structure directly.'
+        }
+      }
       if (!existing.structuredWorkout || typeof existing.structuredWorkout !== 'object') {
         return {
           success: false,
@@ -890,19 +929,21 @@ export const planningTools = (userId: string, timezone: string, aiSettings: AiSe
         completionStatus: 'PENDING'
       })
 
-      await autoUploadPlannedWorkoutToIntervalsIfEnabled({
-        id: workout.id,
-        userId,
-        externalId: workout.externalId,
-        date: workout.date,
-        startTime: workout.startTime,
-        title: workout.title,
-        description: workout.description,
-        type: workout.type,
-        durationSec: workout.durationSec,
-        tss: workout.tss,
-        managedBy: workout.managedBy
-      })
+      if (args.generate_structure === false) {
+        await autoUploadPlannedWorkoutToIntervalsIfEnabled({
+          id: workout.id,
+          userId,
+          externalId: workout.externalId,
+          date: workout.date,
+          startTime: workout.startTime,
+          title: workout.title,
+          description: workout.description,
+          type: workout.type,
+          durationSec: workout.durationSec,
+          tss: workout.tss,
+          managedBy: workout.managedBy
+        })
+      }
 
       // Trigger structured workout generation
       let runId: string | undefined
@@ -911,7 +952,8 @@ export const planningTools = (userId: string, timezone: string, aiSettings: AiSe
           const handle = await generateStructuredWorkoutTask.trigger(
             {
               plannedWorkoutId: workout.id, // Pass plannedWorkoutId
-              targetingOverride: args.targeting_override || null
+              targetingOverride: args.targeting_override || null,
+              quotaCheckedAtEnqueue: true
             },
             {
               tags: [`user:${userId}`, `planned-workout:${workout.id}`],
@@ -1001,7 +1043,8 @@ export const planningTools = (userId: string, timezone: string, aiSettings: AiSe
           const handle = await generateStructuredWorkoutTask.trigger(
             {
               plannedWorkoutId: workout.id,
-              targetingOverride: args.targeting_override || null
+              targetingOverride: args.targeting_override || null,
+              quotaCheckedAtEnqueue: true
             },
             {
               tags: [`user:${userId}`, `planned-workout:${workout.id}`],
@@ -1163,6 +1206,11 @@ export const planningTools = (userId: string, timezone: string, aiSettings: AiSe
       intensity,
       targeting_override
     }) => {
+      const existing = await plannedWorkoutRepository.getById(workout_id, userId, {
+        select: { id: true }
+      })
+      if (!existing) return { success: false, error: 'Planned workout not found' }
+
       // 0. Quota Check
       await checkQuota(userId, 'generate_structured_workout')
 
@@ -1176,7 +1224,8 @@ export const planningTools = (userId: string, timezone: string, aiSettings: AiSe
               durationMinutes: duration_minutes,
               intensity: intensity
             },
-            targetingOverride: targeting_override || null
+            targetingOverride: targeting_override || null,
+            quotaCheckedAtEnqueue: true
           },
           {
             tags: [`user:${userId}`, `planned-workout:${workout_id}`],
@@ -1209,12 +1258,21 @@ export const planningTools = (userId: string, timezone: string, aiSettings: AiSe
       )
     }),
     execute: async ({ workout_id, targeting_override }) => {
+      const existing = await plannedWorkoutRepository.getById(workout_id, userId, {
+        select: { id: true }
+      })
+      if (!existing) return { success: false, error: 'Planned workout not found' }
+
       // 0. Quota Check
       await checkQuota(userId, 'generate_structured_workout')
 
       try {
         const handle = await generateStructuredWorkoutTask.trigger(
-          { plannedWorkoutId: workout_id, targetingOverride: targeting_override || null },
+          {
+            plannedWorkoutId: workout_id,
+            targetingOverride: targeting_override || null,
+            quotaCheckedAtEnqueue: true
+          },
           {
             tags: [`user:${userId}`, `planned-workout:${workout_id}`],
             concurrencyKey: userId
@@ -1247,7 +1305,15 @@ export const planningTools = (userId: string, timezone: string, aiSettings: AiSe
         include: { user: { select: { ftp: true } } }
       })) as any // Cast because of complex include
 
-      if (!workout) return { error: 'Workout not found' }
+      if (!workout) return { error: 'Planned workout not found' }
+
+      if (!hasRenderableStructure(workout.structuredWorkout)) {
+        return {
+          success: false,
+          error:
+            'Workout structure is not ready yet. Wait for structure generation to finish or use Build Structure first.'
+        }
+      }
 
       // Logic copied from publish endpoint, simplified
       // Ideally this should be in a service but for now we implement directly using utils
@@ -1434,7 +1500,7 @@ export const planningTools = (userId: string, timezone: string, aiSettings: AiSe
           const existingWorkout = await workoutRepository.getById(args.workout_id, userId, {
             select: { id: true, date: true }
           })
-          if (!existingWorkout) throw new Error('Workout not found')
+          if (!existingWorkout) throw new Error('Workout not found', { cause: e })
 
           await workoutRepository.delete(args.workout_id, userId)
 

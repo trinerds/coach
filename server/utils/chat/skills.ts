@@ -180,6 +180,7 @@ const CHAT_SKILL_MANIFESTS: Record<ChatSkillId, ChatSkillManifest> = {
 - Never ask for approval in plain text without first invoking the relevant planning mutation tool.
 - If the user approves a prepared planning action, immediately execute that exact approved planning tool call.
 - After approval, do not just acknowledge the action in text. Execute the tool first, then report the result.
+- Do not call patch_planned_workout_structure or set_planned_workout_structure on the same workout in the same turn as generate_planned_workout_structure or adjust_planned_workout — async jobs overwrite direct edits.
 - Do not claim a workout was created, updated, moved, published, or deleted unless the planning tool actually ran successfully.`,
     contextFlags: ['planning', 'date_context', 'time'],
     approvalToolNames: [
