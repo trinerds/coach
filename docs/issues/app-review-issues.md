@@ -317,7 +317,7 @@ Documents **180 app-wide issues** (039–218) from systematic codebase review. C
 4. **145–147, 041, 136, 146** — Logout/account-switch data hygiene
 5. **039, 049–051, 064–065, 073–074, 080–082, 119, 138, 216** — `onTaskFailed` sweep
 6. **171–172, 175–177** — Trigger ingest/quota/stuck PROCESSING (ingest-safe)
-7. **066, 155–160, 157, 158** — Share/privacy hardening
+7. **066, 155–160, 157** — Share/privacy hardening (158 postponed — OAuth developer)
 8. ~~Webhook/OAuth auth (057–129 subset)~~ — **Postponed** until third-party coordination
 9. **152–154** — Join/onboarding flow
 10. **199–215** — i18n/a11y (incremental, low risk)
