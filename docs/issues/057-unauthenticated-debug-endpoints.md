@@ -3,8 +3,9 @@
 **Type:** Bug  
 **Priority:** High  
 **Area:** `backend`, `infra`  
-**Status:** Postponed
-> **Postponed (2026-07-08):** Debug endpoint lockdown is auth hardening; deferred with integration auth batch. Skipped for now to avoid breaking ingest or integration flows until third-party systems are adjusted.
+**Status:** Fixed
+
+> **Fixed (2026-07-08):** Added shared `requireAdmin()` guard to all `/api/debug/*` routes and `auth` + `admin` middleware on debug pages.
 
 ## Description
 
@@ -37,9 +38,9 @@ Only `debug/workouts.get.ts` checks auth.
 
 ## Suggested Fix
 
-Add `requireAuth` with admin role, or gate behind `NODE_ENV === 'development'`.
+Added `requireAdmin()` in `server/utils/auth-guard.ts` and applied to all debug API routes. Debug UI pages use `middleware: ['auth', 'admin']`.
 
 ## Acceptance Criteria
 
-- [ ] Debug endpoints return 401/403 for unauthenticated requests in production
-- [ ] Legitimate admin debug access still works in dev/staging
+- [x] Debug endpoints return 403 for unauthenticated/non-admin requests
+- [x] Legitimate admin debug access still works in dev/staging
