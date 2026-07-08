@@ -961,7 +961,7 @@ export const planningTools = (userId: string, timezone: string, aiSettings: AiSe
         .boolean()
         .optional()
         .describe(
-          'Set to false to skip structured interval regeneration (e.g. for rest days, holidays, or minor updates)'
+          'Set to true to regenerate structured intervals after the update. Defaults to false — use only when duration, type, intensity, or structure changed, or the user asked to rebuild intervals.'
         ),
       targeting_override: targetingOverrideSchema.describe(
         'Optional per-workout targeting override for this regeneration only (does not change profile defaults).'
@@ -969,8 +969,10 @@ export const planningTools = (userId: string, timezone: string, aiSettings: AiSe
     }),
     needsApproval: async () => aiSettings.aiRequireToolApproval,
     execute: async (args) => {
+      const shouldRegenerateStructure = args.generate_structure === true
+
       // 0. Quota Check
-      if (args.generate_structure !== false) {
+      if (shouldRegenerateStructure) {
         await checkQuota(userId, 'generate_structured_workout')
       }
 
@@ -1002,7 +1004,7 @@ export const planningTools = (userId: string, timezone: string, aiSettings: AiSe
 
       // Trigger regeneration of structured intervals
       let runId: string | undefined
-      if (args.generate_structure !== false) {
+      if (shouldRegenerateStructure) {
         try {
           const tags = structureGenerationRunTags({
             userId,
@@ -1217,7 +1219,7 @@ export const planningTools = (userId: string, timezone: string, aiSettings: AiSe
 
   generate_planned_workout_structure: tool({
     description:
-      'Generate or fully regenerate the structured intervals for a planned workout. Use this when no structure exists yet or when a full rebuild is desired. Do NOT use this for minor edits when patch_planned_workout_structure is sufficient.',
+      'Generate or fully regenerate the structured intervals for a planned workout. Use this when no structure exists yet or when a full rebuild is desired. Do NOT use this after create_planned_workout in the same turn — creation already starts structure generation. Do NOT use this for minor edits when patch_planned_workout_structure is sufficient.',
     inputSchema: z.object({
       workout_id: z.string(),
       targeting_override: targetingOverrideSchema.describe(
