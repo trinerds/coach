@@ -339,6 +339,7 @@ export default defineNuxtConfig({
         '@internationalized/date',
         '@sentry/nuxt',
         '@vueuse/core',
+        '@vueuse/shared',
         'chart.js',
         'chartjs-adapter-date-fns',
         'date-fns',
