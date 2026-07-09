@@ -33,6 +33,13 @@ export const usePolling = () => {
       } catch (error) {
         if (onError) onError(error)
         else console.error('Polling error:', error)
+
+        if (attempts >= maxAttempts) {
+          if (onMaxAttemptsReached) onMaxAttemptsReached()
+          return
+        }
+
+        setTimeout(executePoll, interval)
       }
     }
 

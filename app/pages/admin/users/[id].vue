@@ -225,6 +225,7 @@
               variant="soft"
               icon="i-lucide-user-cog"
               label="Impersonate"
+              :disabled="isOwnAdminAccount"
               :loading="impersonating"
               @click="impersonateUser"
             />

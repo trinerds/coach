@@ -23,6 +23,14 @@ export default defineEventHandler(async (event) => {
     })
   }
 
+  const actorId = user.originalUserId || user.id
+  if (actorId === userId) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'You cannot impersonate your own account'
+    })
+  }
+
   const userToImpersonate = await prisma.user.findUnique({
     where: { id: userId }
   })

@@ -516,22 +516,80 @@
     }
   )
 
-  watchEffect(() => {
+  const coachHydrated = ref(false)
+  const coachJoinHydrated = ref(false)
+  const coachStartHydrated = ref(false)
+  const athleteHydrated = ref(false)
+
+  function applyCoachProfileFromServer() {
     if ((coachData.value as any)?.profile) {
       coachProfile.value = structuredClone((coachData.value as any).profile)
       attemptedCoachSave.value = false
     }
+  }
+
+  function applyCoachJoinFromServer() {
     if ((coachJoinData.value as any)?.joinPage) {
       coachJoinPage.value = structuredClone((coachJoinData.value as any).joinPage)
     }
+  }
+
+  function applyCoachStartFromServer() {
     if ((coachStartData.value as any)?.startPage) {
       coachStartPage.value = structuredClone((coachStartData.value as any).startPage)
     }
+  }
+
+  function applyAthleteProfileFromServer() {
     if ((athleteData.value as any)?.profile) {
       athleteProfile.value = structuredClone((athleteData.value as any).profile)
       attemptedAthleteSave.value = false
     }
-  })
+  }
+
+  watch(
+    coachData,
+    () => {
+      if (!coachHydrated.value && (coachData.value as any)?.profile) {
+        applyCoachProfileFromServer()
+        coachHydrated.value = true
+      }
+    },
+    { immediate: true }
+  )
+
+  watch(
+    coachJoinData,
+    () => {
+      if (!coachJoinHydrated.value && (coachJoinData.value as any)?.joinPage) {
+        applyCoachJoinFromServer()
+        coachJoinHydrated.value = true
+      }
+    },
+    { immediate: true }
+  )
+
+  watch(
+    coachStartData,
+    () => {
+      if (!coachStartHydrated.value && (coachStartData.value as any)?.startPage) {
+        applyCoachStartFromServer()
+        coachStartHydrated.value = true
+      }
+    },
+    { immediate: true }
+  )
+
+  watch(
+    athleteData,
+    () => {
+      if (!athleteHydrated.value && (athleteData.value as any)?.profile) {
+        applyAthleteProfileFromServer()
+        athleteHydrated.value = true
+      }
+    },
+    { immediate: true }
+  )
 
   const coachErrors = computed(() =>
     attemptedCoachSave.value ? validatePublicPresenceSettings(coachProfile.value, 'coach') : {}
@@ -596,6 +654,7 @@
         body: coachProfile.value
       })
       await refreshCoach()
+      applyCoachProfileFromServer()
       attemptedCoachSave.value = false
       toast.add({
         title: 'Coach profile saved',
@@ -631,6 +690,7 @@
         body: athleteProfile.value
       })
       await refreshAthlete()
+      applyAthleteProfileFromServer()
       attemptedAthleteSave.value = false
       toast.add({
         title: 'Athlete profile saved',
@@ -656,6 +716,8 @@
         body: coachJoinPage.value
       })
       await Promise.all([refreshCoachJoin(), refreshCoach()])
+      applyCoachJoinFromServer()
+      applyCoachProfileFromServer()
       toast.add({
         title: 'Coach join page saved',
         description: 'Your branded coach join flow is updated.',
@@ -680,6 +742,8 @@
         body: coachStartPage.value
       })
       await Promise.all([refreshCoachStart(), refreshCoach()])
+      applyCoachStartFromServer()
+      applyCoachProfileFromServer()
       toast.add({
         title: 'Coach start page saved',
         description: 'Your request-based coach start page is updated.',
