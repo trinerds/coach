@@ -1,7 +1,7 @@
 <template>
   <UDashboardPanel id="recovery-history">
     <template #header>
-      <UDashboardNavbar title="Recovery History">
+      <UDashboardNavbar :title="tr('recovery_page_title', 'Recovery History')">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
@@ -15,7 +15,7 @@
               icon="i-lucide-plus"
               @click="openCreateRecoveryEvent()"
             >
-              Log event
+              {{ tr('recovery_log_event', 'Log event') }}
             </UButton>
           </div>
         </template>
@@ -26,10 +26,15 @@
       <div class="space-y-4 p-0 sm:p-6">
         <div class="px-4 sm:px-0">
           <h1 class="text-4xl font-black uppercase tracking-tight text-gray-900 dark:text-white">
-            Recovery History
+            {{ tr('recovery_page_title', 'Recovery History') }}
           </h1>
           <p class="mt-1 text-[10px] font-bold uppercase tracking-[0.24em] text-gray-400">
-            Imported wellness, manual events, and daily check-ins in one audit trail
+            {{
+              tr(
+                'recovery_subtitle',
+                'Imported wellness, manual events, and daily check-ins in one audit trail'
+              )
+            }}
           </p>
         </div>
 
@@ -44,8 +49,10 @@
           color="error"
           variant="soft"
           icon="i-heroicons-exclamation-circle"
-          title="Failed to load recovery history"
-          :description="error.message || 'Recovery context could not be loaded.'"
+          :title="tr('recovery_load_error_title', 'Failed to load recovery history')"
+          :description="
+            error.message || tr('recovery_load_error_desc', 'Recovery context could not be loaded.')
+          "
           class="mx-4 sm:mx-0"
         >
           <template #actions>
@@ -56,7 +63,7 @@
               icon="i-heroicons-arrow-path"
               @click="refresh()"
             >
-              Retry
+              {{ tr('recovery_retry', 'Retry') }}
             </UButton>
           </template>
         </UAlert>
@@ -70,7 +77,7 @@
                 <label
                   class="mb-1 block text-xs font-semibold uppercase tracking-widest text-gray-500"
                 >
-                  Source
+                  {{ tr('recovery_filter_source', 'Source') }}
                 </label>
                 <USelect v-model="sourceFilter" :items="sourceOptions" />
               </div>
@@ -78,13 +85,13 @@
                 <label
                   class="mb-1 block text-xs font-semibold uppercase tracking-widest text-gray-500"
                 >
-                  Type
+                  {{ tr('recovery_filter_type', 'Type') }}
                 </label>
                 <USelect v-model="kindFilter" :items="kindOptions" />
               </div>
               <div class="flex items-end">
                 <UButton color="neutral" variant="ghost" size="sm" @click="resetFilters">
-                  Reset filters
+                  {{ tr('recovery_reset_filters', 'Reset filters') }}
                 </UButton>
               </div>
             </div>
@@ -111,6 +118,7 @@
 </template>
 
 <script setup lang="ts">
+  import { useTranslate } from '@tolgee/vue'
   import RecoveryContextStrip from '~/components/recovery/RecoveryContextStrip.vue'
   import RecoveryContextTimeline from '~/components/recovery/RecoveryContextTimeline.vue'
   import RecoveryContextSlideover from '~/components/recovery/RecoveryContextSlideover.vue'
@@ -122,8 +130,15 @@
   })
 
   useHead({
-    title: 'Recovery History'
+    title: () => tr('recovery_page_title', 'Recovery History')
   })
+
+  const { t } = useTranslate('fitness')
+  const tr = (key: string, fallback: string) => {
+    if (typeof t.value !== 'function') return fallback
+    const translated = t.value(key)
+    return translated === key ? fallback : translated
+  }
 
   const selectedPeriod = ref<string | number>(30)
   const sourceFilter = ref('all')
@@ -133,24 +148,24 @@
   const isRecoveryCreateMode = ref(false)
 
   const periodOptions = [
-    { label: '14 Days', value: 14 },
-    { label: '30 Days', value: 30 },
-    { label: '90 Days', value: 90 },
-    { label: 'Year to Date', value: 'YTD' }
+    { label: tr('period_14_days', '14 Days'), value: 14 },
+    { label: tr('period_30_days', '30 Days'), value: 30 },
+    { label: tr('period_90_days', '90 Days'), value: 90 },
+    { label: tr('period_year_to_date', 'Year to Date'), value: 'YTD' }
   ]
 
   const sourceOptions = [
-    { label: 'All sources', value: 'all' },
-    { label: 'Imported', value: 'imported' },
-    { label: 'Manual event', value: 'manual_event' },
-    { label: 'Daily check-in', value: 'daily_checkin' }
+    { label: tr('recovery_source_all', 'All sources'), value: 'all' },
+    { label: tr('recovery_source_imported', 'Imported'), value: 'imported' },
+    { label: tr('recovery_source_manual_event', 'Manual event'), value: 'manual_event' },
+    { label: tr('recovery_source_daily_checkin', 'Daily check-in'), value: 'daily_checkin' }
   ]
 
   const kindOptions = [
-    { label: 'All types', value: 'all' },
-    { label: 'Wellness periods', value: 'wellness' },
-    { label: 'Manual events', value: 'journey_event' },
-    { label: 'Daily check-ins', value: 'daily_checkin' }
+    { label: tr('recovery_kind_all', 'All types'), value: 'all' },
+    { label: tr('recovery_kind_wellness', 'Wellness periods'), value: 'wellness' },
+    { label: tr('recovery_kind_journey_event', 'Manual events'), value: 'journey_event' },
+    { label: tr('recovery_kind_daily_checkin', 'Daily check-ins'), value: 'daily_checkin' }
   ]
 
   const { items, activeToday, refresh, pending, error } = useRecoveryContext(selectedPeriod)

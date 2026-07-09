@@ -55,5 +55,7 @@
   "webhooks_col_time": "Time",
   "webhooks_col_provider": "Provider",
   "webhooks_col_event": "Event",
-  "webhooks_col_error": "Error"
+  "webhooks_col_error": "Error",
+  "llm_meta_title": "LLM Intelligence Stats",
+  "llm_page_title": "LLM Intelligence"
 }

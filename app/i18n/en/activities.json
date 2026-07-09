@@ -53,5 +53,13 @@
   "legend_proposed": "Proposed",
   "legend_threshold": "Threshold",
   "meta_description": "View your training calendar, analyze completed workouts, and plan future sessions.",
-  "meta_title": "Activities"
+  "meta_title": "Activities",
+  "events_page_title": "Events",
+  "events_subtitle": "Training Milestones & Racing Calendar",
+  "events_add": "Add Event",
+  "events_add_short": "Add",
+  "events_edit_title": "Edit Event",
+  "events_add_title": "Add New Event",
+  "events_edit_desc": "Update event details.",
+  "events_add_desc": "Create a new race or event record."
 }

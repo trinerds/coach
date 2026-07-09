@@ -30,10 +30,12 @@
     middleware: ['auth', 'admin']
   })
 
+  const { tr } = useAdminStatsI18n()
+
   const { data: stats, pending } = await useFetch('/api/admin/stats/llm/overview')
 
   useHead({
-    title: 'LLM Intelligence Stats'
+    title: () => tr('llm_meta_title', 'LLM Intelligence Stats')
   })
 
   const spenderTab = ref('today')
@@ -562,7 +564,7 @@
 <template>
   <UDashboardPanel>
     <template #header>
-      <UDashboardNavbar title="LLM Intelligence Stats">
+      <UDashboardNavbar :title="tr('llm_meta_title', 'LLM Intelligence Stats')">
         <template #leading>
           <UButton to="/admin/stats" icon="i-lucide-arrow-left" color="neutral" variant="ghost" />
         </template>

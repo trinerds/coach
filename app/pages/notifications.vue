@@ -1,7 +1,16 @@
 <script setup lang="ts">
+  import { useTranslate } from '@tolgee/vue'
+
   definePageMeta({
     middleware: 'auth'
   })
+
+  const { t } = useTranslate('dashboard')
+  const tr = (key: string, fallback: string) => {
+    if (typeof t.value !== 'function') return fallback
+    const translated = t.value(key)
+    return translated === key ? fallback : translated
+  }
 
   const notificationStore = useNotificationStore()
   const { notifications, loading, total, unreadCount, error } = storeToRefs(notificationStore)
@@ -38,7 +47,7 @@
 <template>
   <UDashboardPanel id="notifications">
     <template #header>
-      <UDashboardNavbar title="Notifications">
+      <UDashboardNavbar :title="tr('navbar_notifications', 'Notifications')">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
@@ -46,7 +55,7 @@
           <div class="flex items-center gap-3">
             <UButton
               v-if="unreadCount > 0"
-              label="Mark all as read"
+              :label="tr('notifications_mark_all_read', 'Mark all as read')"
               color="neutral"
               variant="ghost"
               size="sm"
@@ -73,7 +82,7 @@
           variant="soft"
           icon="i-heroicons-exclamation-circle"
           :title="error"
-          description="Notifications could not be loaded."
+          :description="tr('notifications_load_error_desc', 'Notifications could not be loaded.')"
           class="mb-4"
         >
           <template #actions>
@@ -84,7 +93,7 @@
               icon="i-heroicons-arrow-path"
               @click="notificationStore.fetchNotifications(page, limit)"
             >
-              Retry
+              {{ tr('notifications_retry', 'Retry') }}
             </UButton>
           </template>
         </UAlert>
@@ -98,8 +107,12 @@
             name="i-heroicons-bell-slash"
             class="w-16 h-16 text-gray-200 dark:text-gray-800 mx-auto mb-4"
           />
-          <h2 class="text-xl font-bold text-gray-900 dark:text-white">All caught up!</h2>
-          <p class="text-gray-500 mt-2">You don't have any notifications right now.</p>
+          <h2 class="text-xl font-bold text-gray-900 dark:text-white">
+            {{ tr('notifications_empty_title', 'All caught up!') }}
+          </h2>
+          <p class="text-gray-500 mt-2">
+            {{ tr('notifications_empty_desc', "You don't have any notifications right now.") }}
+          </p>
         </div>
 
         <div v-else class="space-y-3">
@@ -142,7 +155,7 @@
                 <div class="mt-3 flex items-center gap-4">
                   <UButton
                     v-if="notification.link"
-                    label="View Details"
+                    :label="tr('notifications_view_details', 'View Details')"
                     variant="link"
                     size="xs"
                     :padded="false"
@@ -150,7 +163,7 @@
                   />
                   <UButton
                     v-if="!notification.read"
-                    label="Mark as read"
+                    :label="tr('notifications_mark_read', 'Mark as read')"
                     variant="link"
                     color="neutral"
                     size="xs"

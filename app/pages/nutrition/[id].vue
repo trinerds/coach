@@ -417,6 +417,7 @@
                     color="neutral"
                     icon="i-heroicons-arrow-path"
                     size="xs"
+                    :loading="analyzingNutrition"
                     @click="analyzeNutrition"
                     >Refresh</UButton
                   >
@@ -520,6 +521,7 @@
   const loading = ref(true)
   const error = ref<string | null>(null)
   const generatingPlan = ref(false)
+  const analyzingNutrition = ref(false)
   const quickLogInput = ref('')
   const isLogging = ref(false)
 
@@ -807,6 +809,7 @@
 
   async function analyzeNutrition() {
     if (!nutrition.value) return
+    analyzingNutrition.value = true
     try {
       await $fetch(`/api/nutrition/${nutrition.value.id}/analyze`, {
         method: 'POST'
@@ -817,6 +820,7 @@
         color: 'primary'
       })
     } catch (error) {
+      analyzingNutrition.value = false
       toast.add({ title: 'Error', description: 'Failed to trigger analysis.', color: 'error' })
     }
   }
@@ -945,6 +949,29 @@
   }
 
   watch(() => route.params.id, fetchData)
+
+  const { onTaskCompleted, onTaskFailed } = useUserRunsState()
+
+  onTaskCompleted('analyze-nutrition', async () => {
+    await fetchData()
+    analyzingNutrition.value = false
+    toast.add({
+      title: 'Analysis Complete',
+      description: 'Nutrition coach analysis has been updated.',
+      color: 'success',
+      icon: 'i-heroicons-check-circle'
+    })
+  })
+
+  onTaskFailed('analyze-nutrition', (run) => {
+    analyzingNutrition.value = false
+    toast.add({
+      title: 'Analysis Failed',
+      description: run.error?.message || 'Nutrition analysis failed.',
+      color: 'error',
+      icon: 'i-heroicons-exclamation-circle'
+    })
+  })
 
   onMounted(fetchData)
 </script>

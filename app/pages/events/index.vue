@@ -1,7 +1,7 @@
 <template>
   <UDashboardPanel id="events">
     <template #header>
-      <UDashboardNavbar title="Events">
+      <UDashboardNavbar :title="tr('events_page_title', 'Events')">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
@@ -15,8 +15,8 @@
               class="font-black uppercase tracking-widest text-[10px]"
               @click="openCreateModal"
             >
-              <span class="hidden sm:inline">Add Event</span>
-              <span class="sm:hidden">Add</span>
+              <span class="hidden sm:inline">{{ tr('events_add', 'Add Event') }}</span>
+              <span class="sm:hidden">{{ tr('events_add_short', 'Add') }}</span>
             </UButton>
           </div>
         </template>
@@ -28,12 +28,12 @@
         <!-- Page Header -->
         <div class="px-4 sm:px-0">
           <h1 class="text-4xl font-black text-gray-900 dark:text-white uppercase tracking-tight">
-            Events
+            {{ tr('events_page_title', 'Events') }}
           </h1>
           <p
             class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-[0.2em] mt-1 italic"
           >
-            Training Milestones & Racing Calendar
+            {{ tr('events_subtitle', 'Training Milestones & Racing Calendar') }}
           </p>
         </div>
 
@@ -53,8 +53,16 @@
       <!-- Event Form Modal -->
       <UModal
         v-model:open="isEventFormOpen"
-        :title="editingEvent ? 'Edit Event' : 'Add New Event'"
-        :description="editingEvent ? 'Update event details.' : 'Create a new race or event record.'"
+        :title="
+          editingEvent
+            ? tr('events_edit_title', 'Edit Event')
+            : tr('events_add_title', 'Add New Event')
+        "
+        :description="
+          editingEvent
+            ? tr('events_edit_desc', 'Update event details.')
+            : tr('events_add_desc', 'Create a new race or event record.')
+        "
       >
         <template #body>
           <EventForm
@@ -93,6 +101,7 @@
 </template>
 
 <script setup lang="ts">
+  import { useTranslate } from '@tolgee/vue'
   import EventForm from '~/components/events/EventForm.vue'
   import EventTable from '~/components/events/EventTable.vue'
 
@@ -101,8 +110,15 @@
     layout: 'default'
   })
 
+  const { t } = useTranslate('activities')
+  const tr = (key: string, fallback: string) => {
+    if (typeof t.value !== 'function') return fallback
+    const translated = t.value(key)
+    return translated === key ? fallback : translated
+  }
+
   useHead({
-    title: 'Events Management',
+    title: () => tr('events_page_title', 'Events'),
     meta: [{ name: 'description', content: 'Manage your racing calendar and training milestones.' }]
   })
 

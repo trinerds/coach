@@ -5,7 +5,6 @@
 
   const { t } = useTranslate('common')
 
-  const { t } = useTranslate('common')
   const trCommon = (key: string, fallback: string) => {
     if (typeof t.value !== 'function') return fallback
     const translated = t.value(key)

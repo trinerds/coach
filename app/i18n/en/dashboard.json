@@ -291,5 +291,15 @@
   "data_analysis_empty": "Empty",
   "data_analysis_not_started": "Not Started",
   "data_admin_stats_country_chart": "Pie chart of users by country",
-  "data_admin_stats_checkins_chart": "Bar chart of daily check-ins over the last 30 days"
+  "data_admin_stats_checkins_chart": "Bar chart of daily check-ins over the last 30 days",
+  "notifications_mark_all_read": "Mark all as read",
+  "notifications_load_error_desc": "Notifications could not be loaded.",
+  "notifications_retry": "Retry",
+  "notifications_empty_title": "All caught up!",
+  "notifications_empty_desc": "You don't have any notifications right now.",
+  "notifications_view_details": "View Details",
+  "notifications_mark_read": "Mark as read",
+  "notifications_view_all": "View all notifications",
+  "notifications_dropdown_empty": "No notifications yet",
+  "notifications_dropdown_load_error_desc": "Could not load notifications."
 }

@@ -2,6 +2,12 @@
   import { useTranslate } from '@tolgee/vue'
 
   const { t } = useTranslate('dashboard')
+  const tr = (key: string, fallback: string) => {
+    if (typeof t.value !== 'function') return fallback
+    const translated = t.value(key)
+    return translated === key ? fallback : translated
+  }
+
   const notificationStore = useNotificationStore()
   const { notifications, unreadCount, loading, error } = storeToRefs(notificationStore)
   useUserRuns()
@@ -57,7 +63,7 @@
             :padded="false"
             @click="notificationStore.markAllAsRead"
           >
-            Mark all as read
+            {{ tr('notifications_mark_all_read', 'Mark all as read') }}
           </UButton>
         </div>
 
@@ -68,7 +74,9 @@
               variant="soft"
               icon="i-heroicons-exclamation-circle"
               :title="error"
-              description="Could not load notifications."
+              :description="
+                tr('notifications_dropdown_load_error_desc', 'Could not load notifications.')
+              "
             >
               <template #actions>
                 <UButton
@@ -78,7 +86,7 @@
                   icon="i-heroicons-arrow-path"
                   @click="notificationStore.fetchNotifications()"
                 >
-                  Retry
+                  {{ tr('notifications_retry', 'Retry') }}
                 </UButton>
               </template>
             </UAlert>
@@ -93,7 +101,9 @@
               name="i-heroicons-bell-slash"
               class="w-12 h-12 text-gray-200 dark:text-gray-800 mx-auto mb-3"
             />
-            <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">No notifications yet</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">
+              {{ tr('notifications_dropdown_empty', 'No notifications yet') }}
+            </p>
           </div>
 
           <div v-else class="divide-y divide-gray-100 dark:divide-gray-800">
@@ -149,7 +159,7 @@
             class="w-full justify-center"
             @click="isOpen = false"
           >
-            View all notifications
+            {{ tr('notifications_view_all', 'View all notifications') }}
           </UButton>
         </div>
       </div>

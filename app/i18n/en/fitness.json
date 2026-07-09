@@ -42,5 +42,22 @@
   "status_error_load_failed": "Failed to load wellness data",
   "status_error_title": "Error",
   "status_loading": "Loading...",
-  "weight_trend_label": "Weight ({unit})"
+  "weight_trend_label": "Weight ({unit})",
+  "recovery_page_title": "Recovery History",
+  "recovery_subtitle": "Imported wellness, manual events, and daily check-ins in one audit trail",
+  "recovery_log_event": "Log event",
+  "recovery_filter_source": "Source",
+  "recovery_filter_type": "Type",
+  "recovery_reset_filters": "Reset filters",
+  "recovery_source_all": "All sources",
+  "recovery_source_imported": "Imported",
+  "recovery_source_manual_event": "Manual event",
+  "recovery_source_daily_checkin": "Daily check-in",
+  "recovery_kind_all": "All types",
+  "recovery_kind_wellness": "Wellness periods",
+  "recovery_kind_journey_event": "Manual events",
+  "recovery_kind_daily_checkin": "Daily check-ins",
+  "recovery_load_error_title": "Failed to load recovery history",
+  "recovery_load_error_desc": "Recovery context could not be loaded.",
+  "recovery_retry": "Retry"
 }

@@ -331,6 +331,13 @@
 
           // Pass a signal to PlanDashboard to auto-generate structure
           autoTriggerStructure.value = true
+        } else {
+          toast.add({
+            title: 'Generation Still In Progress',
+            description:
+              'Workout generation is taking longer than expected. Refresh the page or check back shortly.',
+            color: 'warning'
+          })
         }
       }
     }, 3000)
