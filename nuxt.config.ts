@@ -336,18 +336,17 @@ export default defineNuxtConfig({
     },
     optimizeDeps: {
       include: [
-        'prosemirror-state',
-        'leaflet',
+        '@internationalized/date',
+        '@sentry/nuxt',
         '@vueuse/core',
-        'date-fns',
-        'date-fns-tz',
-        'vue-chartjs',
         'chart.js',
         'chartjs-adapter-date-fns',
+        'date-fns',
+        'date-fns-tz',
+        'leaflet',
+        'vue-chartjs',
         'vuedraggable',
-        '@sentry/nuxt',
-        'zod',
-        '@internationalized/date'
+        'zod'
       ]
     },
     vue: {

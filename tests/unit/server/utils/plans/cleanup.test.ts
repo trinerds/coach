@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildWorkoutCleanupQuery } from '../../../../server/utils/plans/cleanup'
+import { buildWorkoutCleanupQuery } from '../../../../../server/utils/plans/cleanup'
 
 describe('buildWorkoutCleanupQuery', () => {
   const userId = 'user-123'

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { extractApprovalIdFromToolMessage } from '../../../../server/utils/chat/approval-continuation'
+import { extractApprovalIdFromToolMessage } from '../../../../../server/utils/chat/approval-continuation'
 
 describe('approval continuation helpers', () => {
   it('extracts approval id from tool approval response parts', () => {

@@ -8,7 +8,7 @@ const { prismaWellnessFindUnique, prismaWellnessUpdate, prismaUserFindUnique, ch
     checkQuotaMock: vi.fn()
   }))
 
-vi.mock('../../../../server/utils/db', () => ({
+vi.mock('../../../../../../server/utils/db', () => ({
   prisma: {
     wellness: {
       findUnique: prismaWellnessFindUnique,
@@ -20,39 +20,39 @@ vi.mock('../../../../server/utils/db', () => ({
   }
 }))
 
-vi.mock('../../../../server/utils/quotas/engine', () => ({
+vi.mock('../../../../../server/utils/quotas/engine', () => ({
   checkQuota: checkQuotaMock
 }))
 
-vi.mock('../../../../server/utils/ai-user-settings', () => ({
+vi.mock('../../../../../server/utils/ai-user-settings', () => ({
   getUserAiSettings: vi.fn().mockResolvedValue({
     aiPersona: 'Supportive',
     aiModelPreference: 'gemini-2.0-flash-exp'
   })
 }))
 
-vi.mock('../../../../server/utils/date', () => ({
+vi.mock('../../../../../server/utils/date', () => ({
   getUserTimezone: vi.fn().mockResolvedValue('UTC'),
   getUserLocalDate: vi.fn(() => new Date('2026-03-10T00:00:00.000Z'))
 }))
 
-vi.mock('../../../../server/utils/repositories/wellnessRepository', () => ({
+vi.mock('../../../../../server/utils/repositories/wellnessRepository', () => ({
   wellnessRepository: {
     getForUser: vi.fn().mockResolvedValue([])
   }
 }))
 
-vi.mock('../../../../server/utils/services/wellnessEventService', () => ({
+vi.mock('../../../../../server/utils/services/wellnessEventService', () => ({
   getWellnessEventOverlaysForUser: vi.fn().mockResolvedValue([]),
   getActiveWellnessEventsForDate: vi.fn(() => []),
   formatWellnessEventsForPrompt: vi.fn(() => '')
 }))
 
-vi.mock('../../../../server/utils/services/checkin-service', () => ({
+vi.mock('../../../../../server/utils/services/checkin-service', () => ({
   triggerDailyCheckinIfNeeded: vi.fn()
 }))
 
-vi.mock('../../../../server/utils/gemini', () => ({
+vi.mock('../../../../../server/utils/gemini', () => ({
   generateStructuredAnalysis: vi.fn()
 }))
 
@@ -73,7 +73,8 @@ describe('analyzeWellness quota enforcement', () => {
   })
 
   it('marks wellness analysis as QUOTA_EXCEEDED when quota is exceeded', async () => {
-    const { analyzeWellness } = await import('../../../../server/utils/services/wellness-analysis')
+    const { analyzeWellness } =
+      await import('../../../../../server/utils/services/wellness-analysis')
 
     const quotaError = Object.assign(new Error('Quota exceeded for wellness_analysis'), {
       statusCode: 429
