@@ -6,7 +6,7 @@ defineRouteMeta({
     tags: ['Nutrition'],
     summary: 'Get extended metabolic wave',
     description: 'Returns a multi-day predictive energy wave (historical + current + future).',
-    parameters: [
+    inputSchema: [
       {
         name: 'daysAhead',
         in: 'query',

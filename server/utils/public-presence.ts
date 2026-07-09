@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import {
   ATHLETE_PUBLIC_SECTION_TYPES,
   COACH_PUBLIC_SECTION_TYPES,
@@ -229,7 +229,10 @@ const coachJoinPageSchema = z.object({
   trustTitle: z.string().max(160).nullable().optional(),
   trustNote: z.string().max(400).nullable().optional(),
   unavailableMessage: z.string().max(400).nullable().optional(),
-  steps: z.array(coachJoinPageStepSchema).length(3).default([]),
+  steps: z
+    .array(coachJoinPageStepSchema)
+    .length(3)
+    .default(buildDefaultCoachPublicProfile().joinPage.steps as any),
   faq: z.array(faqItemSchema).max(8).default([])
 })
 
@@ -252,7 +255,7 @@ const coachStartPageSchema = z.object({
   steps: z
     .array(coachJoinPageStepSchema)
     .length(3)
-    .default([] as any),
+    .default(buildDefaultCoachPublicProfile().startPage.steps as any),
   faq: z.array(faqItemSchema).max(8).default([]),
   trustNote: z.string().max(400).nullable().optional(),
   noCommitmentBody: z.string().max(4000).nullable().optional(),

@@ -1,6 +1,6 @@
 import { getServerSession } from '../../../utils/session'
 import { nutritionRepository } from '../../../utils/repositories/nutritionRepository'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { metabolicService } from '../../../utils/services/metabolicService'
 import { nutritionPlanService } from '../../../utils/services/nutritionPlanService'
 import { MEAL_LINKED_WATER_ML } from '../../../utils/nutrition/hydration'
@@ -68,7 +68,7 @@ export default defineEventHandler(async (event) => {
   }
   const { action, mealType, item, itemId } = parsed
 
-  let nutrition: any = null
+  let nutrition: any
   if (/^\d{4}-\d{2}-\d{2}$/.test(id!)) {
     const dateObj = new Date(`${id}T00:00:00Z`)
     nutrition = await nutritionRepository.getByDate(userId, dateObj)

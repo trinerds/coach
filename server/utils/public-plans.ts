@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import {
   PLAN_ACCESS_STATE_OPTIONS,
   PLAN_SKILL_LEVEL_OPTIONS,

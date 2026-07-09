@@ -1,5 +1,5 @@
-import { NoSuchToolError, stepCountIs, streamText } from 'ai'
-import { createGoogleGenerativeAI } from '@ai-sdk/google'
+import { NoSuchToolError, isStepCount, streamText } from 'ai'
+import { createGoogle } from '@ai-sdk/google'
 import { calculateLlmCost } from '../ai-config'
 import { getLlmOperationSettings } from '../ai-operation-settings'
 import { getToolsWithContext } from '../ai-tools'
@@ -553,7 +553,7 @@ export async function executeChatTurn(turnId: string, expectedRunId?: string | n
     .filter(Boolean)
     .join('\n\n')
 
-  const google = createGoogleGenerativeAI({
+  const google = createGoogle({
     apiKey: process.env.GEMINI_API_KEY
   })
   const opSettings = await getLlmOperationSettings(turn.userId, 'chat')
@@ -867,7 +867,8 @@ export async function executeChatTurn(turnId: string, expectedRunId?: string | n
       const promptTokens = params.usage?.inputTokens || 0
       const completionTokens = params.usage?.outputTokens || 0
       const cachedTokens = params.usage?.inputTokenDetails?.cacheReadTokens || 0
-      const reasoningTokens = params.usage?.outputTokenDetails?.reasoningTokens || 0
+      const reasoningTokens =
+        params.usage?.outputTokenDetails.outputTokenDetails.reasoningTokens || 0
       const estimatedCost = calculateLlmCost(
         modelName,
         promptTokens,
@@ -885,8 +886,8 @@ export async function executeChatTurn(turnId: string, expectedRunId?: string | n
           operation: 'chat_attempt',
           entityType: 'ChatTurn',
           entityId: activeTurn.id,
-          promptTokens,
-          completionTokens,
+          inputTokens,
+          outputTokens,
           cachedTokens,
           reasoningTokens,
           totalTokens: promptTokens + completionTokens,
@@ -1050,9 +1051,9 @@ export async function executeChatTurn(turnId: string, expectedRunId?: string | n
       } as any)
     }
 
-    const result = await streamText({
+    const result = streamText({
       model: google(modelName),
-      system: attemptSystemInstruction,
+      instructions: attemptSystemInstruction,
       messages: normalizedMessages,
       tools,
       abortSignal: executionAbortController.signal,
@@ -1079,7 +1080,7 @@ export async function executeChatTurn(turnId: string, expectedRunId?: string | n
           toolName: repair.repairedName
         }
       },
-      stopWhen: stepCountIs(opSettings.maxSteps),
+      stopWhen: isStepCount(opSettings.maxSteps),
       providerOptions: attemptProviderOptions,
       experimental_context: {
         turnId: activeTurn.id,
@@ -1104,7 +1105,7 @@ export async function executeChatTurn(turnId: string, expectedRunId?: string | n
           )
         }
       },
-      onStepFinish: async ({ toolCalls, toolResults, usage }) => {
+      onStepEnd: async ({ toolCalls, toolResults, usage }) => {
         latestUsage = usage
         if (toolCalls) {
           toolCalls.forEach((tc) => {
@@ -1146,7 +1147,7 @@ export async function executeChatTurn(turnId: string, expectedRunId?: string | n
           }
         )
       },
-      onFinish: async (event) => {
+      onEnd: async (event) => {
         const { text, toolResults: finalStepResults, usage, toolCalls: finalCalls } = event
         latestUsage = usage
         assistantText = text || assistantText
@@ -1318,7 +1319,8 @@ export async function executeChatTurn(turnId: string, expectedRunId?: string | n
           const promptTokens = usage.inputTokens || 0
           const completionTokens = usage.outputTokens || 0
           const cachedTokens = usage.inputTokenDetails?.cacheReadTokens || 0
-          const reasoningTokens = (usage as any).outputTokenDetails?.reasoningTokens || 0
+          const reasoningTokens =
+            (usage as any).outputTokenDetails.outputTokenDetails.reasoningTokens || 0
           const estimatedCost = calculateLlmCost(
             modelName,
             promptTokens,
@@ -1336,8 +1338,8 @@ export async function executeChatTurn(turnId: string, expectedRunId?: string | n
               operation: 'chat',
               entityType: 'ChatMessage',
               entityId: draft.id,
-              promptTokens,
-              completionTokens,
+              inputTokens,
+              outputTokens,
               cachedTokens,
               reasoningTokens,
               totalTokens: promptTokens + completionTokens,

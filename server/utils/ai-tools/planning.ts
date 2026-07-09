@@ -1,5 +1,5 @@
 import { tool } from 'ai'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { prisma } from '../../utils/db'
 import { generateStructuredWorkoutTask } from '../../../trigger/generate-structured-workout'
 import { adjustStructuredWorkoutTask } from '../../../trigger/adjust-structured-workout'
@@ -351,13 +351,21 @@ const applyStructurePatchOperation = (structuredWorkout: any, operation: any) =>
   }
 }
 
-const trainingWeekLookupSchema = z
-  .object({
-    week_id: z.string().optional().describe('TrainingWeek ID to update'),
-    workout_id: z
-      .string()
-      .optional()
-      .describe('Planned workout ID whose linked training week should be updated')
+const trainingWeekLookupBaseSchema = z.object({
+  week_id: z.string().optional().describe('TrainingWeek ID to update'),
+  workout_id: z
+    .string()
+    .optional()
+    .describe('Planned workout ID whose linked training week should be updated')
+})
+
+const trainingWeekUpdateSchema = trainingWeekLookupBaseSchema
+  .extend({
+    tss_target: z.number().int().min(0).optional(),
+    volume_target_minutes: z.number().int().min(0).optional(),
+    focus_key: z.string().optional(),
+    focus_label: z.string().optional(),
+    is_recovery: z.boolean().optional()
   })
   .refine((value) => value.week_id || value.workout_id, {
     message: 'Provide either week_id or workout_id'
@@ -496,13 +504,7 @@ export const planningTools = (userId: string, timezone: string, aiSettings: AiSe
   update_training_week: tool({
     description:
       'Update a training week target or focus. Use this when the user wants to change weekly TSS, volume, recovery status, or focus for an existing plan week.',
-    inputSchema: trainingWeekLookupSchema.extend({
-      tss_target: z.number().int().min(0).optional(),
-      volume_target_minutes: z.number().int().min(0).optional(),
-      focus_key: z.string().optional(),
-      focus_label: z.string().optional(),
-      is_recovery: z.boolean().optional()
-    }),
+    inputSchema: trainingWeekUpdateSchema,
     needsApproval: async () => true,
     execute: async ({
       week_id,
@@ -883,7 +885,7 @@ export const planningTools = (userId: string, timezone: string, aiSettings: AiSe
       const parsedDate = parsePlanningDateInput('date', args.date, args)
       if ('error' in parsedDate) return parsedDate.error
 
-      const chatContext = (options?.experimental_context || {}) as Partial<ChatToolExecutionContext>
+      const chatContext = (options?.context || {}) as Partial<ChatToolExecutionContext>
       const deterministicExternalId = chatContext.lineageId
         ? `ai-turn-${hashToolArgs(
             buildToolIdempotencyKey(

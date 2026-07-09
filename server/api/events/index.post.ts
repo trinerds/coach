@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { getServerSession } from '../../utils/session'
 import { eventRepository } from '../../utils/repositories/eventRepository'
 import { syncEventToIntervals } from '../../utils/intervals-sync'

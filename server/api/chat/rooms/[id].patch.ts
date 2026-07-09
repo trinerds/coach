@@ -5,7 +5,7 @@ defineRouteMeta({
     tags: ['Chat'],
     summary: 'Rename a chat room',
     description: 'Updates the name of a chat room for the authenticated user.',
-    parameters: [
+    inputSchema: [
       {
         name: 'id',
         in: 'path',

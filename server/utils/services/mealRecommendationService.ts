@@ -130,7 +130,7 @@ const recommendationSchema = {
             type: 'array',
             items: { type: 'string' }
           },
-          reasoning: { type: 'string' }
+          reasoningText: { type: 'string' }
         },
         required: ['title', 'items', 'totals', 'absorptionType', 'timing']
       }
@@ -390,7 +390,7 @@ export const mealRecommendationService = {
           postWorkoutDebtCarbs,
           absorptionType: template.absorptionType,
           prepMinutes: template.prepMinutes,
-          reasoning: splitRequired
+          reasoningText: splitRequired
             ? `Capped to ${Math.round(carbCap)}g carbs for one sitting; ${postWorkoutDebtCarbs}g remains to place elsewhere.`
             : undefined
         })

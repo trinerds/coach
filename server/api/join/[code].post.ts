@@ -24,7 +24,7 @@ defineRouteMeta({
     tags: ['Coaching', 'Invites'],
     summary: 'Accept invite',
     description: 'Accepts a coaching or team invitation code.',
-    parameters: [
+    inputSchema: [
       {
         name: 'code',
         in: 'path',

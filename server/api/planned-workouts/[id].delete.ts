@@ -6,7 +6,7 @@ defineRouteMeta({
     tags: ['Planned Workouts'],
     summary: 'Delete planned workout',
     description: 'Deletes a specific planned workout and removes it from Intervals.icu.',
-    parameters: [
+    inputSchema: [
       {
         name: 'id',
         in: 'path',

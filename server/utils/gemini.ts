@@ -1,7 +1,7 @@
 import { prisma } from './db'
 import { formatUserDate, formatDateUTC } from './date'
 import { generateText, generateObject, jsonSchema } from 'ai'
-import { createGoogleGenerativeAI } from '@ai-sdk/google'
+import { createGoogle } from '@ai-sdk/google'
 import {
   getMoodLabel,
   getStressLabel,
@@ -18,7 +18,7 @@ import { MODEL_NAMES, calculateLlmCost } from './ai-config'
 import { getLlmOperationSettings } from './ai-operation-settings'
 import { buildWorkoutAnalysisFactsV2 } from './workout-analysis-facts'
 
-const google = createGoogleGenerativeAI({
+const google = createGoogle({
   apiKey: process.env.GEMINI_API_KEY
 })
 
@@ -58,10 +58,10 @@ async function logLlmUsage(params: {
         operation: params.operation,
         entityType: params.entityType,
         entityId: params.entityId,
-        promptTokens: params.promptTokens,
-        completionTokens: params.completionTokens,
+        inputTokens: params.inputTokens,
+        outputTokens: params.outputTokens,
         cachedTokens: params.cachedTokens || 0,
-        reasoningTokens: params.reasoningTokens || 0,
+        reasoningTokens: params.outputTokenDetails.reasoningTokens || 0,
         totalTokens: params.totalTokens,
         estimatedCost: params.estimatedCost,
         durationMs: params.durationMs,
@@ -115,8 +115,8 @@ async function logUsage(params: {
   const durationMs = (params as any).durationMs || 0 // Use passed duration or 0
   const estimatedCost = calculateLlmCost(
     params.modelId,
-    params.usage.promptTokens,
-    params.usage.completionTokens + (params.usage.reasoningTokens || 0),
+    params.usage.inputTokens,
+    params.usage.outputTokens + (params.usage.outputTokenDetails.reasoningTokens || 0),
     params.usage.cachedTokens || 0
   )
 
@@ -127,11 +127,11 @@ async function logUsage(params: {
     operation: params.operation,
     entityType: params.entityType,
     entityId: params.entityId,
-    promptTokens: params.usage.promptTokens,
-    completionTokens: params.usage.completionTokens,
+    inputTokens: params.usage.inputTokens,
+    outputTokens: params.usage.outputTokens,
     cachedTokens: params.usage.cachedTokens || 0,
-    reasoningTokens: params.usage.reasoningTokens || 0,
-    totalTokens: params.usage.promptTokens + params.usage.completionTokens,
+    reasoningTokens: params.usage.outputTokenDetails.reasoningTokens || 0,
+    totalTokens: params.usage.inputTokens + params.usage.outputTokens,
     estimatedCost,
     durationMs,
     retryCount: 0,
@@ -285,8 +285,8 @@ async function retryWithBackoff<T>(
           operation: trackingParams.operation,
           entityType: trackingParams.entityType,
           entityId: trackingParams.entityId,
-          promptTokens,
-          completionTokens,
+          inputTokens,
+          outputTokens,
           cachedTokens,
           reasoningTokens,
           totalTokens,
@@ -479,10 +479,10 @@ export async function generateCoachAnalysis(
         prompt: prompt,
         text: text,
         usage: {
-          promptTokens: usage.inputTokens || 0,
-          completionTokens: usage.outputTokens || 0,
+          inputTokens: usage.inputTokens || 0,
+          outputTokens: usage.outputTokens || 0,
           cachedTokens: usage.inputTokenDetails?.cacheReadTokens || 0,
-          reasoningTokens: (usage as any).outputTokenDetails?.reasoningTokens || 0
+          reasoningTokens: (usage as any).outputTokenDetails.outputTokenDetails.reasoningTokens || 0
         },
         success: true,
         durationMs: Date.now() - startTime
@@ -502,8 +502,8 @@ export async function generateCoachAnalysis(
         entityId: trackingContext.entityId,
         prompt: prompt,
         usage: {
-          promptTokens: 0,
-          completionTokens: 0
+          inputTokens: 0,
+          outputTokens: 0
         },
         success: false,
         error,
@@ -540,9 +540,7 @@ export async function generateStructuredAnalysis<T>(
       prompt: prompt,
       schema: jsonSchema(schema),
       maxRetries: trackingContext?.maxRetries ?? 3,
-      ...(trackingContext?.timeoutMs
-        ? { timeout: { totalMs: trackingContext.timeoutMs } }
-        : {}),
+      ...(trackingContext?.timeoutMs ? { timeout: { totalMs: trackingContext.timeoutMs } } : {}),
       providerOptions
     })
     if (trackingContext) {
@@ -556,10 +554,10 @@ export async function generateStructuredAnalysis<T>(
         prompt: prompt,
         text: JSON.stringify(object),
         usage: {
-          promptTokens: usage.inputTokens || 0,
-          completionTokens: usage.outputTokens || 0,
+          inputTokens: usage.inputTokens || 0,
+          outputTokens: usage.outputTokens || 0,
           cachedTokens: usage.inputTokenDetails?.cacheReadTokens || 0,
-          reasoningTokens: (usage as any).outputTokenDetails?.reasoningTokens || 0
+          reasoningTokens: (usage as any).outputTokenDetails.outputTokenDetails.reasoningTokens || 0
         },
         success: true,
         durationMs: Date.now() - startTime
@@ -579,8 +577,8 @@ export async function generateStructuredAnalysis<T>(
         entityId: trackingContext.entityId,
         prompt: prompt,
         usage: {
-          promptTokens: 0,
-          completionTokens: 0
+          inputTokens: 0,
+          outputTokens: 0
         },
         success: false,
         error,

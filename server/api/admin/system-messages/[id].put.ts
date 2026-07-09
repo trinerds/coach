@@ -1,6 +1,6 @@
 import { getServerSession } from '../../../utils/session'
 import { prisma } from '../../../utils/db'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 
 export default defineEventHandler(async (event) => {
   const session = await getServerSession(event)

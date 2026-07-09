@@ -5,7 +5,7 @@ defineRouteMeta({
     tags: ['Chat'],
     summary: 'Delete a chat room (soft delete)',
     description: 'Marks a chat room as deleted for the authenticated user.',
-    parameters: [
+    inputSchema: [
       {
         name: 'id',
         in: 'path',

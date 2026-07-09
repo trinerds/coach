@@ -7,7 +7,7 @@ defineRouteMeta({
     tags: ['Analytics'],
     summary: 'Get LLM usage history',
     description: 'Returns a paginated history of AI model calls.',
-    parameters: [
+    inputSchema: [
       {
         name: 'page',
         in: 'query',

@@ -3,7 +3,7 @@ defineRouteMeta({
     tags: ['Integrations'],
     summary: 'Oura Webhook Verification',
     description: 'Verifies the Oura webhook subscription.',
-    parameters: [
+    inputSchema: [
       { name: 'verification_token', in: 'query', schema: { type: 'string' } },
       { name: 'challenge', in: 'query', schema: { type: 'string' } }
     ],

@@ -22,7 +22,7 @@ defineRouteMeta({
     tags: ['Public'],
     summary: 'Get public workout intervals',
     description: 'Detects and analyzes intervals for a publicly shared workout.',
-    parameters: [
+    inputSchema: [
       {
         name: 'token',
         in: 'path',

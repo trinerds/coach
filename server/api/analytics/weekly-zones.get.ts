@@ -13,7 +13,7 @@ defineRouteMeta({
     tags: ['Analytics'],
     summary: 'Get weekly zone distribution',
     description: 'Returns time spent in power and heart rate zones aggregated weekly.',
-    parameters: [
+    inputSchema: [
       {
         name: 'weeks',
         in: 'query',
@@ -45,8 +45,8 @@ export default defineEventHandler(async (event) => {
   const sport = query.sport === 'all' ? undefined : (query.sport as string)
   const tags = parseTagQueryParam(query.tags)
   const endDate = getUserLocalDate(timezone)
-  let startDate = getUserLocalDate(timezone)
-  let numWeeks = 0
+  let startDate: Date
+  let numWeeks: number
 
   if (query.weeks === 'YTD') {
     startDate = getStartOfYearUTC(timezone)
@@ -55,6 +55,7 @@ export default defineEventHandler(async (event) => {
     numWeeks = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 7))
   } else {
     numWeeks = parseInt(query.weeks as string) || 12
+    startDate = getUserLocalDate(timezone)
     startDate.setUTCDate(startDate.getUTCDate() - numWeeks * 7)
   }
 

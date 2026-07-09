@@ -1,5 +1,5 @@
 import { defineEventHandler, createError, getRouterParam, readBody } from 'h3'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { getServerSession } from '../../../../utils/session'
 import { prisma } from '../../../../utils/db'
 import {

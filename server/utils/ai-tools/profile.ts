@@ -1,5 +1,5 @@
 import { tool } from 'ai'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { userRepository } from '../repositories/userRepository'
 import { sportSettingsRepository } from '../repositories/sportSettingsRepository'
 import { generateAthleteProfileTask } from '../../../trigger/generate-athlete-profile'

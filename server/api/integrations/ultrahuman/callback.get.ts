@@ -6,7 +6,7 @@ defineRouteMeta({
     tags: ['Integrations'],
     summary: 'Ultrahuman callback',
     description: 'Handles the OAuth callback from Ultrahuman.',
-    parameters: [
+    inputSchema: [
       { name: 'code', in: 'query', schema: { type: 'string' } },
       { name: 'state', in: 'query', schema: { type: 'string' } },
       { name: 'error', in: 'query', schema: { type: 'string' } }

@@ -6,7 +6,7 @@ defineRouteMeta({
     tags: ['Admin'],
     summary: 'Get Audit Logs',
     description: 'Retrieve system audit logs with pagination and filtering',
-    parameters: [
+    inputSchema: [
       { name: 'page', in: 'query', schema: { type: 'integer', default: 1 } },
       { name: 'limit', in: 'query', schema: { type: 'integer', default: 50 } },
       { name: 'userId', in: 'query', schema: { type: 'string' } },

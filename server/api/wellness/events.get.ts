@@ -9,7 +9,7 @@ defineRouteMeta({
     description:
       'Returns normalized wellness events from synced tags and wellness-related calendar periods for chart overlays and AI context.',
     security: [{ bearerAuth: [] }],
-    parameters: [
+    inputSchema: [
       {
         name: 'days',
         in: 'query',

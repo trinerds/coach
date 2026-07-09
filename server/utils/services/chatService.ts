@@ -4,7 +4,7 @@ import { getUserTimezone } from '../../utils/date'
 import { getUserAiSettings } from '../../utils/ai-user-settings'
 import { buildAthleteContext } from './chatContextService'
 import { getToolsWithContext } from '../../utils/ai-tools'
-import { createGoogleGenerativeAI } from '@ai-sdk/google'
+import { createGoogle } from '@ai-sdk/google'
 import { generateCoachAnalysis } from '../../utils/gemini'
 import { calculateLlmCost, MODEL_NAMES } from '../../utils/ai-config'
 
@@ -118,7 +118,7 @@ export class ChatService {
     const timezone = await getUserTimezone(userId)
     const aiSettings = await getUserAiSettings(userId)
 
-    const google = createGoogleGenerativeAI({
+    const google = createGoogle({
       apiKey: process.env.GEMINI_API_KEY
     })
     const modelName = MODEL_NAMES[aiSettings.aiModelPreference]
@@ -147,7 +147,7 @@ export class ChatService {
       const promptTokens = data.usage.inputTokens || 0
       const completionTokens = data.usage.outputTokens || 0
       const cachedTokens = data.usage.inputTokenDetails?.cacheReadTokens || 0
-      const reasoningTokens = data.usage.outputTokenDetails?.reasoningTokens || 0
+      const reasoningTokens = data.usage.outputTokenDetails.outputTokenDetails.reasoningTokens || 0
       const totalTokens = promptTokens + completionTokens
 
       const estimatedCost = calculateLlmCost(
@@ -170,8 +170,8 @@ export class ChatService {
           operation: 'chat',
           entityType: 'ChatMessage',
           entityId: data.messageId,
-          promptTokens,
-          completionTokens,
+          inputTokens,
+          outputTokens,
           cachedTokens,
           reasoningTokens,
           totalTokens,

@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { getCalendarDataForUser } from '../../../../utils/calendar-data'
 import { requireCoachAccessToAthlete } from '../../../../utils/coaching-auth'
 

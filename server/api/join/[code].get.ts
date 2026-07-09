@@ -8,7 +8,7 @@ defineRouteMeta({
     tags: ['Coaching', 'Invites'],
     summary: 'Get invite details',
     description: 'Returns metadata for a coaching or team invitation code.',
-    parameters: [
+    inputSchema: [
       {
         name: 'code',
         in: 'path',

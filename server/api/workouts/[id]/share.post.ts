@@ -6,7 +6,7 @@ defineRouteMeta({
     tags: ['Workouts'],
     summary: 'Share workout',
     description: 'Generates or revokes a public share token for a workout.',
-    parameters: [
+    inputSchema: [
       {
         name: 'id',
         in: 'path',

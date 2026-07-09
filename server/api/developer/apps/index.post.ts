@@ -1,7 +1,7 @@
 import { oauthRepository } from '../../../utils/repositories/oauthRepository'
 import { getEffectiveUserId } from '../../../utils/coaching'
 import { logAction } from '../../../utils/audit'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 
 const createAppSchema = z.object({
   name: z.string().min(3).max(50),

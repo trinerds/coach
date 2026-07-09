@@ -7,7 +7,7 @@ defineRouteMeta({
     tags: ['Workouts'],
     summary: 'Get workout tags',
     description: 'Returns distinct workout tags and counts for the authenticated user.',
-    parameters: [
+    inputSchema: [
       {
         name: 'q',
         in: 'query',

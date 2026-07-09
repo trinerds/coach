@@ -7,7 +7,7 @@ defineRouteMeta({
     tags: ['Settings'],
     summary: 'Revoke an API key',
     description: 'Permanently deletes an API key.',
-    parameters: [
+    inputSchema: [
       {
         name: 'id',
         in: 'path',

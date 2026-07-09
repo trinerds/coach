@@ -3,7 +3,7 @@ defineRouteMeta({
     tags: ['Integrations'],
     summary: 'Fitbit webhook verification',
     description: 'Verifies the Fitbit subscriber endpoint.',
-    parameters: [{ name: 'verify', in: 'query', schema: { type: 'string' }, required: true }],
+    inputSchema: [{ name: 'verify', in: 'query', schema: { type: 'string' }, required: true }],
     responses: {
       204: { description: 'Verified' },
       404: { description: 'Not Found' }

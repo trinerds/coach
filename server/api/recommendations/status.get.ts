@@ -7,7 +7,7 @@ defineRouteMeta({
     tags: ['Recommendations'],
     summary: 'Get recommendation generation status',
     description: 'Checks if recommendation generation tasks are currently running.',
-    parameters: [
+    inputSchema: [
       {
         in: 'query',
         name: 'jobId',

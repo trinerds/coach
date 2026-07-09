@@ -25,16 +25,21 @@ vi.mock('../../../../../server/utils/db', () => ({
   prisma: prismaMock
 }))
 
-vi.mock('../../../../../server/utils/data-management/collector', () => ({
-  UserUniverseCollector: vi.fn().mockImplementation((prisma: unknown, userId: string) => {
-    collectorConstructorMock(prisma, userId)
+vi.mock('../../../../../server/utils/data-management/collector', () => {
+  class UserUniverseCollector {
+    constructor(
+      prisma: unknown,
+      private readonly userId: string
+    ) {
+      collectorConstructorMock(prisma, userId)
+    }
 
-    return {
-      exportSections: () => [
+    exportSections() {
+      return [
         {
           key: 'metadata',
           collect: async () => ({
-            userId,
+            userId: this.userId,
             exportedAt: new Date().toISOString(),
             version: '1.0.0'
           })
@@ -48,8 +53,10 @@ vi.mock('../../../../../server/utils/data-management/collector', () => ({
         { key: 'system', collect: collectSystemMock }
       ]
     }
-  })
-}))
+  }
+
+  return { UserUniverseCollector }
+})
 
 const getHandler = async () => {
   const mod = await import('../../../../../server/api/profile/export.get')

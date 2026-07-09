@@ -11,7 +11,7 @@ defineRouteMeta({
     tags: ['Scores'],
     summary: 'Get workout trends',
     description: 'Returns daily workout scores and trends for a specified period.',
-    parameters: [
+    inputSchema: [
       {
         name: 'days',
         in: 'query',

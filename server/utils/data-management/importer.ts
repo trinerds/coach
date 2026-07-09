@@ -121,8 +121,8 @@ export class UserUniverseImporter {
     }
 
     // Strip integration tokens (optional, but safer)
-    if (universe.system?.integrations) {
-      universe.system.integrations.forEach((i: any) => {
+    if (universe.instructions?.integrations) {
+      universe.instructions.integrations.forEach((i: any) => {
         i.accessToken = 'REDACTED_LOCAL'
         i.refreshToken = 'REDACTED_LOCAL'
       })
@@ -223,8 +223,8 @@ export class UserUniverseImporter {
   }
 
   private async importIntegrations(tx: any, universe: any) {
-    if (universe.system?.integrations) {
-      for (const integration of universe.system.integrations) {
+    if (universe.instructions?.integrations) {
+      for (const integration of universe.instructions.integrations) {
         await tx.integration.create({ data: integration })
       }
     }

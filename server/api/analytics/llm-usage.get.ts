@@ -7,7 +7,7 @@ defineRouteMeta({
     tags: ['Analytics'],
     summary: 'Get LLM usage stats',
     description: 'Returns usage statistics for AI model calls.',
-    parameters: [
+    inputSchema: [
       {
         name: 'days',
         in: 'query',
@@ -99,12 +99,9 @@ export default defineEventHandler(async (event) => {
   const failedCalls = totalCalls - successfulCalls
   const totalCost = usageData.reduce((sum: number, u: any) => sum + (u.estimatedCost || 0), 0)
   const totalTokens = usageData.reduce((sum: number, u: any) => sum + (u.totalTokens || 0), 0)
-  const totalPromptTokens = usageData.reduce(
-    (sum: number, u: any) => sum + (u.promptTokens || 0),
-    0
-  )
+  const totalPromptTokens = usageData.reduce((sum: number, u: any) => sum + (u.inputTokens || 0), 0)
   const totalCompletionTokens = usageData.reduce(
-    (sum: number, u: any) => sum + (u.completionTokens || 0),
+    (sum: number, u: any) => sum + (u.outputTokens || 0),
     0
   )
   const avgDuration =

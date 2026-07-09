@@ -6,7 +6,7 @@ defineRouteMeta({
     tags: ['Integrations'],
     summary: 'Polar callback',
     description: 'Handles the OAuth callback from Polar.',
-    parameters: [
+    inputSchema: [
       { name: 'code', in: 'query', schema: { type: 'string' } },
       { name: 'state', in: 'query', schema: { type: 'string' } },
       { name: 'error', in: 'query', schema: { type: 'string' } }
@@ -114,7 +114,7 @@ export default defineEventHandler(async (event) => {
     } catch (e: any) {
       if (e.message !== 'User already registered') {
         console.error('Failed to register Polar user:', e)
-        throw new Error('Failed to register user with Polar')
+        throw new Error('Failed to register user with Polar', { cause: e })
       }
       console.log(`Polar user for ${user.id} was already registered.`)
     }

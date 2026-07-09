@@ -1,6 +1,6 @@
 import { getServerSession } from '../../../../utils/session'
 import { movePlannedWorkoutForUser } from '../../../../utils/planned-workout-service'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 
 const moveSchema = z.object({
   targetDate: z.string().datetime()

@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { requireCoachAccessToAthlete } from '../../../../../utils/coaching-auth'
 import { workoutRepository } from '../../../../../utils/repositories/workoutRepository'
 

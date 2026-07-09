@@ -14,7 +14,7 @@ defineRouteMeta({
     tags: ['Performance'],
     summary: 'Get Performance Management Chart (PMC)',
     description: 'Returns fitness (CTL), fatigue (ATL), and form (TSB) metrics over time.',
-    parameters: [
+    inputSchema: [
       {
         name: 'days',
         in: 'query',

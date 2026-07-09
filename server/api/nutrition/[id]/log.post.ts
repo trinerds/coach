@@ -1,7 +1,7 @@
 import { getServerSession } from '../../../utils/session'
 import { nutritionRepository } from '../../../utils/repositories/nutritionRepository'
 import { generateStructuredAnalysis } from '../../../utils/gemini'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { getUserTimezone, getStartOfLocalDateUTC } from '../../../utils/date'
 import { metabolicService } from '../../../utils/services/metabolicService'
 import { nutritionPlanService } from '../../../utils/services/nutritionPlanService'
@@ -72,8 +72,8 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const { query, mealType } = LogSchema.parse(body)
 
-  let nutrition: any = null
-  let dateStr = ''
+  let nutrition: any
+  let dateStr: string
   if (/^\d{4}-\d{2}-\d{2}$/.test(id!)) {
     dateStr = id!
     const dateObj = new Date(`${id}T00:00:00Z`)
@@ -144,10 +144,7 @@ export default defineEventHandler(async (event) => {
     // If no time is provided, anchor to configured meal schedule.
     if (!normalizedLoggedAt) {
       const effectiveMealType = (item.mealType || mealType || 'snacks') as
-        | 'breakfast'
-        | 'lunch'
-        | 'dinner'
-        | 'snacks'
+        'breakfast' | 'lunch' | 'dinner' | 'snacks'
       normalizedLoggedAt = pickMealScheduledTime(effectiveMealType, settings.mealPattern)
     }
 

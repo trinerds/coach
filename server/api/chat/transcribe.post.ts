@@ -1,5 +1,5 @@
 import { getServerSession } from '../../utils/session'
-import { createGoogleGenerativeAI } from '@ai-sdk/google'
+import { createGoogle } from '@ai-sdk/google'
 import { generateText } from 'ai'
 import { prisma } from '../../utils/db'
 import { calculateLlmCost } from '../../utils/ai-config'
@@ -67,7 +67,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const google = createGoogleGenerativeAI({
+  const google = createGoogle({
     apiKey: process.env.GEMINI_API_KEY
   })
   const modelName = 'gemini-3-flash-preview'
@@ -80,7 +80,8 @@ export default defineEventHandler(async (event) => {
       messages: [
         {
           role: 'user',
-          content: [
+
+          parts: [
             {
               type: 'text',
               text: 'Transcribe this voice note for a chat composer. Return only the transcript text. Do not summarize, interpret, add formatting, or answer the user.'
@@ -113,7 +114,8 @@ export default defineEventHandler(async (event) => {
       const promptTokens = usage?.inputTokens || 0
       const completionTokens = usage?.outputTokens || 0
       const cachedTokens = usage?.inputTokenDetails?.cacheReadTokens || 0
-      const reasoningTokens = (usage as any)?.outputTokenDetails?.reasoningTokens || 0
+      const reasoningTokens =
+        (usage as any)?.outputTokenDetails.outputTokenDetails.reasoningTokens || 0
 
       await prisma.llmUsage.create({
         data: {
@@ -122,8 +124,8 @@ export default defineEventHandler(async (event) => {
           model: modelName,
           modelType: 'flash',
           operation: 'chat_transcription',
-          promptTokens,
-          completionTokens,
+          inputTokens,
+          outputTokens,
           cachedTokens,
           reasoningTokens,
           totalTokens: promptTokens + completionTokens,

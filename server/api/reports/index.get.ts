@@ -5,7 +5,7 @@ defineRouteMeta({
     tags: ['Reports'],
     summary: 'List reports',
     description: 'Returns a list of reports for the authenticated user.',
-    parameters: [
+    inputSchema: [
       {
         name: 'limit',
         in: 'query',

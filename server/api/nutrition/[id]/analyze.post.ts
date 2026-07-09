@@ -9,7 +9,7 @@ defineRouteMeta({
     tags: ['Nutrition'],
     summary: 'Analyze nutrition',
     description: 'Triggers AI analysis for a specific nutrition record.',
-    parameters: [
+    inputSchema: [
       {
         name: 'id',
         in: 'path',

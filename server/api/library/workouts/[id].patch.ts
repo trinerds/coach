@@ -4,7 +4,7 @@ import {
   computeStructuredWorkoutDurationSec,
   computeStrengthExerciseMetrics
 } from '../../../utils/structured-workout-persistence'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import {
   annotateLibraryOwner,
   getLibraryAccessContext,

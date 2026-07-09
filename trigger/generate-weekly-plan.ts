@@ -83,7 +83,7 @@ const weeklyPlanSchema = {
             enum: ['indoor', 'outdoor', 'gym'],
             description: 'Location for the workout'
           },
-          reasoning: {
+          reasoningText: {
             type: 'string',
             description: 'Why this workout on this day'
           }
@@ -203,7 +203,7 @@ export const generateWeeklyPlanTask = task({
     // So getStartOfDayUTC is correct.
 
     let effectiveDaysToPlan = daysToPlan
-    let alignedWeekEnd = new Date(alignedWeekStart)
+    const alignedWeekEnd = new Date(alignedWeekStart)
     alignedWeekEnd.setUTCDate(alignedWeekEnd.getUTCDate() + (effectiveDaysToPlan - 1))
     // Set to end of day in local time -> UTC
     let alignedWeekEndUTC = getEndOfDayUTC(timezone, alignedWeekEnd)
@@ -219,7 +219,6 @@ export const generateWeeklyPlanTask = task({
         const dayMs = 24 * 60 * 60 * 1000
         effectiveDaysToPlan =
           Math.round((alignedWeekEndStart.getTime() - alignedWeekStart.getTime()) / dayMs) + 1
-        alignedWeekEnd = new Date(alignedWeekEndStart)
       } else {
         logger.warn('trainingWeekId provided but not found, using payload dates', {
           trainingWeekId
@@ -477,7 +476,7 @@ CONTEXT FROM MASTER PLAN:
     const targetMaxTSS = Math.round(currentWeeklyTSS * 1.1) // 10% increase
 
     // Build athlete profile context
-    let athleteContext = ''
+    let athleteContext: string
     if (athleteProfile?.analysisJson) {
       const profile = athleteProfile.analysisJson as any
       athleteContext = `
@@ -886,7 +885,8 @@ Maintain your **${aiSettings.aiPersona}** persona throughout the plan's reasonin
             userId,
             date: workoutDate, // Stored as UTC start of day for user
             title: d.title,
-            description: d.description + (d.reasoning ? `\n\nReasoning: ${d.reasoning}` : ''),
+            description:
+              d.description + (d.reasoningText ? `\n\nReasoning: ${d.reasoningText}` : ''),
             // Map AI "Gym" type to "WeightTraining" which is standard in Intervals/our DB
             // "Rest" is preserved. Everything else is passed through.
             // AI has been instructed NOT to use "Workout" or "Active Recovery".

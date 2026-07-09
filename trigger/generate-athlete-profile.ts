@@ -511,7 +511,7 @@ export const generateAthleteProfileTask = task({
           select: {
             date: true,
             recommendation: true,
-            reasoning: true,
+            reasoningText: true,
             analysisJson: true
           }
         }),
@@ -631,7 +631,7 @@ Recent sleep: ${recentWellness
       const recommendationsSummary = recentRecommendations
         .map(
           (r) =>
-            `${formatUserDate(r.date, timezone)}: ${r.recommendation.toUpperCase()} - ${r.reasoning}`
+            `${formatUserDate(r.date, timezone)}: ${r.recommendation.toUpperCase()} - ${r.reasoningText}`
         )
         .join('\n')
 

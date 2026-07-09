@@ -15,7 +15,7 @@ defineRouteMeta({
     tags: ['Workouts'],
     summary: 'Get workout stream details',
     description: 'Returns detailed stream data (pacing, HR, power) for a specific workout.',
-    parameters: [
+    inputSchema: [
       {
         name: 'id',
         in: 'path',

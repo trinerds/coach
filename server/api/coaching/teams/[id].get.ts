@@ -6,7 +6,7 @@ defineRouteMeta({
     tags: ['Coaching', 'Teams'],
     summary: 'Get team details',
     description: 'Returns the details of a specific team if the user has access.',
-    parameters: [
+    inputSchema: [
       {
         name: 'id',
         in: 'path',

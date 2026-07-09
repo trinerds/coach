@@ -5,7 +5,7 @@ defineRouteMeta({
     tags: ['OAuth'],
     summary: 'Get Authorization Details',
     description: 'Returns public details for an application to be shown on the consent screen.',
-    parameters: [{ name: 'client_id', in: 'query', required: true, schema: { type: 'string' } }],
+    inputSchema: [{ name: 'client_id', in: 'query', required: true, schema: { type: 'string' } }],
     responses: {
       200: {
         description: 'Success',

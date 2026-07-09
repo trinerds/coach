@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { requireAuth } from '../../../utils/auth-guard'
 
 const createWidgetSchema = z.object({
@@ -10,7 +10,7 @@ const createWidgetSchema = z.object({
 export default defineEventHandler(async (event) => {
   const user = await requireAuth(event)
   const body = await readBody(event)
-  
+
   const result = createWidgetSchema.safeParse(body)
   if (!result.success) {
     throw createError({

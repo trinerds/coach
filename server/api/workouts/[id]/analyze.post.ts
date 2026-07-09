@@ -8,7 +8,7 @@ defineRouteMeta({
     tags: ['Workouts'],
     summary: 'Analyze workout',
     description: 'Triggers AI analysis for a specific workout.',
-    parameters: [
+    inputSchema: [
       {
         name: 'id',
         in: 'path',

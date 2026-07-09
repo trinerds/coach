@@ -1,6 +1,6 @@
 import { requireAuth } from '../../../utils/auth-guard'
 import { coachingRepository } from '../../../utils/repositories/coachingRepository'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 
 defineRouteMeta({
   openAPI: {

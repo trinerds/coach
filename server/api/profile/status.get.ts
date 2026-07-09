@@ -6,7 +6,7 @@ defineRouteMeta({
     tags: ['Profile'],
     summary: 'Get profile generation status',
     description: 'Checks if profile generation tasks are currently running.',
-    parameters: [
+    inputSchema: [
       {
         in: 'query',
         name: 'jobId',

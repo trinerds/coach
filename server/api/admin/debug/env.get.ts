@@ -78,7 +78,7 @@ export default defineEventHandler(async (event) => {
   }
 
   return {
-    system: systemInfo,
+    instructions: systemInfo,
     env: safeEnv,
     runtimeConfig: {
       public: safePublicConfig,

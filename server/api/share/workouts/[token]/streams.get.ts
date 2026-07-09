@@ -7,7 +7,7 @@ defineRouteMeta({
     tags: ['Public'],
     summary: 'Get public workout streams',
     description: 'Returns stream data for a publicly shared workout.',
-    parameters: [
+    inputSchema: [
       {
         name: 'token',
         in: 'path',

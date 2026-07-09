@@ -5,7 +5,7 @@ defineRouteMeta({
     tags: ['Coaching'],
     summary: 'Remove coach',
     description: 'Removes a coaching relationship, disconnecting from the specified coach.',
-    parameters: [
+    inputSchema: [
       {
         name: 'id',
         in: 'path',

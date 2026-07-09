@@ -8,7 +8,7 @@ defineRouteMeta({
     tags: ['Workouts'],
     summary: 'Get workout power curve',
     description: 'Calculates the power curve (peak power over durations) for a specific workout.',
-    parameters: [
+    inputSchema: [
       {
         name: 'id',
         in: 'path',

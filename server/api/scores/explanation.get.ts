@@ -7,7 +7,7 @@ defineRouteMeta({
     tags: ['Scores'],
     summary: 'Get score explanation',
     description: 'Returns an AI-generated explanation for a specific score trend.',
-    parameters: [
+    inputSchema: [
       {
         name: 'type',
         in: 'query',

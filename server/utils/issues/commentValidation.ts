@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import {
   ISSUE_COMMENT_MAX_LENGTH,
   ISSUE_COMMENT_MAX_LENGTH_LABEL

@@ -6,7 +6,7 @@ defineRouteMeta({
     tags: ['Coaching', 'Groups'],
     summary: 'Get athlete group details',
     description: 'Returns the details and members of a specific athlete group.',
-    parameters: [
+    inputSchema: [
       {
         name: 'id',
         in: 'path',

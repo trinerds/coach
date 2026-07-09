@@ -1,7 +1,7 @@
 import { getServerSession } from '../../../utils/session'
 import { prisma } from '../../../utils/db'
 import { trainingWeekRepository } from '../../../utils/repositories/trainingWeekRepository'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 
 const updateWeekSchema = z.object({
   focusKey: z.string().optional(),

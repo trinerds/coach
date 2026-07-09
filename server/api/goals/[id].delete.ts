@@ -5,7 +5,7 @@ defineRouteMeta({
     tags: ['Goals'],
     summary: 'Delete goal',
     description: 'Deletes a specific goal by ID.',
-    parameters: [
+    inputSchema: [
       {
         name: 'id',
         in: 'path',

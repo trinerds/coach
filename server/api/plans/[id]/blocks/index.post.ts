@@ -4,7 +4,7 @@ import { shiftPlanDates, calculateWeekTargets } from '../../../../utils/plan-log
 import { trainingPlanRepository } from '../../../../utils/repositories/trainingPlanRepository'
 import { trainingBlockRepository } from '../../../../utils/repositories/trainingBlockRepository'
 import { trainingWeekRepository } from '../../../../utils/repositories/trainingWeekRepository'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 
 const createBlockSchema = z.object({
   name: z.string(),

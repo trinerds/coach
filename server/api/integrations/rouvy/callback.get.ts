@@ -6,7 +6,7 @@ defineRouteMeta({
     tags: ['Integrations'],
     summary: 'ROUVY callback',
     description: 'Handles the OAuth callback from ROUVY.',
-    parameters: [
+    inputSchema: [
       { name: 'code', in: 'query', schema: { type: 'string' } },
       { name: 'state', in: 'query', schema: { type: 'string' } },
       { name: 'error', in: 'query', schema: { type: 'string' } }

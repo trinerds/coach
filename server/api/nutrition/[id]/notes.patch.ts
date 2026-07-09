@@ -5,7 +5,7 @@ defineRouteMeta({
     tags: ['Nutrition'],
     summary: 'Update nutrition notes',
     description: 'Updates the notes for a specific nutrition entry.',
-    parameters: [
+    inputSchema: [
       {
         name: 'id',
         in: 'path',

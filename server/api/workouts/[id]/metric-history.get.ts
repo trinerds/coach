@@ -64,7 +64,7 @@ defineRouteMeta({
     summary: 'Get metric history',
     description:
       'Returns previous workouts of the same activity type with extracted values for a specific metric.',
-    parameters: [
+    inputSchema: [
       {
         name: 'id',
         in: 'path',

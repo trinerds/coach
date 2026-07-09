@@ -78,7 +78,7 @@ defineRouteMeta({
     tags: ['Performance'],
     summary: 'Get FTP evolution',
     description: 'Returns the history of Functional Threshold Power changes.',
-    parameters: [
+    inputSchema: [
       {
         name: 'months',
         in: 'query',

@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { requireAuth } from '../../utils/auth-guard'
 import { workoutRepository } from '../../utils/repositories/workoutRepository'
 import { metabolicService } from '../../utils/services/metabolicService'
@@ -33,7 +33,7 @@ defineRouteMeta({
     summary: 'Update workout details',
     description:
       'Updates a specific workout by ID. Supports renaming, changing types, and overriding metrics.',
-    parameters: [
+    inputSchema: [
       {
         name: 'id',
         in: 'path',

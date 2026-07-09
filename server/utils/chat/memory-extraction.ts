@@ -1,7 +1,7 @@
 import { generateObject } from 'ai'
-import { createGoogleGenerativeAI } from '@ai-sdk/google'
+import { createGoogle } from '@ai-sdk/google'
 import type { UserMemoryCategory, UserMemoryScope } from '@prisma/client'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { calculateLlmCost } from '../ai-config'
 import { prisma } from '../db'
 import { buildMemoryCandidate, type MemoryCandidate } from '../services/userMemoryService'
@@ -58,7 +58,7 @@ export async function extractMemoryCandidatesFromConversation(input: {
     }
   }
 
-  const google = createGoogleGenerativeAI({
+  const google = createGoogle({
     apiKey: process.env.GEMINI_API_KEY
   })
 
@@ -133,15 +133,17 @@ ${formatConversation(normalizedMessages)}`
           operation: input.operation || 'memory-extract',
           entityType: input.entityType || 'ChatMessage',
           entityId: input.entityId || input.roomId || null,
-          promptTokens: usage.inputTokens || 0,
-          completionTokens: usage.outputTokens || 0,
+          inputTokens: usage.inputTokens || 0,
+          outputTokens: usage.outputTokens || 0,
           cachedTokens: usage.inputTokenDetails?.cacheReadTokens || 0,
-          reasoningTokens: (usage as any).outputTokenDetails?.reasoningTokens || 0,
+          reasoningTokens:
+            (usage as any).outputTokenDetails.outputTokenDetails.reasoningTokens || 0,
           totalTokens: (usage.inputTokens || 0) + (usage.outputTokens || 0),
           estimatedCost: calculateLlmCost(
             input.modelId || MEMORY_EXTRACTION_MODEL_ID,
             usage.inputTokens || 0,
-            (usage.outputTokens || 0) + ((usage as any).outputTokenDetails?.reasoningTokens || 0),
+            (usage.outputTokens || 0) +
+              ((usage as any).outputTokenDetails.outputTokenDetails.reasoningTokens || 0),
             usage.inputTokenDetails?.cacheReadTokens || 0
           ),
           durationMs: Date.now() - startedAt,

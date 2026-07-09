@@ -7,7 +7,7 @@ defineRouteMeta({
     tags: ['Public'],
     summary: 'Get public power curve',
     description: 'Calculates the power curve for a publicly shared workout.',
-    parameters: [
+    inputSchema: [
       {
         name: 'token',
         in: 'path',

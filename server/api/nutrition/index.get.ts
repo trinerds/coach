@@ -9,7 +9,7 @@ defineRouteMeta({
     summary: 'List nutrition data',
     description: 'Returns the recent nutrition logs for the authenticated user.',
     security: [{ bearerAuth: [] }],
-    parameters: [
+    inputSchema: [
       {
         name: 'limit',
         in: 'query',

@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { requireAuth } from '../../../utils/auth-guard'
 
 const reorderSchema = z.object({
@@ -8,7 +8,7 @@ const reorderSchema = z.object({
 export default defineEventHandler(async (event) => {
   const user = await requireAuth(event)
   const body = await readBody(event)
-  
+
   const result = reorderSchema.safeParse(body)
   if (!result.success) {
     throw createError({
@@ -22,9 +22,9 @@ export default defineEventHandler(async (event) => {
   try {
     // Perform updates in a transaction for atomicity
     await prisma.$transaction(
-      ids.map((id, index) => 
+      ids.map((id, index) =>
         prisma.dashboard.update({
-          where: { 
+          where: {
             id,
             ownerId: user.id // Security check
           },

@@ -35,7 +35,7 @@ const adHocWorkoutSchema = {
       items: { type: 'string' },
       description: '3 concise cues for how to execute the session well.'
     },
-    reasoning: { type: 'string' }
+    reasoningText: { type: 'string' }
   },
   required: ['title', 'type', 'durationMinutes', 'targetTss', 'intensity', 'objective', 'reasoning']
 }
@@ -201,7 +201,7 @@ export const generateAdHocWorkoutTask = task({
           Array.isArray(suggestion.executionCues) && suggestion.executionCues.length > 0
             ? `Execution Cues: ${suggestion.executionCues.join(' | ')}\n`
             : ''
-        }\nReasoning: ${suggestion.reasoning}`,
+        }\nReasoning: ${suggestion.reasoningText}`,
         type: suggestion.type,
         durationSec: suggestion.durationMinutes * 60,
         tss: suggestion.targetTss,

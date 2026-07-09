@@ -7,7 +7,7 @@ defineRouteMeta({
     tags: ['Nutrition'],
     summary: 'Get metabolic wave for range',
     description: 'Returns continuous metabolic points for a specific date range.',
-    parameters: [
+    inputSchema: [
       {
         name: 'startDate',
         in: 'query',

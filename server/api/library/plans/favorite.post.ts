@@ -1,6 +1,6 @@
 import { getServerSession } from '../../../utils/session'
 import { prisma } from '../../../utils/db'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 
 const favoriteSchema = z.object({
   planId: z.string(),

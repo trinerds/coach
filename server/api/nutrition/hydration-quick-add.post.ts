@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { getEffectiveUserId } from '../../utils/coaching'
 import { parseCalendarDate } from '../../utils/date'
 import { nutritionRepository } from '../../utils/repositories/nutritionRepository'

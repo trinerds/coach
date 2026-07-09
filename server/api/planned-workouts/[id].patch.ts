@@ -6,7 +6,7 @@ defineRouteMeta({
     tags: ['Planned Workouts'],
     summary: 'Update planned workout',
     description: 'Updates a specific planned workout and syncs changes to Intervals.icu.',
-    parameters: [
+    inputSchema: [
       {
         name: 'id',
         in: 'path',

@@ -11,7 +11,7 @@ defineRouteMeta({
     tags: ['Workouts'],
     summary: 'Get workout details',
     description: 'Returns the full details for a specific workout.',
-    parameters: [
+    inputSchema: [
       {
         name: 'id',
         in: 'path',

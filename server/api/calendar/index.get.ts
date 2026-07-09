@@ -7,7 +7,7 @@ defineRouteMeta({
     summary: 'Get calendar activities',
     description:
       'Returns a combined list of completed and planned workouts, along with nutrition and wellness data.',
-    parameters: [
+    inputSchema: [
       {
         name: 'startDate',
         in: 'query',

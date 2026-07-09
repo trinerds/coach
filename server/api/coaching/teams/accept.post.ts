@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { requireAuth } from '../../../utils/auth-guard'
 import { teamRepository } from '../../../utils/repositories/teamRepository'
 

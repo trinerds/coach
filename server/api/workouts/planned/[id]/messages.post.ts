@@ -1,6 +1,6 @@
 import { prisma } from '../../../../utils/db'
 import { tasks } from '@trigger.dev/sdk/v3'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { getServerSession } from '../../../../utils/session'
 import { publishTaskRunStartedEvent } from '../../../../utils/task-run-events'
 import { structureGenerationRunTags } from '../../../../utils/trigger-run-tags'

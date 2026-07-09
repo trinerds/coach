@@ -7,7 +7,7 @@ defineRouteMeta({
     tags: ['Planned Workouts'],
     summary: 'List planned workouts',
     description: 'Returns upcoming planned workouts for the authenticated user.',
-    parameters: [
+    inputSchema: [
       {
         name: 'limit',
         in: 'query',

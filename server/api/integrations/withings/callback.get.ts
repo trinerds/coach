@@ -5,7 +5,7 @@ defineRouteMeta({
     tags: ['Integrations'],
     summary: 'Withings callback',
     description: 'Handles the OAuth callback from Withings.',
-    parameters: [
+    inputSchema: [
       { name: 'code', in: 'query', schema: { type: 'string' } },
       { name: 'state', in: 'query', schema: { type: 'string' } },
       { name: 'error', in: 'query', schema: { type: 'string' } }

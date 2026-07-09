@@ -54,7 +54,7 @@ defineRouteMeta({
     tags: ['Workouts'],
     summary: 'Get aggregate power curve',
     description: 'Returns the power curve (current period vs all-time) for the athlete.',
-    parameters: [
+    inputSchema: [
       {
         name: 'days',
         in: 'query',

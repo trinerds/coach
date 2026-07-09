@@ -7,7 +7,7 @@ defineRouteMeta({
     description:
       'Updates editable fields on a specific wellness record. Fields may be set to null to clear bad data.',
     security: [{ bearerAuth: [] }],
-    parameters: [
+    inputSchema: [
       {
         name: 'wellnessId',
         in: 'path',

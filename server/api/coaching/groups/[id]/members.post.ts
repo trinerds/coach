@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { requireAuth } from '../../../../utils/auth-guard'
 import { teamRepository } from '../../../../utils/repositories/teamRepository'
 import { coachingRepository } from '../../../../utils/repositories/coachingRepository'
@@ -12,7 +12,7 @@ defineRouteMeta({
     tags: ['Coaching', 'Groups'],
     summary: 'Add athlete to group',
     description: 'Adds an athlete to a specific athlete group.',
-    parameters: [
+    inputSchema: [
       {
         name: 'id',
         in: 'path',

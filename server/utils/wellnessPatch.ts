@@ -1,6 +1,6 @@
 import type { H3Event } from 'h3'
 import { Prisma } from '@prisma/client'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { requireAuth } from './auth-guard'
 import { prisma } from './db'
 import { bodyMeasurementService } from './services/bodyMeasurementService'
@@ -75,7 +75,7 @@ export async function handleWellnessPatch(event: H3Event) {
   }
 
   const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(param)
-  let wellness: any = null
+  let wellness: any
 
   if (isUuid) {
     wellness = await prisma.wellness.findUnique({

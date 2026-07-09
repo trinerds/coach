@@ -11,7 +11,7 @@ defineRouteMeta({
     tags: ['Scores'],
     summary: 'Get readiness correlation',
     description: 'Returns data points correlating recovery scores with workout performance (TSS).',
-    parameters: [
+    inputSchema: [
       {
         name: 'days',
         in: 'query',
@@ -70,7 +70,7 @@ export default defineEventHandler(async (event) => {
   const tags = parseTagQueryParam(query.tags)
 
   const now = new Date()
-  let startDate = new Date()
+  let startDate: Date
 
   if (query.days === 'YTD') {
     const timezone = await getUserTimezone(userId)

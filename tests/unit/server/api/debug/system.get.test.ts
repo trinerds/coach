@@ -40,7 +40,7 @@ describe('GET /api/debug/system', () => {
       time: expect.objectContaining({
         serverTimeISO: expect.any(String)
       }),
-      system: expect.objectContaining({
+      instructions: expect.objectContaining({
         nodeVersion: expect.any(String),
         cpuCount: expect.any(Number)
       })

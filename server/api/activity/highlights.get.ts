@@ -10,7 +10,7 @@ defineRouteMeta({
     tags: ['Activity'],
     summary: 'Get activity highlights',
     description: 'Returns aggregated activity statistics and workload ratios (ACWR).',
-    parameters: [
+    inputSchema: [
       {
         name: 'days',
         in: 'query',
@@ -72,8 +72,8 @@ export default defineEventHandler(async (event) => {
   const tags = parseTagQueryParam(query.tags)
 
   const now = new Date()
-  let startDate = new Date()
-  let days = 0
+  let startDate: Date
+  let days: number
 
   if (query.days === 'YTD') {
     const timezone = await getUserTimezone(userId)

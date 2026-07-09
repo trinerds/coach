@@ -3,7 +3,7 @@ defineRouteMeta({
     tags: ['Public'],
     summary: 'Get public workout',
     description: 'Returns details of a publicly shared workout via token.',
-    parameters: [
+    inputSchema: [
       {
         name: 'token',
         in: 'path',

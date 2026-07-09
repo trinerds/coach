@@ -9,7 +9,7 @@ defineRouteMeta({
     tags: ['Planned Workouts'],
     summary: 'Complete planned workout',
     description: 'Marks a planned workout as completed by linking it to an actual workout.',
-    parameters: [
+    inputSchema: [
       {
         name: 'id',
         in: 'path',

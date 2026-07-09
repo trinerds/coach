@@ -10,7 +10,7 @@ defineRouteMeta({
     tags: ['Performance'],
     summary: 'Get weight evolution',
     description: 'Returns the history of weight changes from wellness logs.',
-    parameters: [
+    inputSchema: [
       {
         name: 'months',
         in: 'query',

@@ -1,6 +1,6 @@
 import { getServerSession } from '../../../utils/session'
 import { issuesRepository } from '../../../utils/repositories/issuesRepository'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { BugStatus } from '@prisma/client'
 import { createUserNotification } from '../../../utils/notifications'
 

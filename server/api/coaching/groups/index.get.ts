@@ -7,7 +7,7 @@ defineRouteMeta({
     summary: 'List athlete groups',
     description:
       'Returns the list of athlete groups owned by the coach, and optionally team-scoped groups.',
-    parameters: [
+    inputSchema: [
       {
         name: 'teamId',
         in: 'query',

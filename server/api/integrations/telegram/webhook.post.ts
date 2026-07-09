@@ -1,7 +1,7 @@
 import { prisma } from '../../../utils/db'
 import { chatService } from '../../../utils/services/chatService'
 import { sendTelegramMessage, sendTelegramAction } from '../../../utils/telegram'
-import { generateText } from 'ai'
+import { generateText, isStepCount } from 'ai'
 import { buildPersistedToolCalls, expandStoredChatMessages } from '../../../utils/chat/history'
 import { transformHistoryToCoreMessages } from '../../../utils/ai-history'
 import { normalizeCoreMessagesForGemini } from '../../../utils/chat/core-message-normalizer'
@@ -216,11 +216,10 @@ export default defineEventHandler(async (event) => {
     try {
       result = await generateText({
         model: google(modelName),
-        system: systemInstruction,
+        instructions: systemInstruction,
         messages: normalizedMessages as any,
         tools: tools as any,
-        // @ts-expect-error - maxSteps is valid in AI SDK v6 but types are finicky with 'any' tools
-        maxSteps: 5 // Allow multi-step tool use
+        stopWhen: isStepCount(5)
       })
     } catch (llmError: any) {
       console.error('[Telegram] LLM Generation Failed:', llmError)

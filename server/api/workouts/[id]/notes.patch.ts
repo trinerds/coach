@@ -5,7 +5,7 @@ defineRouteMeta({
     tags: ['Workouts'],
     summary: 'Update workout notes',
     description: 'Updates the notes for a specific workout.',
-    parameters: [
+    inputSchema: [
       {
         name: 'id',
         in: 'path',

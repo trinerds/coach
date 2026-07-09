@@ -2,7 +2,7 @@ import { getServerSession } from '../../utils/session'
 import { prisma } from '../../utils/db'
 import { recommendationRepository } from '../../utils/repositories/recommendationRepository'
 import { athleteMetricsService } from '../../utils/athleteMetricsService'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 
 const updateSchema = z.object({
   status: z.enum(['ACTIVE', 'COMPLETED', 'DISMISSED']).optional(),

@@ -41,14 +41,14 @@ const recalculateCostsCommand = new Command('recalculate-costs')
             gte: new Date(Date.now() - days * 24 * 60 * 60 * 1000)
           },
           success: true,
-          promptTokens: { not: null },
-          completionTokens: { not: null }
+          inputTokens: { not: null },
+          outputTokens: { not: null }
         },
         select: {
           id: true,
           model: true,
-          promptTokens: true,
-          completionTokens: true,
+          inputTokens: true,
+          outputTokens: true,
           cachedTokens: true,
           reasoningTokens: true,
           estimatedCost: true,
@@ -68,8 +68,9 @@ const recalculateCostsCommand = new Command('recalculate-costs')
       let totalNewCost = 0
 
       for (const record of records) {
-        const inputTokens = record.promptTokens || 0
-        const outputTokens = (record.completionTokens || 0) + (record.reasoningTokens || 0)
+        const inputTokens = record.inputTokens || 0
+        const outputTokens =
+          (record.outputTokens || 0) + (record.outputTokenDetails.reasoningTokens || 0)
         const cachedTokens = record.cachedTokens || 0
 
         const newCost = calculateLlmCost(record.model, inputTokens, outputTokens, cachedTokens)
@@ -81,10 +82,14 @@ const recalculateCostsCommand = new Command('recalculate-costs')
         // Check if discrepancy exists (using small epsilon for float comparison)
         if (Math.abs(newCost - oldCost) > 0.0000001) {
           updatedCount++
-          
+
           if (dryRun) {
             if (updatedCount <= 5) {
-              console.log(chalk.gray(`[Dry Run] Record ${record.id} (${record.model}): $${oldCost.toFixed(6)} -> $${newCost.toFixed(6)}`))
+              console.log(
+                chalk.gray(
+                  `[Dry Run] Record ${record.id} (${record.model}): $${oldCost.toFixed(6)} -> $${newCost.toFixed(6)}`
+                )
+              )
             }
           } else {
             await prisma.llmUsage.update({
@@ -107,7 +112,6 @@ const recalculateCostsCommand = new Command('recalculate-costs')
       } else {
         console.log(chalk.green(`\nSuccessfully updated ${updatedCount} records!`))
       }
-
     } catch (e) {
       console.error(chalk.red('Error recalculating LLM costs:'), e)
     } finally {

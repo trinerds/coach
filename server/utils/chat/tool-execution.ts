@@ -28,8 +28,7 @@ export function wrapChatToolsForExecution(
     wrapped[toolName] = {
       ...toolDef,
       execute: async (args: any, options: any) => {
-        const runtimeContext = (options?.experimental_context ||
-          {}) as Partial<ChatToolExecutionContext>
+        const runtimeContext = (options?.context || {}) as Partial<ChatToolExecutionContext>
         const context = {
           ...fallbackContext,
           ...runtimeContext

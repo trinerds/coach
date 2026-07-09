@@ -12,7 +12,7 @@ defineRouteMeta({
     tags: ['Wellness'],
     summary: 'Get wellness trends',
     description: 'Returns daily wellness metrics for a specified date range.',
-    parameters: [
+    inputSchema: [
       {
         name: 'startDate',
         in: 'query',

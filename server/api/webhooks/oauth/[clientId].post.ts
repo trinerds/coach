@@ -7,7 +7,7 @@ defineRouteMeta({
     summary: 'Generic OAuth Webhook',
     description:
       'A generic webhook endpoint for third-party OAuth applications to push data. Captures the raw payload and associates it with the application.',
-    parameters: [
+    inputSchema: [
       {
         name: 'clientId',
         in: 'path',

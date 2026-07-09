@@ -1,6 +1,6 @@
 import { getServerSession } from '../../../utils/session'
 import { prisma } from '../../../utils/db'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 
 const createPlanTemplateSchema = z.object({
   name: z.string().min(1),

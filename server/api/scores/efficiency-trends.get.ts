@@ -11,7 +11,7 @@ defineRouteMeta({
     tags: ['Scores'],
     summary: 'Get efficiency trends',
     description: 'Returns efficiency factor (Power/HR) and decoupling trends.',
-    parameters: [
+    inputSchema: [
       {
         name: 'days',
         in: 'query',
@@ -76,7 +76,7 @@ export default defineEventHandler(async (event) => {
   const query = getQuery(event)
 
   const now = new Date()
-  let startDate = new Date()
+  let startDate: Date
   const sport = query.sport === 'all' ? undefined : (query.sport as string)
   const tags = parseTagQueryParam(query.tags)
 

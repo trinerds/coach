@@ -111,7 +111,7 @@ const goalReviewSchema = {
                 enum: ['HIGH', 'MEDIUM', 'LOW'],
                 description: 'Suggested priority change'
               },
-              reasoning: {
+              reasoningText: {
                 type: 'string',
                 description: 'Why these adjustments are recommended'
               }

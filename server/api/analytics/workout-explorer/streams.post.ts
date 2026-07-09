@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { requireAuth } from '../../../utils/auth-guard'
 import { getAccessibleWorkout } from '../../../utils/analyticsScope'
 import { lttb } from '../../../utils/analytics/lttb'

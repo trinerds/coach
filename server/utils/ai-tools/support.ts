@@ -1,5 +1,5 @@
 import { tool } from 'ai'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { prisma } from '../db'
 import { issuesRepository } from '../repositories/issuesRepository'
 import { BugStatus } from '@prisma/client'

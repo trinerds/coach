@@ -8,7 +8,7 @@ defineRouteMeta({
     tags: ['Wellness'],
     summary: 'Get wellness by ID or Date',
     description: 'Returns a wellness record by ID or Date.',
-    parameters: [
+    inputSchema: [
       {
         name: 'wellnessParam',
         in: 'path',

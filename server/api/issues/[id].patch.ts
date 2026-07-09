@@ -1,6 +1,6 @@
 import { getServerSession } from '../../utils/session'
 import { issuesRepository } from '../../utils/repositories/issuesRepository'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 
 const updateSchema = z.object({
   title: z.string().min(3).max(100).optional(),

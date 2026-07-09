@@ -49,7 +49,7 @@ defineRouteMeta({
     summary: 'List workouts',
     description: 'Returns a list of workouts for the authenticated user or an athlete they coach.',
     security: [{ bearerAuth: [] }],
-    parameters: [
+    inputSchema: [
       {
         name: 'limit',
         in: 'query',

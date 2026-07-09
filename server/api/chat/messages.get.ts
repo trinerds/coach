@@ -7,7 +7,7 @@ defineRouteMeta({
     tags: ['Chat'],
     summary: 'List chat messages',
     description: 'Returns the message history for a specific chat room.',
-    parameters: [
+    inputSchema: [
       {
         name: 'roomId',
         in: 'query',

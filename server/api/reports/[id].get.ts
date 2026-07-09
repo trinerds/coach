@@ -5,7 +5,7 @@ defineRouteMeta({
     tags: ['Reports'],
     summary: 'Get report detail',
     description: 'Returns the full details of a specific analysis report.',
-    parameters: [
+    inputSchema: [
       {
         name: 'id',
         in: 'path',

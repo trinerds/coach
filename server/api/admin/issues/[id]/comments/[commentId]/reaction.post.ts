@@ -1,6 +1,6 @@
 import { getServerSession } from '../../../../../../utils/session'
 import { issuesRepository } from '../../../../../../utils/repositories/issuesRepository'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 
 const reactionSchema = z.object({
   emoji: z.string().min(1).max(10)
@@ -25,7 +25,11 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Invalid emoji' })
   }
 
-  const updatedComment = await issuesRepository.toggleReaction(commentId, session.user.id, result.data.emoji)
+  const updatedComment = await issuesRepository.toggleReaction(
+    commentId,
+    session.user.id,
+    result.data.emoji
+  )
 
   return updatedComment
 })

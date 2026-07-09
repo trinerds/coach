@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
         Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
       ).toISOString()
     },
-    system: {
+    instructions: {
       nodeVersion: process.version,
       platform: os.platform(),
       arch: os.arch(),

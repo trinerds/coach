@@ -7,7 +7,7 @@ defineRouteMeta({
     tags: ['Analytics'],
     summary: 'Get LLM usage detail',
     description: 'Returns detailed information for a specific LLM call.',
-    parameters: [
+    inputSchema: [
       {
         name: 'id',
         in: 'path',
@@ -90,8 +90,8 @@ export default defineEventHandler(async (event) => {
     modelType: usage.modelType,
     entityType: usage.entityType,
     entityId: usage.entityId,
-    promptTokens: usage.promptTokens,
-    completionTokens: usage.completionTokens,
+    inputTokens: usage.inputTokens,
+    outputTokens: usage.outputTokens,
     totalTokens: usage.totalTokens,
     estimatedCost: usage.estimatedCost,
     durationMs: usage.durationMs,

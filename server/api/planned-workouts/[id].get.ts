@@ -6,7 +6,7 @@ defineRouteMeta({
     tags: ['Planned Workouts'],
     summary: 'Get planned workout',
     description: 'Returns details for a specific planned workout.',
-    parameters: [
+    inputSchema: [
       {
         name: 'id',
         in: 'path',

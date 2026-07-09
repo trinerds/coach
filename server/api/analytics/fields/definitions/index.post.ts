@@ -1,9 +1,13 @@
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { requireAuth } from '../../../../utils/auth-guard'
 
 const createFieldSchema = z.object({
   entityType: z.enum(['WELLNESS', 'WORKOUT']),
-  fieldKey: z.string().min(1).max(50).regex(/^[a-z0-9_]+$/),
+  fieldKey: z
+    .string()
+    .min(1)
+    .max(50)
+    .regex(/^[a-z0-9_]+$/),
   label: z.string().min(1).max(100),
   dataType: z.enum(['NUMBER', 'BOOLEAN', 'STRING']),
   unit: z.string().max(20).optional()
@@ -12,7 +16,7 @@ const createFieldSchema = z.object({
 export default defineEventHandler(async (event) => {
   const user = await requireAuth(event)
   const body = await readBody(event)
-  
+
   const result = createFieldSchema.safeParse(body)
   if (!result.success) {
     throw createError({

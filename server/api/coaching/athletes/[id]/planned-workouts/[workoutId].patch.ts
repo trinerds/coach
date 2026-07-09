@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { requireCoachAccessToAthlete } from '../../../../../utils/coaching-auth'
 import { updatePlannedWorkoutForUser } from '../../../../../utils/planned-workout-service'
 

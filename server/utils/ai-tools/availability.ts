@@ -1,5 +1,5 @@
 import { tool } from 'ai'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { availabilityRepository } from '../repositories/availabilityRepository'
 import type { AiSettings } from '../ai-user-settings'
 

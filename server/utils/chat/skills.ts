@@ -1,6 +1,6 @@
 import { generateObject } from 'ai'
-import { createGoogleGenerativeAI } from '@ai-sdk/google'
-import { z } from 'zod'
+import { createGoogle } from '@ai-sdk/google'
+import { z } from 'zod/v3'
 import { calculateLlmCost } from '../ai-config'
 import { filterChatToolsForChat, isChatToolTemporarilyDisabled } from '../ai-tools'
 import { prisma } from '../db'
@@ -1070,8 +1070,8 @@ async function logRouterUsage(params: {
         operation: 'chat_skill_router',
         entityType: 'ChatTurn',
         entityId: params.turnId,
-        promptTokens,
-        completionTokens,
+        inputTokens: promptTokens,
+        outputTokens: completionTokens,
         cachedTokens,
         reasoningTokens,
         totalTokens: promptTokens + completionTokens,
@@ -1160,7 +1160,7 @@ export async function classifyChatSkills(
 
   const prompt = buildRouterPrompt(params)
   const startedAt = Date.now()
-  const google = createGoogleGenerativeAI({
+  const google = createGoogle({
     apiKey: process.env.GEMINI_API_KEY
   })
 

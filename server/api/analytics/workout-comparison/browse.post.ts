@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { requireAuth } from '../../../utils/auth-guard'
 import { coachingRepository } from '../../../utils/repositories/coachingRepository'
 import { prisma } from '../../../utils/db'

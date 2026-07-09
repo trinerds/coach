@@ -7,7 +7,7 @@ defineRouteMeta({
     tags: ['Public'],
     summary: 'Get shared resource',
     description: 'Returns details of a shared resource via token.',
-    parameters: [
+    inputSchema: [
       {
         name: 'token',
         in: 'path',

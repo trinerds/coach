@@ -6,7 +6,7 @@ defineRouteMeta({
     tags: ['Coaching', 'Teams'],
     summary: 'Get team roster',
     description: 'Returns the list of athletes in a team with their metrics.',
-    parameters: [
+    inputSchema: [
       {
         name: 'id',
         in: 'path',

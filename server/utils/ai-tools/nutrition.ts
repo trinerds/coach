@@ -1,5 +1,5 @@
 import { tool } from 'ai'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { prisma } from '../db'
 import { nutritionRepository } from '../repositories/nutritionRepository'
 import { plannedWorkoutRepository } from '../repositories/plannedWorkoutRepository'
@@ -612,8 +612,8 @@ export const nutritionTools = (userId: string, timezone: string, aiSettings: AiS
       }
 
       const currentItems = (nutrition[meal_type] as any[]) || []
-      let updatedItems: any[] = []
-      let message = ''
+      let updatedItems: any[]
+      let message: string
 
       if (item_id) {
         // Remove by ID

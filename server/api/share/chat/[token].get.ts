@@ -3,7 +3,7 @@ defineRouteMeta({
     tags: ['Public'],
     summary: 'Get public chat',
     description: 'Returns messages of a publicly shared chat room via token.',
-    parameters: [
+    inputSchema: [
       {
         name: 'token',
         in: 'path',

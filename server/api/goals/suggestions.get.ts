@@ -7,7 +7,7 @@ defineRouteMeta({
     tags: ['Goals'],
     summary: 'Get goal suggestions',
     description: 'Retrieves the status and result of a goal suggestion job.',
-    parameters: [
+    inputSchema: [
       {
         name: 'jobId',
         in: 'query',

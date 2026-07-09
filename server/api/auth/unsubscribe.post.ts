@@ -1,6 +1,6 @@
 import { verifyUnsubscribeToken } from '../../utils/unsubscribe-token'
 import { prisma } from '../../utils/db'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 
 const unsubscribeSchema = z.object({
   token: z.string(),

@@ -16,7 +16,7 @@ defineRouteMeta({
     tags: ['Public'],
     summary: 'Get workout share image',
     description: 'Generates and returns a PNG image for a shared workout.',
-    parameters: [
+    inputSchema: [
       {
         name: 'token',
         in: 'path',

@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { requireAuth } from '../../../../utils/auth-guard'
 import { teamRepository } from '../../../../utils/repositories/teamRepository'
 
@@ -13,7 +13,7 @@ defineRouteMeta({
     tags: ['Coaching', 'Teams'],
     summary: 'Create team invite',
     description: 'Generates a new invite code for the team.',
-    parameters: [
+    inputSchema: [
       {
         name: 'id',
         in: 'path',

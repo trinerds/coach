@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { nutritionSettingsRepository } from '../../utils/repositories/nutritionSettingsRepository'
 import { getServerSession } from '../../utils/session'
 import { metabolicService } from '../../utils/services/metabolicService'

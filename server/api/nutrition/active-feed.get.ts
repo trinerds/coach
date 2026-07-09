@@ -31,7 +31,7 @@ export default defineEventHandler(async (event) => {
     const mealRecCandidate = (latestRec?.analysisJson as any)?.meal_recommendation
     const nextWindowType = context.nextFuelingWindow?.type as string | undefined
     const recWindowType = mealRecCandidate?.windowType as string | undefined
-    const recommendationText = `${mealRecCandidate?.timing || ''} ${mealRecCandidate?.reasoning || ''}`
+    const recommendationText = `${mealRecCandidate?.timing || ''} ${mealRecCandidate?.reasoningText || ''}`
     const looksLikePreWorkout = /before\s+your\s+(ride|workout)|pre-?workout|head out/i.test(
       recommendationText
     )

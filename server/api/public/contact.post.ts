@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { sendEmail } from '../../utils/email'
 import { prisma } from '../../utils/db'
 import { resolveAthletePublicProfile, resolveCoachPublicProfile } from '../../utils/public-presence'

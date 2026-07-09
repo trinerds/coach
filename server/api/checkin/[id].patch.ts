@@ -1,11 +1,11 @@
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { requireAuth } from '../../utils/auth-guard'
 import { dailyCheckinRepository } from '../../utils/repositories/dailyCheckinRepository'
 
 const questionSchema = z.object({
   id: z.string(),
   text: z.string(),
-  reasoning: z.string().optional(),
+  reasoningText: z.string().optional(),
   answer: z.enum(['YES', 'NO']).nullable().optional()
 })
 

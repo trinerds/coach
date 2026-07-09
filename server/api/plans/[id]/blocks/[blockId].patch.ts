@@ -3,7 +3,7 @@ import { prisma } from '../../../../utils/db'
 import { shiftPlanDates, calculateWeekTargets } from '../../../../utils/plan-logic'
 import { trainingBlockRepository } from '../../../../utils/repositories/trainingBlockRepository'
 import { trainingWeekRepository } from '../../../../utils/repositories/trainingWeekRepository'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 
 const updateBlockSchema = z.object({
   name: z.string().optional(),

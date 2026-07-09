@@ -7,7 +7,7 @@ defineRouteMeta({
     summary: 'Publish AI workout summary to Intervals.icu',
     description:
       'Publishes the workout AI executive summary to the linked Intervals.icu activity description.',
-    parameters: [
+    inputSchema: [
       {
         name: 'id',
         in: 'path',

@@ -1,7 +1,7 @@
 import { getServerSession } from '../../../utils/session'
 import { prisma } from '../../../utils/db'
 import { planService } from '../../../utils/services/planService'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 
 const replanSchema = z.object({
   blocks: z.array(

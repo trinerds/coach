@@ -14,6 +14,10 @@ class MockClient {
   on = vi.fn().mockReturnThis()
 }
 
+function MockPrismaPg(_pool: unknown) {}
+
+function MockPrismaClient(_options?: unknown) {}
+
 vi.mock('pg', () => ({
   default: { Pool: MockPool, Client: MockClient },
   Pool: MockPool,
@@ -21,13 +25,13 @@ vi.mock('pg', () => ({
 }))
 
 vi.mock('@prisma/adapter-pg', () => ({
-  PrismaPg: vi.fn().mockImplementation(() => ({}))
+  PrismaPg: MockPrismaPg
 }))
 
 vi.mock('@prisma/client', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@prisma/client')>()
   return {
     ...actual,
-    PrismaClient: vi.fn().mockImplementation(() => ({}))
+    PrismaClient: MockPrismaClient
   }
 })

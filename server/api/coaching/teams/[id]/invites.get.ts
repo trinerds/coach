@@ -6,7 +6,7 @@ defineRouteMeta({
     tags: ['Coaching', 'Teams'],
     summary: 'List team invites',
     description: 'Returns the list of pending invites for a team.',
-    parameters: [
+    inputSchema: [
       {
         name: 'id',
         in: 'path',

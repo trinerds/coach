@@ -6,7 +6,7 @@ defineRouteMeta({
     tags: ['Integrations'],
     summary: 'Oura callback',
     description: 'Handles the OAuth callback from Oura.',
-    parameters: [
+    inputSchema: [
       { name: 'code', in: 'query', schema: { type: 'string' } },
       { name: 'state', in: 'query', schema: { type: 'string' } },
       { name: 'error', in: 'query', schema: { type: 'string' } }

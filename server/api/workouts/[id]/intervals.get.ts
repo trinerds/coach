@@ -25,7 +25,7 @@ defineRouteMeta({
     summary: 'Get workout intervals',
     description:
       'Detects and analyzes intervals within a workout based on power, pace, or heart rate.',
-    parameters: [
+    inputSchema: [
       {
         name: 'id',
         in: 'path',
@@ -248,8 +248,8 @@ export default defineEventHandler(async (event) => {
   }
 
   // C. Selection Logic
-  let finalIntervals = []
-  let detectionMetric = ''
+  let finalIntervals: typeof syncedIntervals
+  let detectionMetric: string
 
   if (syncedIntervals.length > 0) {
     finalIntervals = syncedIntervals

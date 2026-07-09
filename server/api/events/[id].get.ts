@@ -6,7 +6,7 @@ defineRouteMeta({
     tags: ['Events'],
     summary: 'Get event details',
     description: 'Returns a single event by ID.',
-    parameters: [
+    inputSchema: [
       {
         in: 'path',
         name: 'id',

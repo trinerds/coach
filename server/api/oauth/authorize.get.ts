@@ -6,7 +6,7 @@ defineRouteMeta({
     summary: 'Authorize OAuth Application',
     description:
       'Initiates the OAuth 2.0 authorization code flow. Validates parameters and redirects to the consent screen.',
-    parameters: [
+    inputSchema: [
       {
         name: 'response_type',
         in: 'query',

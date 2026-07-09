@@ -1,11 +1,11 @@
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { prisma } from '../db'
 import { getLibraryOwnerScope, groupLibraryItemsByOwner } from '../library-access'
 
 export const libraryTools = (userId: string, actorUserId: string = userId) => ({
   save_to_workout_library: {
     description: 'Saves a structured workout definition to the user library for future reuse.',
-    parameters: z.object({
+    inputSchema: z.object({
       title: z.string().describe('The title of the workout'),
       description: z.string().optional().describe('Brief description of the session'),
       type: z.string().describe('Type of workout (e.g. Ride, Run, Swim)'),
@@ -43,7 +43,7 @@ export const libraryTools = (userId: string, actorUserId: string = userId) => ({
 
   search_workout_library: {
     description: 'Searches the user workout library for existing templates.',
-    parameters: z.object({
+    inputSchema: z.object({
       query: z.string().optional().describe('Text search for title or category'),
       type: z.string().optional().describe('Filter by workout type'),
       category: z.string().optional().describe('Filter by training category'),

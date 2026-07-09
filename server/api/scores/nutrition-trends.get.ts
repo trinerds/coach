@@ -8,7 +8,7 @@ defineRouteMeta({
     tags: ['Scores'],
     summary: 'Get nutrition trends',
     description: 'Returns nutrition scores and averages for a specified period.',
-    parameters: [
+    inputSchema: [
       {
         name: 'days',
         in: 'query',

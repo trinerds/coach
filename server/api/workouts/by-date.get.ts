@@ -7,7 +7,7 @@ defineRouteMeta({
     tags: ['Workouts'],
     summary: 'Get workouts by date',
     description: 'Returns all workouts for a specific date.',
-    parameters: [
+    inputSchema: [
       {
         name: 'date',
         in: 'query',

@@ -1,5 +1,5 @@
 import { tasks } from '@trigger.dev/sdk/v3'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { getServerSession } from '../../../../utils/session'
 import { prisma } from '../../../../utils/db'
 import {

@@ -1,6 +1,6 @@
 import { logger, task } from '@trigger.dev/sdk/v3'
 import { prisma } from '../server/utils/db'
-import { createGoogleGenerativeAI } from '@ai-sdk/google'
+import { createGoogle } from '@ai-sdk/google'
 import { generateText } from 'ai'
 import { calculateLlmCost } from '../server/utils/ai-config'
 import { extractMemoryCandidatesFromConversation } from '../server/utils/chat/memory-extraction'
@@ -94,7 +94,7 @@ export const summarizeChatTask = task({
       .filter((message) => message.content.length > 0)
 
     // 3. Call AI to summarize and potentially rename
-    const google = createGoogleGenerativeAI({
+    const google = createGoogle({
       apiKey: process.env.GEMINI_API_KEY
     })
 
@@ -116,7 +116,7 @@ export const summarizeChatTask = task({
       logger.info(`Generating summary for ${messages.length} messages`)
       const { text: newSummary, usage: summaryUsage } = await generateText({
         model: google('gemini-flash-lite-latest'),
-        system: `You are an expert at condensing training conversations. 
+        instructions: `You are an expert at condensing training conversations. 
         Summarize the chat between an athlete and their AI coach.
         ${existingSummary ? `IMPORTANT: Here is the PREVIOUS summary of earlier parts of this conversation: "${existingSummary}". Incorporate its key points into the new summary so no vital context is lost.` : ''}
         Focus on: Key achievements, current injuries/pains, recent workout feedback, and any specific goals discussed. Keep it under 250 words.`,
@@ -135,8 +135,8 @@ export const summarizeChatTask = task({
           operation: 'summarize-chat',
           entityType: 'ChatRoom',
           entityId: roomId,
-          promptTokens: summaryUsage.inputTokens || 0,
-          completionTokens: summaryUsage.outputTokens || 0,
+          inputTokens: summaryUsage.inputTokens || 0,
+          outputTokens: summaryUsage.outputTokens || 0,
           totalTokens: (summaryUsage.inputTokens || 0) + (summaryUsage.outputTokens || 0),
           estimatedCost: calculateLlmCost(
             'gemini-flash-lite-latest',
@@ -155,7 +155,7 @@ export const summarizeChatTask = task({
       logger.info(`Generating title for room ${roomId}`)
       const { text: title, usage: titleUsage } = await generateText({
         model: google('gemini-flash-lite-latest'),
-        system:
+        instructions:
           'Generate a 2-4 word catchy title for this conversation based on the user prompt. No quotes, just the title.',
         prompt: conversationText
       })
@@ -170,8 +170,8 @@ export const summarizeChatTask = task({
           operation: 'rename-chat',
           entityType: 'ChatRoom',
           entityId: roomId,
-          promptTokens: titleUsage.inputTokens || 0,
-          completionTokens: titleUsage.outputTokens || 0,
+          inputTokens: titleUsage.inputTokens || 0,
+          outputTokens: titleUsage.outputTokens || 0,
           totalTokens: (titleUsage.inputTokens || 0) + (titleUsage.outputTokens || 0),
           estimatedCost: calculateLlmCost(
             'gemini-flash-lite-latest',

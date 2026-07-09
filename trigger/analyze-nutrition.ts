@@ -22,7 +22,7 @@ interface NutritionAnalysis {
     status: 'complete' | 'mostly_complete' | 'partial' | 'incomplete'
     confidence: number
     missing_meals?: string[]
-    reasoning: string
+    reasoningText: string
   }
   sections: Array<{
     title: string
@@ -91,7 +91,7 @@ const nutritionAnalysisSchema = {
           items: { type: 'string' },
           description: 'List of likely missing meals or gaps'
         },
-        reasoning: {
+        reasoningText: {
           type: 'string',
           description: 'Explanation of completeness assessment'
         }
@@ -660,7 +660,7 @@ function convertStructuredToMarkdown(analysis: any): string {
     if (dc.missing_meals && dc.missing_meals.length > 0) {
       markdown += `Potentially missing: ${dc.missing_meals.join(', ')}\n`
     }
-    markdown += `\n${dc.reasoning}\n\n`
+    markdown += `\n${dc.reasoningText}\n\n`
   }
 
   markdown += `## Executive Summary\n${analysis.executive_summary}\n\n`

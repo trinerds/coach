@@ -244,7 +244,7 @@ describe('public presence utilities', () => {
           ]
         }
       })
-    ).toThrow(/Pricing section is invalid|valid url|URL/i)
+    ).toThrow(/Pricing section is invalid|valid url|URL|exactly 3 element/i)
   })
 
   it('normalizes editable expectations and proof content on the coach start page', () => {

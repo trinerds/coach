@@ -8,7 +8,7 @@ defineRouteMeta({
     tags: ['Workouts'],
     summary: 'Delete workout',
     description: 'Deletes a specific workout by ID.',
-    parameters: [
+    inputSchema: [
       {
         name: 'id',
         in: 'path',

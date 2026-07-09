@@ -6,7 +6,7 @@ defineRouteMeta({
     tags: ['Coaching', 'Groups'],
     summary: 'Remove athlete from group',
     description: 'Removes an athlete from a specific athlete group.',
-    parameters: [
+    inputSchema: [
       {
         name: 'id',
         in: 'path',

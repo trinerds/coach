@@ -1,5 +1,5 @@
 import { tool } from 'ai'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { buildMemoryCandidate, userMemoryService } from '../services/userMemoryService'
 
 const memoryScopeSchema = z.enum(['GLOBAL', 'ROOM'])

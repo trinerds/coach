@@ -5,7 +5,7 @@ defineRouteMeta({
     tags: ['Integrations'],
     summary: 'Fitbit callback',
     description: 'Handles the OAuth callback from Fitbit.',
-    parameters: [
+    inputSchema: [
       { name: 'code', in: 'query', schema: { type: 'string' } },
       { name: 'state', in: 'query', schema: { type: 'string' } },
       { name: 'error', in: 'query', schema: { type: 'string' } }

@@ -1,5 +1,5 @@
 import { tool } from 'ai'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { calculateTrainingMetrics as calcMetrics } from '../chat-tools/metric-tools'
 
 export const metricTools = (userId: string, timezone: string) => ({

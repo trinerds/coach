@@ -1,5 +1,5 @@
 import { tool } from 'ai'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { recommendationRepository } from '../repositories/recommendationRepository'
 import { activityRecommendationRepository } from '../repositories/activityRecommendationRepository'
 import { getUserLocalDate } from '../date'
@@ -8,7 +8,7 @@ function formatActivityRecommendation(rec: {
   id: string
   recommendation: string
   confidence: number
-  reasoning: string
+  reasoningText: string
   analysisJson?: unknown
   plannedWorkout?: {
     id: string
@@ -34,7 +34,7 @@ function formatActivityRecommendation(rec: {
       description: planned.description || rec.recommendation,
       decision: rec.recommendation,
       confidence: rec.confidence,
-      reasoning: rec.reasoning,
+      reasoningText: rec.reasoningText,
       planned_workout_id: planned.id
     }
   }
@@ -53,7 +53,7 @@ function formatActivityRecommendation(rec: {
       description: modifications.description || rec.recommendation,
       decision: rec.recommendation,
       confidence: rec.confidence,
-      reasoning: rec.reasoning
+      reasoningText: rec.reasoningText
     }
   }
 
@@ -61,10 +61,10 @@ function formatActivityRecommendation(rec: {
     source: 'activity_recommendation' as const,
     recommendation_id: rec.id,
     title: rec.recommendation,
-    description: rec.reasoning,
+    description: rec.reasoningText,
     decision: rec.recommendation,
     confidence: rec.confidence,
-    reasoning: rec.reasoning
+    reasoningText: rec.reasoningText
   }
 }
 
