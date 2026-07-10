@@ -10,8 +10,14 @@ import { syncPlannedWorkoutToIntervals } from './intervals-sync'
 import { plannedWorkoutRepository } from './repositories/plannedWorkoutRepository'
 import { metabolicService } from './services/metabolicService'
 import { isNutritionTrackingEnabled } from './nutrition/feature'
-import { WorkoutConverter } from './workout-converter'
 import { sportSettingsRepository } from './repositories/sportSettingsRepository'
+import { createZoneProfileSnapshot } from '../../shared/structured-workout-contract'
+import { serializeCanonicalForIntervals } from './canonical-workout-serializer'
+import {
+  buildCanonicalPlannedWorkoutWriteData,
+  writeCanonicalPlannedWorkoutStructure
+} from './canonical-planned-workout-write'
+import { resolveWorkoutTargeting } from '../../trigger/utils/workout-targeting'
 
 export function normalizePlannedWorkoutDate(value: string | Date) {
   if (typeof value === 'string') {
@@ -37,17 +43,14 @@ async function buildWorkoutDoc(userId: string, workout: any, body: any) {
     select: { ftp: true }
   })
 
-  return WorkoutConverter.toIntervalsICU({
+  return serializeCanonicalForIntervals({
     title: body?.title || workout?.title || 'Workout',
     description: body?.description ?? workout?.description ?? '',
     type: intervalsType,
-    steps: structuredWorkout?.steps || [],
-    exercises: structuredWorkout?.exercises,
-    messages: structuredWorkout?.messages || [],
     ftp: user?.ftp || 250,
-    sportSettings: sportSettings || undefined,
-    generationSettingsSnapshot:
-      workout?.lastGenerationSettingsSnapshot || workout?.createdFromSettingsSnapshot || null
+    structure: structuredWorkout,
+    zoneProfileSnapshot:
+      (structuredWorkout as any)?.zoneProfileSnapshot || createZoneProfileSnapshot(sportSettings)
   })
 }
 
@@ -68,6 +71,41 @@ export async function createPlannedWorkoutForUser(userId: string, body: any) {
   }
 
   const forcedDate = normalizePlannedWorkoutDate(body.date)
+  const structureSettings = body.structuredWorkout
+    ? await sportSettingsRepository.getForActivityType(userId, body.type || 'Ride')
+    : null
+  const structureWrite = body.structuredWorkout
+    ? buildCanonicalPlannedWorkoutWriteData({
+        source: 'MANUAL_EDIT',
+        structure: body.structuredWorkout,
+        zoneProfileSnapshot: createZoneProfileSnapshot(structureSettings),
+        syncStatus: 'LOCAL_ONLY',
+        refs: {
+          ftp: Number(structureSettings?.ftp || 250),
+          lthr: Number(structureSettings?.lthr || 0),
+          maxHr: Number(structureSettings?.maxHr || 0),
+          thresholdPace: Number(structureSettings?.thresholdPace || 0)
+        },
+        fallbackOrder: resolveWorkoutTargeting(structureSettings).targetPolicy
+          .fallbackOrder as Array<'power' | 'heartRate' | 'pace' | 'rpe'>,
+        preservePlannedDuration: body.durationSec,
+        incrementRevision: false
+      })
+    : null
+  if (structureWrite?.canonical?.diagnostics?.length) {
+    throw createError({
+      statusCode: 422,
+      message: 'Structured workout has unresolved targets.',
+      data: { diagnostics: structureWrite.canonical.diagnostics }
+    })
+  }
+  if (body.structuredWorkout && !structureWrite?.canonical) {
+    throw createError({ statusCode: 400, message: 'Invalid structured workout' })
+  }
+  body = {
+    ...body,
+    ...(structureWrite ? structureWrite.data : {})
+  }
   const workoutDoc = await buildWorkoutDoc(userId, null, body)
   const { integration, importPlannedWorkouts } = await getPlannedWorkoutSyncSettings(userId)
 
@@ -96,6 +134,10 @@ export async function createPlannedWorkoutForUser(userId: string, body: any) {
     }
   }
 
+  if (structureWrite && syncStatus === 'SYNCED') {
+    delete (structureWrite.data as any).syncStatus
+  }
+
   const plannedWorkout = await plannedWorkoutRepository.create({
     userId,
     externalId,
@@ -111,7 +153,7 @@ export async function createPlannedWorkoutForUser(userId: string, body: any) {
     fuelingStrategy: body.fuelingStrategy || 'STANDARD',
     completed: false,
     syncStatus,
-    structuredWorkout: body.structuredWorkout ?? undefined,
+    ...(structureWrite ? structureWrite.data : {}),
     rawJson: intervalsWorkout || {}
   })
 
@@ -137,22 +179,57 @@ export async function updatePlannedWorkoutForUser(userId: string, workoutId: str
 
   const forcedDate = body.date ? normalizePlannedWorkoutDate(body.date) : undefined
   const { importPlannedWorkouts } = await getPlannedWorkoutSyncSettings(userId)
+  const structureSettings =
+    body.structuredWorkout !== undefined
+      ? await sportSettingsRepository.getForActivityType(
+          userId,
+          body.type || existing.type || 'Ride'
+        )
+      : null
+  const { targetPolicy } = resolveWorkoutTargeting(structureSettings || {})
+  const refs = {
+    ftp: Number(structureSettings?.ftp || 250),
+    lthr: Number(structureSettings?.lthr || 0),
+    maxHr: Number(structureSettings?.maxHr || 0),
+    thresholdPace: Number(structureSettings?.thresholdPace || 0)
+  }
 
-  const updated = await plannedWorkoutRepository.update(workoutId, userId, {
+  if (body.structuredWorkout !== undefined) {
+    await writeCanonicalPlannedWorkoutStructure({
+      plannedWorkoutId: workoutId,
+      source: 'MANUAL_EDIT',
+      structure: body.structuredWorkout,
+      zoneProfileSnapshot:
+        (existing.structuredWorkout as any)?.zoneProfileSnapshot ||
+        createZoneProfileSnapshot(structureSettings),
+      syncStatus: importPlannedWorkouts ? 'PENDING' : existing.syncStatus,
+      refs,
+      fallbackOrder: targetPolicy.fallbackOrder as Array<'power' | 'heartRate' | 'pace' | 'rpe'>,
+      preservePlannedDuration:
+        body.durationSec || body.duration_minutes
+          ? body.duration_minutes
+            ? body.duration_minutes * 60
+            : body.durationSec
+          : existing.durationSec
+    })
+  }
+
+  const updated = (await plannedWorkoutRepository.update(workoutId, userId, {
     ...(forcedDate && { date: forcedDate }),
     ...(body.title && { title: body.title }),
     ...(body.description !== undefined && { description: body.description }),
     ...(body.type && { type: body.type }),
     ...(body.startTime !== undefined && { startTime: body.startTime }),
-    ...(body.durationSec && { durationSec: body.durationSec }),
-    ...(body.duration_minutes && { durationSec: body.duration_minutes * 60 }),
-    ...(body.tss !== undefined && { tss: body.tss }),
-    ...(body.workIntensity !== undefined && { workIntensity: body.workIntensity }),
+    ...(body.durationSec && !body.structuredWorkout && { durationSec: body.durationSec }),
+    ...(body.duration_minutes &&
+      !body.structuredWorkout && { durationSec: body.duration_minutes * 60 }),
+    ...(body.tss !== undefined && !body.structuredWorkout && { tss: body.tss }),
+    ...(body.workIntensity !== undefined &&
+      !body.structuredWorkout && { workIntensity: body.workIntensity }),
     ...(body.fuelingStrategy !== undefined && { fuelingStrategy: body.fuelingStrategy }),
-    ...(body.structuredWorkout !== undefined && { structuredWorkout: body.structuredWorkout }),
     modifiedLocally: true,
-    ...(importPlannedWorkouts && { syncStatus: 'PENDING' })
-  })
+    ...(importPlannedWorkouts && !body.structuredWorkout && { syncStatus: 'PENDING' })
+  })) as any
 
   try {
     if (await isNutritionTrackingEnabled(userId)) {

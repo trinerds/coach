@@ -6,12 +6,11 @@ import {
   isIntervalsEventId,
   normalizeIntervalsSportType
 } from '../../../../utils/intervals'
-import { WorkoutConverter } from '../../../../utils/workout-converter'
 import { getServerSession } from '../../../../utils/session'
-import { sportSettingsRepository } from '../../../../utils/repositories/sportSettingsRepository'
 import { plannedWorkoutPublishRepository } from '../../../../utils/repositories/plannedWorkoutPublishRepository'
 import { buildStructurePublishFields } from '../../../../utils/planned-workout-structure-sync'
 import { publishPlannedWorkoutToRouvy } from '../../../../utils/rouvy-workout-publisher'
+import { serializeCanonicalForIntervals } from '../../../../utils/canonical-workout-serializer'
 
 export default defineEventHandler(async (event) => {
   const session = await getServerSession(event)
@@ -81,27 +80,17 @@ export default defineEventHandler(async (event) => {
   // Check if already published/synced for Intervals
   const isLocal = !existingExternalId
 
-  // Fetch sport settings to check preferences
-  const sportSettings = await sportSettingsRepository.getForActivityType(userId, intervalsType)
-
   // Prepare workout data
   let workoutDoc = ''
   if (workout.structuredWorkout) {
-    const workoutData = {
+    workoutDoc = serializeCanonicalForIntervals({
       title: workout.title,
       description: workout.description || '',
       type: intervalsType,
-      steps: (workout.structuredWorkout as any).steps || [],
-      exercises: (workout.structuredWorkout as any).exercises, // Add this
-      messages: (workout.structuredWorkout as any).messages || [],
       ftp: (workout.user as any).ftp || 250,
-      sportSettings: sportSettings || undefined,
-      generationSettingsSnapshot:
-        (workout as any).lastGenerationSettingsSnapshot ||
-        (workout as any).createdFromSettingsSnapshot ||
-        null
-    }
-    workoutDoc = WorkoutConverter.toIntervalsICU(workoutData)
+      structure: workout.structuredWorkout,
+      zoneProfileSnapshot: (workout.structuredWorkout as any)?.zoneProfileSnapshot
+    })
   }
 
   // Clean the description to ensure we don't append workout doc to an already dirty description

@@ -1,6 +1,9 @@
 import { getServerSession } from '../../../../utils/session'
 import { prisma } from '../../../../utils/db'
 import { z } from 'zod/v3'
+import { adaptStructuredWorkout } from '../../../../../shared/structured-workout-contract'
+import { buildTemplateStructureWriteData } from '../../../../utils/canonical-planned-workout-write'
+import { sportSettingsRepository } from '../../../../utils/repositories/sportSettingsRepository'
 
 const architectPatchSchema = z.object({
   name: z.string().optional(),
@@ -83,6 +86,22 @@ export default defineEventHandler(async (event) => {
     isPublic,
     blocks: incomingBlocks
   } = validation.data
+  for (const block of incomingBlocks) {
+    for (const week of block.weeks) {
+      for (const workout of week.workouts) {
+        if (!workout.structuredWorkout) continue
+        const canonical = adaptStructuredWorkout(workout.structuredWorkout, { source: 'TEMPLATE' })
+        if (!canonical || canonical.diagnostics?.length) {
+          throw createError({
+            statusCode: 422,
+            message: `Workout "${workout.title}" has unresolved target units.`,
+            data: { diagnostics: canonical?.diagnostics || [] }
+          })
+        }
+        workout.structuredWorkout = canonical
+      }
+    }
+  }
 
   return await prisma.$transaction(async (tx) => {
     // 1. Update Plan Level Meta
@@ -200,6 +219,19 @@ export default defineEventHandler(async (event) => {
 
         // 7. Iterate Workouts
         for (const woData of wData.workouts) {
+          const sportSettings = await sportSettingsRepository.getForActivityType(
+            userId,
+            woData.type || ''
+          )
+          const canonicalWrite = woData.structuredWorkout
+            ? buildTemplateStructureWriteData({
+                structure: woData.structuredWorkout,
+                sportSettings,
+                preservePlannedDuration: woData.durationSec
+              })
+            : null
+          const canonicalStructure = canonicalWrite?.canonical || null
+          const structureFields = canonicalWrite?.data || {}
           if (woData.id && !woData.id.startsWith('temp-')) {
             await tx.plannedWorkout.update({
               where: { id: woData.id },
@@ -212,7 +244,7 @@ export default defineEventHandler(async (event) => {
                 durationSec: woData.durationSec,
                 tss: woData.tss,
                 category: woData.category,
-                structuredWorkout: woData.structuredWorkout,
+                ...(canonicalStructure ? structureFields : {}),
                 modifiedLocally: true // Explicitly set if updating
               }
             })
@@ -231,7 +263,7 @@ export default defineEventHandler(async (event) => {
                 durationSec: woData.durationSec,
                 tss: woData.tss,
                 category: woData.category,
-                structuredWorkout: woData.structuredWorkout,
+                ...(canonicalStructure ? structureFields : {}),
                 managedBy: 'COACH_WATTS',
                 modifiedLocally: true
               }

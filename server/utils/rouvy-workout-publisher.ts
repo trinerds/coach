@@ -1,9 +1,9 @@
-import { WorkoutConverter } from './workout-converter'
 import { prisma } from './db'
 import { buildZonedDateTimeFromUtcDate } from './date'
 import { pushRouvyWorkout } from './rouvy'
 import { plannedWorkoutPublishRepository } from './repositories/plannedWorkoutPublishRepository'
 import { buildStructurePublishFields } from './planned-workout-structure-sync'
+import { serializeCanonicalDownload } from './canonical-workout-serializer'
 
 function buildRouvyFilename(title: string) {
   const basename = title
@@ -38,16 +38,13 @@ export async function publishPlannedWorkoutToRouvy(workoutId: string, userId: st
     throw createError({ statusCode: 400, message: 'ROUVY integration not found' })
   }
 
-  const structuredWorkout = workout.structuredWorkout as any
-  const zwoContent = WorkoutConverter.toZWO({
+  const zwoContent = serializeCanonicalDownload({
     title: workout.title,
     description: workout.description || '',
-    author: workout.user.name || 'Coach Wattz',
-    type: workout.type || 'Ride',
-    steps: structuredWorkout.steps || [],
-    messages: structuredWorkout.messages || [],
-    ftp: workout.user.ftp || 250
-  })
+    structure: workout.structuredWorkout,
+    ftp: workout.user.ftp || 250,
+    format: 'zwo'
+  }) as string
   const plannedAt = buildZonedDateTimeFromUtcDate(
     workout.date,
     workout.startTime,

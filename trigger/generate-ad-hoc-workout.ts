@@ -227,7 +227,13 @@ export const generateAdHocWorkoutTask = task({
       managedBy: plannedWorkout.managedBy
     })
 
-    // Trigger Structure Generation
+    // Trigger Structure Generation. The revision prevents any older job from
+    // replacing this newly requested structure.
+    const generation = await prisma.plannedWorkout.update({
+      where: { id: plannedWorkout.id },
+      data: { generationRevision: { increment: 1 } },
+      select: { generationRevision: true }
+    })
     const tags = structureGenerationRunTags({
       userId,
       plannedWorkoutId: plannedWorkout.id,
@@ -236,7 +242,8 @@ export const generateAdHocWorkoutTask = task({
     await tasks.trigger(
       'generate-structured-workout',
       {
-        plannedWorkoutId: plannedWorkout.id
+        plannedWorkoutId: plannedWorkout.id,
+        generationRevision: generation.generationRevision
       },
       {
         concurrencyKey: userId,

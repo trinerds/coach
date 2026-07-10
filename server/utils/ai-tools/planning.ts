@@ -1,7 +1,6 @@
 import { tool } from 'ai'
 import { z } from 'zod/v3'
 import { prisma } from '../../utils/db'
-import { generateStructuredWorkoutTask } from '../../../trigger/generate-structured-workout'
 import { adjustStructuredWorkoutTask } from '../../../trigger/adjust-structured-workout'
 import {
   syncPlannedWorkoutToIntervals,
@@ -47,6 +46,13 @@ import {
 } from '../structured-workout-persistence'
 import { publishTaskRunStartedEvent } from '../task-run-events'
 import { isPlannedWorkoutStructureJobInFlight } from '../trigger-check'
+import { enqueuePlannedWorkoutStructureGeneration } from '../planned-workout-structure-trigger'
+import {
+  adaptStructuredWorkout,
+  createZoneProfileSnapshot,
+  validateStructuredWorkoutLimits
+} from '../../../shared/structured-workout-contract'
+import { writeCanonicalPlannedWorkoutStructure } from '../../utils/canonical-planned-workout-write'
 
 const STEP_INTENT_VALUES = [
   'warmup',
@@ -65,6 +71,10 @@ const STEP_INTENT_VALUES = [
 
 const STRUCTURED_STEP_TYPE_VALUES = ['Warmup', 'Active', 'Rest', 'Cooldown'] as const
 const PRIMARY_TARGET_VALUES = ['power', 'heartRate', 'pace', 'rpe'] as const
+
+function getStructuredWorkoutLimitError(structure: unknown): string | null {
+  return validateStructuredWorkoutLimits(structure).at(0)?.message || null
+}
 
 function normalizeStructuredStepTypeInput(value: unknown) {
   if (typeof value !== 'string') return value
@@ -695,6 +705,8 @@ export const planningTools = (userId: string, timezone: string, aiSettings: AiSe
     }),
     needsApproval: async () => aiSettings.aiRequireToolApproval,
     execute: async ({ workout_id, structured_workout }) => {
+      const limitError = getStructuredWorkoutLimitError(structured_workout)
+      if (limitError) return { success: false, error: limitError }
       const existing = (await plannedWorkoutRepository.getById(workout_id, userId, {
         select: {
           id: true,
@@ -733,19 +745,31 @@ export const planningTools = (userId: string, timezone: string, aiSettings: AiSe
         targetFormatPolicy,
         workoutType: existing.type || ''
       })
-      const metrics = computeStructuredWorkoutMetrics(normalized, {
-        refs,
-        fallbackOrder: targetPolicy.fallbackOrder as Array<'power' | 'heartRate' | 'pace' | 'rpe'>
+      const normalizedLimitError = getStructuredWorkoutLimitError(normalized)
+      if (normalizedLimitError) return { success: false, error: normalizedLimitError }
+      const canonical = adaptStructuredWorkout(normalized, {
+        source: 'MANUAL_EDIT',
+        zoneProfileSnapshot: createZoneProfileSnapshot(sportSettings)
       })
+      if (!canonical || canonical.diagnostics?.length) {
+        return {
+          success: false,
+          error: 'Structure has unresolved target units.',
+          diagnostics: canonical?.diagnostics
+        }
+      }
 
-      const updated = (await plannedWorkoutRepository.update(workout_id, userId, {
-        durationSec: metrics.durationSec > 0 ? metrics.durationSec : undefined,
-        tss: metrics.tss > 0 ? metrics.tss : undefined,
-        workIntensity: metrics.workIntensity ?? undefined,
-        syncStatus: existing.syncStatus === 'LOCAL_ONLY' ? 'LOCAL_ONLY' : 'PENDING',
-        syncError: null,
-        ...buildStructureEditFields(normalized, 'USER')
-      })) as any
+      const write = await writeCanonicalPlannedWorkoutStructure({
+        plannedWorkoutId: workout_id,
+        source: 'MANUAL_EDIT',
+        structure: canonical,
+        zoneProfileSnapshot: canonical.zoneProfileSnapshot,
+        syncStatus: existing.syncStatus,
+        refs,
+        fallbackOrder: targetPolicy.fallbackOrder as Array<'power' | 'heartRate' | 'pace' | 'rpe'>,
+        preservePlannedDuration: existing.durationSec
+      })
+      const updated = write.workout!
 
       return {
         success: true,
@@ -798,6 +822,8 @@ export const planningTools = (userId: string, timezone: string, aiSettings: AiSe
         for (const operation of operations) {
           applyStructurePatchOperation(patched, operation)
         }
+        const limitError = getStructuredWorkoutLimitError(patched)
+        if (limitError) return { success: false, error: limitError }
 
         const sportSettings = await sportSettingsRepository.getForActivityType(
           userId,
@@ -819,19 +845,35 @@ export const planningTools = (userId: string, timezone: string, aiSettings: AiSe
           targetFormatPolicy,
           workoutType: existing.type || ''
         })
-        const metrics = computeStructuredWorkoutMetrics(normalized, {
-          refs,
-          fallbackOrder: targetPolicy.fallbackOrder as Array<'power' | 'heartRate' | 'pace' | 'rpe'>
+        const normalizedLimitError = getStructuredWorkoutLimitError(normalized)
+        if (normalizedLimitError) return { success: false, error: normalizedLimitError }
+        const canonical = adaptStructuredWorkout(normalized, {
+          source: 'MANUAL_EDIT',
+          zoneProfileSnapshot:
+            (existing.structuredWorkout as any)?.zoneProfileSnapshot ||
+            createZoneProfileSnapshot(sportSettings)
         })
+        if (!canonical || canonical.diagnostics?.length) {
+          return {
+            success: false,
+            error: 'Structure has unresolved target units.',
+            diagnostics: canonical?.diagnostics
+          }
+        }
 
-        const updated = (await plannedWorkoutRepository.update(workout_id, userId, {
-          durationSec: metrics.durationSec > 0 ? metrics.durationSec : undefined,
-          tss: metrics.tss > 0 ? metrics.tss : undefined,
-          workIntensity: metrics.workIntensity ?? undefined,
-          syncStatus: existing.syncStatus === 'LOCAL_ONLY' ? 'LOCAL_ONLY' : 'PENDING',
-          syncError: null,
-          ...buildStructureEditFields(normalized, 'USER')
-        })) as any
+        const write = await writeCanonicalPlannedWorkoutStructure({
+          plannedWorkoutId: workout_id,
+          source: 'MANUAL_EDIT',
+          structure: canonical,
+          zoneProfileSnapshot: canonical.zoneProfileSnapshot,
+          syncStatus: existing.syncStatus,
+          refs,
+          fallbackOrder: targetPolicy.fallbackOrder as Array<
+            'power' | 'heartRate' | 'pace' | 'rpe'
+          >,
+          preservePlannedDuration: existing.durationSec
+        })
+        const updated = write.workout!
 
         return {
           success: true,
@@ -990,21 +1032,14 @@ export const planningTools = (userId: string, timezone: string, aiSettings: AiSe
       let structureError: string | undefined
       if (args.generate_structure !== false) {
         try {
-          const handle = await generateStructuredWorkoutTask.trigger(
-            {
-              plannedWorkoutId: workout.id, // Pass plannedWorkoutId
-              targetingOverride: args.targeting_override || null,
-              quotaCheckedAtEnqueue: true
-            },
-            {
-              tags: [`user:${userId}`, `planned-workout:${workout.id}`],
-              concurrencyKey: userId
-            }
-          )
-          await publishTaskRunStartedEvent(userId, 'generate-structured-workout', handle, {
-            tags: [`user:${userId}`, `planned-workout:${workout.id}`]
+          const queued = await enqueuePlannedWorkoutStructureGeneration({
+            userId,
+            plannedWorkoutId: workout.id,
+            targetingOverride: args.targeting_override || null,
+            source: 'chat'
           })
-          runId = handle.id
+          if (queued.status !== 'queued') throw new Error(queued.error)
+          runId = queued.runId
         } catch (e) {
           console.error('Failed to trigger structured workout generation:', e)
           structureError = e instanceof Error ? e.message : String(e)
@@ -1089,22 +1124,15 @@ export const planningTools = (userId: string, timezone: string, aiSettings: AiSe
       let runId: string | undefined
       if (shouldRegenerateStructure) {
         try {
-          const handle = await generateStructuredWorkoutTask.trigger(
-            {
-              plannedWorkoutId: workout.id,
-              targetingOverride: args.targeting_override || null,
-              quotaCheckedAtEnqueue: true
-            },
-            {
-              tags: [`user:${userId}`, `planned-workout:${workout.id}`],
-              concurrencyKey: userId
-            }
-          )
-          await publishTaskRunStartedEvent(userId, 'generate-structured-workout', handle, {
-            tags: [`user:${userId}`, `planned-workout:${workout.id}`]
+          const queued = await enqueuePlannedWorkoutStructureGeneration({
+            userId,
+            plannedWorkoutId: workout.id,
+            targetingOverride: args.targeting_override || null,
+            source: 'chat'
           })
+          if (queued.status !== 'queued') throw new Error(queued.error)
           structureStatus = 'queued'
-          runId = handle.id
+          runId = queued.runId
         } catch (e) {
           console.error('Failed to trigger structured workout regeneration:', e)
           structureStatus = 'failed'
@@ -1271,6 +1299,11 @@ export const planningTools = (userId: string, timezone: string, aiSettings: AiSe
 
       // Trigger adjustment task
       try {
+        const generation = await prisma.plannedWorkout.update({
+          where: { id: workout_id },
+          data: { generationRevision: { increment: 1 } },
+          select: { generationRevision: true }
+        })
         const tags = structureGenerationRunTags({
           userId,
           plannedWorkoutId: workout_id,
@@ -1285,6 +1318,7 @@ export const planningTools = (userId: string, timezone: string, aiSettings: AiSe
               intensity: intensity
             },
             targetingOverride: targeting_override || null,
+            generationRevision: generation.generationRevision,
             quotaCheckedAtEnqueue: true
           },
           {
@@ -1328,29 +1362,17 @@ export const planningTools = (userId: string, timezone: string, aiSettings: AiSe
       await checkQuota(userId, 'generate_structured_workout')
 
       try {
-        const tags = structureGenerationRunTags({
+        const queued = await enqueuePlannedWorkoutStructureGeneration({
           userId,
           plannedWorkoutId: workout_id,
+          targetingOverride: targeting_override || null,
           source: 'chat'
         })
-        const handle = await generateStructuredWorkoutTask.trigger(
-          {
-            plannedWorkoutId: workout_id,
-            targetingOverride: targeting_override || null,
-            quotaCheckedAtEnqueue: true
-          },
-          {
-            tags,
-            concurrencyKey: userId
-          }
-        )
-        await publishTaskRunStartedEvent(userId, 'generate-structured-workout', handle, {
-          tags
-        })
+        if (queued.status !== 'queued') throw new Error(queued.error)
         return {
           success: true,
           workout_id,
-          run_id: handle.id,
+          run_id: queued.runId,
           message: 'Structure regeneration started.'
         }
       } catch (e) {

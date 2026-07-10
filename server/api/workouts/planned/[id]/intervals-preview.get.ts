@@ -1,7 +1,6 @@
 import { prisma } from '../../../../utils/db'
 import { getServerSession } from '../../../../utils/session'
-import { WorkoutConverter } from '../../../../utils/workout-converter'
-import { sportSettingsRepository } from '../../../../utils/repositories/sportSettingsRepository'
+import { serializeCanonicalForIntervals } from '../../../../utils/canonical-workout-serializer'
 
 export default defineEventHandler(async (event) => {
   const session = await getServerSession(event)
@@ -35,23 +34,13 @@ export default defineEventHandler(async (event) => {
     return { intervalsDescription: '', hasStructure: false }
   }
 
-  const sportSettings = await sportSettingsRepository.getForActivityType(userId, workout.type || '')
-
-  const workoutData = {
+  const intervalsDescription = serializeCanonicalForIntervals({
     title: workout.title,
     description: workout.description || '',
-    type: workout.type || '',
-    steps: (workout.structuredWorkout as any).steps || [],
-    exercises: (workout.structuredWorkout as any).exercises || [],
-    messages: (workout.structuredWorkout as any).messages || [],
+    type: workout.type,
     ftp: workout.user?.ftp || 250,
-    sportSettings: sportSettings || undefined,
-    generationSettingsSnapshot:
-      (workout as any).lastGenerationSettingsSnapshot ||
-      (workout as any).createdFromSettingsSnapshot ||
-      null
-  }
-
-  const intervalsDescription = WorkoutConverter.toIntervalsICU(workoutData)
+    structure: workout.structuredWorkout,
+    zoneProfileSnapshot: (workout.structuredWorkout as any)?.zoneProfileSnapshot
+  })
   return { intervalsDescription, hasStructure: true }
 })

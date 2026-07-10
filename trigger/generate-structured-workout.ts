@@ -4,7 +4,7 @@ import { generateStructuredAnalysis, buildConciseWorkoutSummary } from '../serve
 import { prisma } from '../server/utils/db'
 import { userReportsQueue } from './queues'
 import { syncPlannedWorkoutToIntervals } from '../server/utils/intervals-sync'
-import { WorkoutConverter } from '../server/utils/workout-converter'
+import { serializeCanonicalForIntervals } from '../server/utils/canonical-workout-serializer'
 import { workoutRepository } from '../server/utils/repositories/workoutRepository'
 import { sportSettingsRepository } from '../server/utils/repositories/sportSettingsRepository'
 import { getUserTimezone, getUserLocalDate } from '../server/utils/date'
@@ -21,6 +21,11 @@ import {
   WORKOUT_STRUCTURE_AI_MAX_RETRIES,
   WORKOUT_STRUCTURE_AI_TIMEOUT_MS
 } from '../server/utils/workout-ai-timeouts'
+import {
+  adaptStructuredWorkout,
+  createZoneProfileSnapshot,
+  validateStructuredWorkoutLimits
+} from '../shared/structured-workout-contract'
 import { enforceCyclingCadenceVariation, resolveCyclingCadence } from './utils/cadence'
 import {
   resolveWorkoutTargeting,
@@ -35,10 +40,8 @@ import {
   buildPlannedWorkoutSettingsSnapshot,
   buildPlannedWorkoutGenerationContext
 } from './utils/workout-targeting'
-import {
-  buildStructureEditFields,
-  buildStructurePublishFields
-} from '../server/utils/planned-workout-structure-sync'
+import { buildStructurePublishFields } from '../server/utils/planned-workout-structure-sync'
+import { writeCanonicalPlannedWorkoutStructure } from '../server/utils/canonical-planned-workout-write'
 import { publishActivityEvent } from '../server/utils/activity-realtime'
 import { normalizeSwimStructure } from '../server/utils/swim-structure'
 import { normalizeStructuredStrengthWorkout } from '../server/utils/strength-exercise-library'
@@ -762,6 +765,7 @@ export const generateStructuredWorkoutTask = task({
   run: async (payload: {
     plannedWorkoutId?: string
     workoutTemplateId?: string
+    generationRevision?: number
     targetingOverride?: WorkoutTargetingOverride | null
     generatorOverride?: StructuredWorkoutGeneratorMode | null
     quotaCheckedAtEnqueue?: boolean
@@ -1557,6 +1561,12 @@ OUTPUT JSON matching the schema.`
       totalTSS: Math.round(totalTSS * 100) / 100
     })
 
+    const structureLimitIssues = validateStructuredWorkoutLimits(structure)
+    if (structureLimitIssues.length > 0) {
+      throw new Error(
+        `Generated structured workout violates limits: ${structureLimitIssues[0]!.message}`
+      )
+    }
     const renderable = hasRenderableStructure(structure)
     if (renderable && totalDuration <= 0) {
       throw new Error('Generated structured workout has zero total duration')
@@ -1591,30 +1601,35 @@ OUTPUT JSON matching the schema.`
       contextProfile
     })
 
-    const updateData: any = {
-      ...buildStructureEditFields(structure, 'AI')
+    const canonicalStructure = adaptStructuredWorkout(structure, {
+      source: 'AI_GENERATION',
+      zoneProfileSnapshot: createZoneProfileSnapshot(sportSettings)
+    })
+    if (!canonicalStructure || canonicalStructure.diagnostics?.length) {
+      throw new Error('Generated workout contains unresolved target units')
     }
-    if (totalDistance > 0) updateData.distanceMeters = totalDistance
-    if (Number(workout.durationSec) > 0) updateData.durationSec = workout.durationSec
-    else if (totalDuration > 0) updateData.durationSec = totalDuration
-    if (totalTSS > 0) updateData.tss = Math.round(totalTSS)
-    updateData.lastGenerationSettingsSnapshot = settingsSnapshot
-    updateData.lastGenerationContext = generationContext
-    if (!(workout as any).createdFromSettingsSnapshot) {
-      updateData.createdFromSettingsSnapshot = settingsSnapshot
-    }
-
-    if (totalTSS > 0 && totalDuration > 0) {
-      const calculatedIntensity = Math.sqrt((36 * totalTSS) / totalDuration)
-      if (!isNaN(calculatedIntensity) && calculatedIntensity > 0) {
-        updateData.workIntensity = parseFloat(calculatedIntensity.toFixed(2))
-      }
-    }
-
     if (entityType === 'PlannedWorkout') {
-      const updatedWorkout = await (prisma as any).plannedWorkout.update({
-        where: { id: entityId },
-        data: updateData
+      const write = await writeCanonicalPlannedWorkoutStructure({
+        plannedWorkoutId: entityId,
+        source: 'AI_GENERATION',
+        structure: canonicalStructure,
+        zoneProfileSnapshot: canonicalStructure.zoneProfileSnapshot,
+        expectedGenerationRevision: payload.generationRevision,
+        syncStatus: workout.syncStatus,
+        refs: { ftp, lthr, maxHr, thresholdPace },
+        fallbackOrder: targetPolicy.fallbackOrder as Array<'power' | 'heartRate' | 'pace' | 'rpe'>,
+        preservePlannedDuration: workout.durationSec,
+        extra: {
+          lastGenerationSettingsSnapshot: settingsSnapshot,
+          lastGenerationContext: generationContext,
+          ...(!(workout as any).createdFromSettingsSnapshot
+            ? { createdFromSettingsSnapshot: settingsSnapshot }
+            : {})
+        }
+      })
+      if (write.stale) return { success: false, stale: true, entityId, entityType }
+      const updatedWorkout = await (prisma as any).plannedWorkout.findUnique({
+        where: { id: entityId }
       })
       await publishActivityEvent(updatedWorkout.userId, {
         scope: 'calendar',
@@ -1648,18 +1663,14 @@ OUTPUT JSON matching the schema.`
           logger.log('Publishing local structured workout to Intervals.icu', {
             plannedWorkoutId: entityId
           })
-          const workoutData = {
+          const workoutDoc = serializeCanonicalForIntervals({
             title: updatedWorkout.title,
             description: updatedWorkout.description || '',
-            type: updatedWorkout.type || '',
-            steps: structure.steps || [],
-            exercises: structure.exercises,
-            messages: [],
+            type: updatedWorkout.type,
             ftp: workout.user.ftp || 250,
-            sportSettings: sportSettings || undefined,
-            generationSettingsSnapshot: settingsSnapshot
-          }
-          const workoutDoc = WorkoutConverter.toIntervalsICU(workoutData)
+            structure: canonicalStructure,
+            zoneProfileSnapshot: canonicalStructure.zoneProfileSnapshot
+          })
           const syncResult = await syncPlannedWorkoutToIntervals(
             'CREATE',
             {
@@ -1687,7 +1698,7 @@ OUTPUT JSON matching the schema.`
               where: { id: entityId },
               data: {
                 ...(syncResult.result?.id && { externalId: String(syncResult.result.id) }),
-                ...buildStructurePublishFields(structure),
+                ...buildStructurePublishFields(canonicalStructure),
                 syncStatus: 'SYNCED',
                 lastSyncedAt: new Date(),
                 syncError: null
@@ -1717,18 +1728,14 @@ OUTPUT JSON matching the schema.`
         }
       } else {
         logger.log('Syncing updated structure to Intervals.icu', { plannedWorkoutId: entityId })
-        const workoutData = {
+        const workoutDoc = serializeCanonicalForIntervals({
           title: updatedWorkout.title,
           description: updatedWorkout.description || '',
-          type: updatedWorkout.type || '',
-          steps: structure.steps || [],
-          exercises: structure.exercises,
-          messages: [],
+          type: updatedWorkout.type,
           ftp: workout.user.ftp || 250,
-          sportSettings: sportSettings || undefined,
-          generationSettingsSnapshot: settingsSnapshot
-        }
-        const workoutDoc = WorkoutConverter.toIntervalsICU(workoutData)
+          structure: canonicalStructure,
+          zoneProfileSnapshot: canonicalStructure.zoneProfileSnapshot
+        })
         const syncResult = await syncPlannedWorkoutToIntervals(
           'UPDATE',
           {
@@ -1755,7 +1762,7 @@ OUTPUT JSON matching the schema.`
           const syncedWorkout = await (prisma as any).plannedWorkout.update({
             where: { id: entityId },
             data: {
-              ...buildStructurePublishFields(structure),
+              ...buildStructurePublishFields(canonicalStructure),
               syncStatus: 'SYNCED',
               lastSyncedAt: new Date(),
               syncError: null
@@ -1783,10 +1790,13 @@ OUTPUT JSON matching the schema.`
     } else {
       // WorkoutTemplate - Strictly filter fields
       const templateData = {
-        structuredWorkout: structure as any,
-        durationSec: totalDuration > 0 ? totalDuration : updateData.durationSec,
-        tss: updateData.tss,
-        workIntensity: updateData.workIntensity
+        structuredWorkout: canonicalStructure as any,
+        durationSec: totalDuration > 0 ? totalDuration : null,
+        tss: totalTSS > 0 ? Math.round(totalTSS) : null,
+        workIntensity:
+          totalTSS > 0 && totalDuration > 0
+            ? parseFloat(Math.sqrt((36 * totalTSS) / totalDuration).toFixed(2))
+            : null
       }
 
       const updatedTemplate = await (prisma as any).workoutTemplate.update({

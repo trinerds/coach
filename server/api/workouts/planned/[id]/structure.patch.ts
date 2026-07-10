@@ -4,16 +4,16 @@ import { WorkoutParser } from '../../../../utils/workout-parser'
 import { syncPlannedWorkoutToIntervals } from '../../../../utils/intervals-sync'
 import { sportSettingsRepository } from '../../../../utils/repositories/sportSettingsRepository'
 import { resolveWorkoutTargeting } from '../../../../../trigger/utils/workout-targeting'
-import {
-  normalizeStructuredWorkoutForPersistence,
-  computeStructuredWorkoutMetrics,
-  getPendingSyncStatus
-} from '../../../../utils/structured-workout-persistence'
-import {
-  buildStructureEditFields,
-  buildStructurePublishFields
-} from '../../../../utils/planned-workout-structure-sync'
+import { normalizeStructuredWorkoutForPersistence } from '../../../../utils/structured-workout-persistence'
+import { buildStructurePublishFields } from '../../../../utils/planned-workout-structure-sync'
 import { normalizeStructuredStrengthWorkout } from '../../../../utils/strength-exercise-library'
+import {
+  adaptStructuredWorkout,
+  createZoneProfileSnapshot,
+  validateStructuredWorkoutLimits
+} from '../../../../../shared/structured-workout-contract'
+import { serializeCanonicalForIntervals } from '../../../../utils/canonical-workout-serializer'
+import { writeCanonicalPlannedWorkoutStructure } from '../../../../utils/canonical-planned-workout-write'
 
 export default defineEventHandler(async (event) => {
   const session = await getServerSession(event)
@@ -33,8 +33,7 @@ export default defineEventHandler(async (event) => {
     steps: providedSteps,
     exercises: providedExercises,
     blocks: providedBlocks,
-    durationSec: providedDurationSec,
-    tss: providedTss
+    durationSec: providedDurationSec
   } = body
 
   if (
@@ -82,6 +81,16 @@ export default defineEventHandler(async (event) => {
         }
       : null
 
+  const incomingStructure = rawStrengthStructure || { steps }
+  const incomingLimitIssues = validateStructuredWorkoutLimits(incomingStructure)
+  if (incomingLimitIssues.length > 0) {
+    throw createError({
+      statusCode: 400,
+      message: incomingLimitIssues[0]!.message,
+      data: { issues: incomingLimitIssues }
+    })
+  }
+
   let normalizedStrengthStructure: any = null
   if (rawStrengthStructure) {
     try {
@@ -114,7 +123,6 @@ export default defineEventHandler(async (event) => {
     ...(Array.isArray(providedSteps) || typeof text === 'string' ? { steps } : {}),
     ...(normalizedStrengthStructure || {})
   }
-  const syncText = typeof text === 'string' ? text : WorkoutParser.toIntervalsICU(steps)
   const sportSettings = await sportSettingsRepository.getForActivityType(userId, workout.type || '')
   const { targetPolicy, targetFormatPolicy } = resolveWorkoutTargeting(sportSettings)
   const refs = {
@@ -132,6 +140,27 @@ export default defineEventHandler(async (event) => {
     targetFormatPolicy,
     workoutType: workout.type || ''
   })
+  const canonical = adaptStructuredWorkout(normalized, {
+    source: 'MANUAL_EDIT',
+    zoneProfileSnapshot:
+      (workout.structuredWorkout as any)?.zoneProfileSnapshot ||
+      createZoneProfileSnapshot(sportSettings)
+  })
+  if (!canonical || canonical.diagnostics?.length) {
+    throw createError({
+      statusCode: 422,
+      message: 'Structure has unresolved targets. Declare target units before saving.',
+      data: { diagnostics: canonical?.diagnostics || [] }
+    })
+  }
+  const normalizedLimitIssues = validateStructuredWorkoutLimits(canonical)
+  if (normalizedLimitIssues.length > 0) {
+    throw createError({
+      statusCode: 400,
+      message: normalizedLimitIssues[0]!.message,
+      data: { issues: normalizedLimitIssues }
+    })
+  }
 
   if ((normalized.steps?.length ?? 0) > 0) {
     console.log('[StructurePatch] Normalized sample step metrics:', {
@@ -142,33 +171,32 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const metrics = computeStructuredWorkoutMetrics(normalized, {
-    refs,
-    fallbackOrder: targetPolicy.fallbackOrder as Array<'power' | 'heartRate' | 'pace' | 'rpe'>
+  // Publish the same normalized representation we persist. Sending raw editor text
+  // here allowed Intervals to execute a different workout from the local renderer.
+  const syncText = serializeCanonicalForIntervals({
+    title: workout.title,
+    description: workout.description || '',
+    type: workout.type,
+    ftp: (workout.user as any)?.ftp || 250,
+    structure: canonical,
+    zoneProfileSnapshot: canonical.zoneProfileSnapshot
   })
 
   // 3. Update DB
-  const updatedWorkout = await prisma.plannedWorkout.update({
-    where: { id },
-    data: {
-      durationSec:
-        Number.isFinite(Number(providedDurationSec)) && Number(providedDurationSec) > 0
-          ? Math.round(Number(providedDurationSec))
-          : metrics.durationSec > 0
-            ? metrics.durationSec
-            : workout.durationSec,
-      tss:
-        Number.isFinite(Number(providedTss)) && Number(providedTss) >= 0
-          ? Number(providedTss)
-          : metrics.tss > 0
-            ? metrics.tss
-            : workout.tss,
-      workIntensity: metrics.workIntensity ?? workout.workIntensity,
-      syncStatus: getPendingSyncStatus(workout.syncStatus),
-      syncError: null,
-      ...buildStructureEditFields(normalized, 'USER')
-    }
+  const persisted = await writeCanonicalPlannedWorkoutStructure({
+    plannedWorkoutId: id,
+    source: 'MANUAL_EDIT',
+    structure: canonical,
+    zoneProfileSnapshot: canonical.zoneProfileSnapshot,
+    syncStatus: workout.syncStatus,
+    refs,
+    fallbackOrder: targetPolicy.fallbackOrder as Array<'power' | 'heartRate' | 'pace' | 'rpe'>,
+    preservePlannedDuration:
+      Number.isFinite(Number(providedDurationSec)) && Number(providedDurationSec) > 0
+        ? Math.round(Number(providedDurationSec))
+        : workout.durationSec
   })
+  const updatedWorkout = persisted.workout!
 
   // 4. If already synced to Intervals, push update
   if (workout.syncStatus === 'SYNCED') {

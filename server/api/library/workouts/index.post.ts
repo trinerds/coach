@@ -12,6 +12,7 @@ import {
   parseLibraryScope
 } from '../../../utils/library-access'
 import { normalizeStructuredStrengthWorkout } from '../../../utils/strength-exercise-library'
+import { adaptStructuredWorkout } from '../../../../shared/structured-workout-contract'
 
 const workoutTemplateSchema = z.object({
   title: z.string().min(1),
@@ -60,6 +61,17 @@ export default defineEventHandler(async (event) => {
         message: error?.message || 'Invalid strength exercise payload'
       })
     }
+  }
+  if (data.structuredWorkout) {
+    const canonical = adaptStructuredWorkout(data.structuredWorkout, { source: 'TEMPLATE' })
+    if (!canonical || canonical.diagnostics?.length) {
+      throw createError({
+        statusCode: 422,
+        message: 'Template structure has unresolved target units.',
+        data: { diagnostics: canonical?.diagnostics || [] }
+      })
+    }
+    data.structuredWorkout = canonical
   }
 
   if (data.folderId) {

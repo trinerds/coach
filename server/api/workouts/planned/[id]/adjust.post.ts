@@ -33,6 +33,11 @@ export default defineEventHandler(async (event) => {
   }
 
   const userId = (session.user as any).id
+  const generation = await prisma.plannedWorkout.update({
+    where: { id: workout.id },
+    data: { generationRevision: { increment: 1 } },
+    select: { generationRevision: true }
+  })
   const tags = structureGenerationRunTags({
     userId,
     plannedWorkoutId: workout.id,
@@ -42,7 +47,8 @@ export default defineEventHandler(async (event) => {
     'adjust-structured-workout',
     {
       plannedWorkoutId: workout.id,
-      adjustments
+      adjustments,
+      generationRevision: generation.generationRevision
     },
     {
       concurrencyKey: userId,

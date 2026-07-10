@@ -637,6 +637,11 @@ Return valid JSON matching the schema provided.`
           }
         )
         for (const workoutId of workoutIdsToStructure) {
+          const generation = await prisma.plannedWorkout.update({
+            where: { id: workoutId },
+            data: { generationRevision: { increment: 1 } },
+            select: { generationRevision: true }
+          })
           const tags = structureGenerationRunTags({
             userId,
             plannedWorkoutId: workoutId,
@@ -644,7 +649,7 @@ Return valid JSON matching the schema provided.`
           })
           await tasks.trigger(
             'generate-structured-workout',
-            { plannedWorkoutId: workoutId },
+            { plannedWorkoutId: workoutId, generationRevision: generation.generationRevision },
             { tags, concurrencyKey: userId }
           )
         }

@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 import { v4 as uuidv4 } from 'uuid'
+import { buildLegacyAdapterWriteData } from '../../utils/canonical-planned-workout-write'
 
 /**
  * UserUniverseImporter:
@@ -335,6 +336,13 @@ export class UserUniverseImporter {
     if (universe.activities?.plannedWorkouts) {
       for (const pw of universe.activities.plannedWorkouts) {
         const { publishTargets, ...pwData } = pw
+        if (pwData.structuredWorkout) {
+          const legacyWrite = buildLegacyAdapterWriteData({
+            structure: pwData.structuredWorkout,
+            preservePlannedDuration: pwData.durationSec
+          })
+          Object.assign(pwData, legacyWrite.data)
+        }
         await tx.plannedWorkout.create({ data: pwData })
         if (publishTargets) {
           for (const t of publishTargets) await tx.plannedWorkoutPublishTarget.create({ data: t })

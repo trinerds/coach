@@ -6,6 +6,12 @@ import { mergeWorkoutTags } from './workout-tags'
 import { WorkoutConverter } from './workout-converter'
 import { WorkoutParser } from './workout-parser'
 import {
+  adaptStructuredWorkout,
+  createZoneProfileSnapshot,
+  paceToMps,
+  type ZoneProfileSnapshot
+} from '../../shared/structured-workout-contract'
+import {
   getSwimStructureStats,
   normalizeSwimStructure,
   shouldReparseSwimDescription
@@ -740,8 +746,8 @@ export async function fetchIntervalsAthleteProfile(integration: Integration) {
       'power',
       currentFtp
     )
-    // Pace zones might be complex (units vary), but if provided we try to map them
-    // Assuming pace zones are also "max" values if in array
+    // Intervals profile pace-zone boundaries are speeds in metres/minute. Convert at
+    // this provider boundary; downstream code only receives canonical m/s values.
     const currentPaceZones = convertIntervalsZones(s.pace_zones, s.pace_zone_names, 'pace')
 
     // Extended Settings
@@ -762,6 +768,8 @@ export async function fetchIntervalsAthleteProfile(integration: Integration) {
       maxHr: currentMaxHr,
       hrZones: currentHrZones,
       powerZones: currentPowerZones,
+      paceZones: currentPaceZones,
+      paceZoneUnit: 'm/s',
       thresholdPace: currentThresholdPace,
 
       // Extended Power
@@ -1338,7 +1346,11 @@ function normalizeWorkoutSteps(steps: any[]): any[] {
   })
 }
 
-export function normalizeIntervalsPlannedWorkout(event: IntervalsPlannedWorkout, userId: string) {
+export function normalizeIntervalsPlannedWorkout(
+  event: IntervalsPlannedWorkout,
+  userId: string,
+  zoneProfileSnapshot?: ZoneProfileSnapshot
+) {
   // Intervals.icu sometimes uses different field names for planned metrics depending on the source/type
   const durationSec = event.duration ?? event.moving_time ?? event.workout_doc?.duration ?? null
   const tss = event.tss ?? event.icu_training_load ?? null
@@ -1435,6 +1447,12 @@ export function normalizeIntervalsPlannedWorkout(event: IntervalsPlannedWorkout,
 
   const localDatePart = event.start_date_local?.split('T')[0] || event.start_date_local
 
+  const canonicalStructure = structuredWorkout
+    ? adaptStructuredWorkout(structuredWorkout, {
+        source: 'INTERVALS_IMPORT',
+        zoneProfileSnapshot: zoneProfileSnapshot || createZoneProfileSnapshot({})
+      })
+    : undefined
   const result = {
     userId,
     externalId: String(event.id), // Convert to string
@@ -1458,7 +1476,7 @@ export function normalizeIntervalsPlannedWorkout(event: IntervalsPlannedWorkout,
     distanceMeters: distance ? Math.round(distance) : null,
     tss: tss ? Math.round(tss * 10) / 10 : null,
     workIntensity: workIntensity ? Math.round(workIntensity * 100) / 100 : null,
-    structuredWorkout,
+    structuredWorkout: canonicalStructure,
     completed: false,
     managedBy: isCoachWatts ? 'COACH_WATTS' : 'USER',
     rawJson: event
@@ -1468,7 +1486,13 @@ export function normalizeIntervalsPlannedWorkout(event: IntervalsPlannedWorkout,
   if (!structuredWorkout && isGym && event.description) {
     const parsedExercises = WorkoutConverter.parseIntervalsGymDescription(event.description || '')
     if (parsedExercises.length > 0) {
-      result.structuredWorkout = { exercises: parsedExercises, steps: [] }
+      result.structuredWorkout = adaptStructuredWorkout(
+        { exercises: parsedExercises, steps: [] },
+        {
+          source: 'INTERVALS_IMPORT',
+          zoneProfileSnapshot: zoneProfileSnapshot || createZoneProfileSnapshot({})
+        }
+      )
     }
   }
 
@@ -1836,9 +1860,13 @@ function convertIntervalsZones(
       // The calculation above will result in a very high watt number (e.g. 2000W+), which is fine.
     }
 
-    // Handle Pace (placeholder logic as units vary significantly - min/km vs m/s)
-    // If we receive raw values, we map them as is for now.
-    // Ideally we'd normalize to m/s if they are in seconds/100m or similar.
+    if (type === 'pace') {
+      // Intervals.icu profile boundaries are metres/minute. Do not infer by magnitude:
+      // the provider contract is declared here and the returned value is canonical m/s.
+      const canonical = paceToMps(rawValue, 'm/min')
+      if (canonical === null) continue
+      max = canonical
+    }
 
     const name: string = (names && names[i]) || `Zone ${i + 1}`
 

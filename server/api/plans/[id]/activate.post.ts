@@ -4,6 +4,8 @@ import { plannedWorkoutRepository } from '../../../utils/repositories/plannedWor
 import { getServerSession } from '../../../utils/session'
 import { tasks } from '@trigger.dev/sdk/v3'
 import { getUserTimezone, getUserLocalDate, getStartOfDayUTC } from '../../../utils/date'
+import { sportSettingsRepository } from '../../../utils/repositories/sportSettingsRepository'
+import { buildTemplateStructureWriteData } from '../../../utils/canonical-planned-workout-write'
 
 export default defineEventHandler(async (event) => {
   const session = await getServerSession(event)
@@ -65,6 +67,29 @@ export default defineEventHandler(async (event) => {
 
   // 2. Handle Template vs Draft
   if (plan.isTemplate) {
+    const settingsByType = new Map<string, any>()
+    for (const block of plan.blocks) {
+      for (const week of block.weeks) {
+        for (const workout of week.workouts) {
+          const type = workout.type || 'Ride'
+          if (!settingsByType.has(type)) {
+            settingsByType.set(type, await sportSettingsRepository.getForActivityType(userId, type))
+          }
+        }
+      }
+    }
+
+    const templateStructureFields = (workout: any) => {
+      if (!workout.structuredWorkout) return {}
+      const settings = settingsByType.get(workout.type || 'Ride') || {}
+      return buildTemplateStructureWriteData({
+        structure: workout.structuredWorkout,
+        sportSettings: settings,
+        preservePlannedDuration: workout.durationSec,
+        syncStatus: 'LOCAL_ONLY'
+      }).data
+    }
+
     // Clone the template into a new ACTIVE plan
     const newPlan = await trainingPlanRepository.create({
       userId,
@@ -110,15 +135,16 @@ export default defineEventHandler(async (event) => {
                   focus: week.focus,
                   workouts: {
                     create: week.workouts.map((workout: any) => {
+                      const structureFields = templateStructureFields(workout)
                       // Template stores relative dayIndex (0-6, Mon-Sun)
-                      let dayOffset = 0
-                      if (workout.dayIndex !== null && workout.dayIndex !== undefined) {
-                        dayOffset = workout.dayIndex
-                      } else {
-                        // Fallback for older templates using epoch-date hack
-                        const jsDay = new Date(workout.date).getDay() // 0=Sun, 1=Mon
-                        dayOffset = jsDay === 0 ? 6 : jsDay - 1
-                      }
+                      const dayOffset =
+                        workout.dayIndex !== null && workout.dayIndex !== undefined
+                          ? workout.dayIndex
+                          : (() => {
+                              // Fallback for older templates using epoch-date hack
+                              const jsDay = new Date(workout.date).getDay() // 0=Sun, 1=Mon
+                              return jsDay === 0 ? 6 : jsDay - 1
+                            })()
 
                       const workoutDate = new Date(weekStartDate)
                       workoutDate.setUTCDate(workoutDate.getUTCDate() + dayOffset)
@@ -133,11 +159,7 @@ export default defineEventHandler(async (event) => {
                         description: workout.description,
                         type: workout.type,
                         category: workout.category,
-                        durationSec: workout.durationSec,
-                        distanceMeters: workout.distanceMeters,
-                        tss: workout.tss,
-                        workIntensity: workout.workIntensity,
-                        structuredWorkout: workout.structuredWorkout,
+                        ...structureFields,
                         completionStatus: 'PENDING'
                       }
                     })

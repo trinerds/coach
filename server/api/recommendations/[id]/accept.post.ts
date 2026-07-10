@@ -183,6 +183,11 @@ export default defineEventHandler(async (event) => {
   // Trigger regeneration of structured workout based on the new description/title/params.
   // The generation task is responsible for syncing the final structure to Intervals.
   if (requiresStructure) {
+    const generation = await prisma.plannedWorkout.update({
+      where: { id: targetPlannedWorkoutId },
+      data: { generationRevision: { increment: 1 } },
+      select: { generationRevision: true }
+    })
     const tags = structureGenerationRunTags({
       userId,
       plannedWorkoutId: targetPlannedWorkoutId,
@@ -191,7 +196,8 @@ export default defineEventHandler(async (event) => {
     await tasks.trigger(
       'generate-structured-workout',
       {
-        plannedWorkoutId: targetPlannedWorkoutId
+        plannedWorkoutId: targetPlannedWorkoutId,
+        generationRevision: generation.generationRevision
       },
       {
         concurrencyKey: userId,

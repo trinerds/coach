@@ -2,6 +2,7 @@ import { z } from 'zod/v3'
 import { getServerSession } from '../../../../utils/session'
 import { prisma } from '../../../../utils/db'
 import { toPrismaNullableJsonValue } from '../../../../utils/prisma-json'
+import { adaptStructuredWorkout } from '../../../../../shared/structured-workout-contract'
 
 const importPlanSchema = z.object({
   folderId: z.string().nullable().optional()
@@ -145,7 +146,11 @@ export default defineEventHandler(async (event) => {
                     workIntensity: workout.workIntensity,
                     rawJson: toPrismaNullableJsonValue(workout.rawJson),
                     modifiedLocally: true,
-                    structuredWorkout: toPrismaNullableJsonValue(workout.structuredWorkout),
+                    structuredWorkout: toPrismaNullableJsonValue(
+                      workout.structuredWorkout
+                        ? adaptStructuredWorkout(workout.structuredWorkout, { source: 'TEMPLATE' })
+                        : null
+                    ),
                     targetArea: workout.targetArea,
                     managedBy: 'COACH_WATTS',
                     fuelingStrategy: workout.fuelingStrategy,

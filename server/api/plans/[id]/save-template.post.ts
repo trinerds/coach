@@ -1,5 +1,7 @@
 import { getServerSession } from '../../../utils/session'
 import { prisma } from '../../../utils/db'
+import { sportSettingsRepository } from '../../../utils/repositories/sportSettingsRepository'
+import { buildTemplateStructureWriteData } from '../../../utils/canonical-planned-workout-write'
 
 export default defineEventHandler(async (event) => {
   const session = await getServerSession(event)
@@ -42,6 +44,18 @@ export default defineEventHandler(async (event) => {
 
   if (plan.userId !== userId) {
     throw createError({ statusCode: 403, message: 'Not authorized' })
+  }
+
+  const settingsByType = new Map<string, any>()
+  for (const block of plan.blocks) {
+    for (const week of block.weeks) {
+      for (const workout of week.workouts) {
+        const type = workout.type || 'Ride'
+        if (!settingsByType.has(type)) {
+          settingsByType.set(type, await sportSettingsRepository.getForActivityType(userId, type))
+        }
+      }
+    }
   }
 
   const template = await (prisma as any).$transaction(async (tx: any) => {
@@ -112,6 +126,15 @@ export default defineEventHandler(async (event) => {
         })
 
         for (const workout of week.workouts) {
+          const settings = settingsByType.get(workout.type || 'Ride') || {}
+          const structureFields = workout.structuredWorkout
+            ? buildTemplateStructureWriteData({
+                structure: workout.structuredWorkout,
+                sportSettings: settings,
+                preservePlannedDuration: workout.durationSec,
+                syncStatus: 'LOCAL_ONLY'
+              }).data
+            : {}
           const workoutDate = new Date(workout.date)
           const jsDay = workoutDate.getDay()
           const dayIndex = jsDay === 0 ? 6 : jsDay - 1
@@ -128,11 +151,7 @@ export default defineEventHandler(async (event) => {
               description: workout.description,
               type: workout.type,
               category: workout.category,
-              durationSec: workout.durationSec,
-              distanceMeters: workout.distanceMeters,
-              tss: workout.tss,
-              workIntensity: workout.workIntensity,
-              structuredWorkout: workout.structuredWorkout as any,
+              ...structureFields,
               completionStatus: 'PENDING',
               managedBy: 'COACH_WATTS'
             }

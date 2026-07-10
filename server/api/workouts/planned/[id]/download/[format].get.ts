@@ -1,6 +1,6 @@
 import { prisma } from '../../../../../utils/db'
-import { WorkoutConverter } from '../../../../../utils/workout-converter'
 import { getServerSession } from '../../../../../utils/session'
+import { serializeCanonicalDownload } from '../../../../../utils/canonical-workout-serializer'
 
 export default defineEventHandler(async (event) => {
   const session = await getServerSession(event)
@@ -9,9 +9,9 @@ export default defineEventHandler(async (event) => {
   }
 
   const id = getRouterParam(event, 'id')
-  const format = getRouterParam(event, 'format') // 'zwo' or 'fit'
+  const format = getRouterParam(event, 'format')
 
-  if (!id || !format || !['zwo', 'fit'].includes(format)) {
+  if (!id || !format || !['zwo', 'fit', 'mrc', 'erg'].includes(format)) {
     throw createError({ statusCode: 400, message: 'Invalid request' })
   }
 
@@ -26,37 +26,52 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, message: 'Workout not found or has no structure' })
   }
 
-  const workoutData = {
-    title: workout.title,
-    description: workout.description || '',
-    author: 'Coach Wattz',
-    steps: (workout.structuredWorkout as any).steps,
-    messages: (workout.structuredWorkout as any).messages,
-    ftp: workout.user.ftp || 250
-  }
-
   let fileData: string | Uint8Array
   let contentType: string
   let fileExt: string
 
   switch (format) {
     case 'zwo':
-      fileData = WorkoutConverter.toZWO(workoutData)
+      fileData = serializeCanonicalDownload({
+        title: workout.title,
+        description: workout.description || '',
+        ftp: workout.user.ftp,
+        structure: workout.structuredWorkout,
+        format
+      })
       contentType = 'application/xml'
       fileExt = 'zwo'
       break
     case 'fit':
-      fileData = WorkoutConverter.toFIT(workoutData)
+      fileData = serializeCanonicalDownload({
+        title: workout.title,
+        description: workout.description || '',
+        ftp: workout.user.ftp,
+        structure: workout.structuredWorkout,
+        format
+      })
       contentType = 'application/octet-stream'
       fileExt = 'fit'
       break
     case 'mrc':
-      fileData = WorkoutConverter.toMRC(workoutData)
+      fileData = serializeCanonicalDownload({
+        title: workout.title,
+        description: workout.description || '',
+        ftp: workout.user.ftp,
+        structure: workout.structuredWorkout,
+        format
+      })
       contentType = 'text/plain'
       fileExt = 'mrc'
       break
     case 'erg':
-      fileData = WorkoutConverter.toERG(workoutData)
+      fileData = serializeCanonicalDownload({
+        title: workout.title,
+        description: workout.description || '',
+        ftp: workout.user.ftp,
+        structure: workout.structuredWorkout,
+        format
+      })
       contentType = 'text/plain'
       fileExt = 'erg'
       break
@@ -68,7 +83,7 @@ export default defineEventHandler(async (event) => {
   setResponseHeader(
     event,
     'Content-Disposition',
-    `attachment; filename="${workoutData.title.replace(/[^a-z0-9]/gi, '_')}.${fileExt}"`
+    `attachment; filename="${workout.title.replace(/[^a-z0-9]/gi, '_')}.${fileExt}"`
   )
 
   return fileData

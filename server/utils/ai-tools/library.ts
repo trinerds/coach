@@ -1,6 +1,7 @@
 import { z } from 'zod/v3'
 import { prisma } from '../db'
 import { getLibraryOwnerScope, groupLibraryItemsByOwner } from '../library-access'
+import { adaptStructuredWorkout } from '../../../shared/structured-workout-contract'
 
 export const libraryTools = (userId: string, actorUserId: string = userId) => ({
   save_to_workout_library: {
@@ -22,10 +23,21 @@ export const libraryTools = (userId: string, actorUserId: string = userId) => ({
         const ownerUserId =
           args.ownerScope === 'athlete' || actorUserId === userId ? userId : actorUserId
         const { ownerScope, ...templateData } = args
+        const canonical = adaptStructuredWorkout(templateData.structuredWorkout, {
+          source: 'TEMPLATE'
+        })
+        if (!canonical || canonical.diagnostics?.length) {
+          return {
+            success: false,
+            message: 'Template has unresolved target units.',
+            diagnostics: canonical?.diagnostics
+          }
+        }
         const template = await (prisma as any).workoutTemplate.create({
           data: {
             userId: ownerUserId,
             ...templateData,
+            structuredWorkout: canonical,
             tags: templateData.tags || []
           }
         })

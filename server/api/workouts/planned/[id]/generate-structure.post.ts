@@ -1,9 +1,7 @@
 import { getServerSession } from '../../../../utils/session'
 import { prisma } from '../../../../utils/db'
-import { tasks } from '@trigger.dev/sdk/v3'
 import { checkQuota } from '../../../../utils/quotas/engine'
-import { publishTaskRunStartedEvent } from '../../../../utils/task-run-events'
-import { structureGenerationRunTags } from '../../../../utils/trigger-run-tags'
+import { enqueuePlannedWorkoutStructureGeneration } from '../../../../utils/planned-workout-structure-trigger'
 
 export default defineEventHandler(async (event) => {
   const session = await getServerSession(event)
@@ -76,28 +74,16 @@ export default defineEventHandler(async (event) => {
 
   // Trigger the generation task
   try {
-    const tags = structureGenerationRunTags({
+    const queued = await enqueuePlannedWorkoutStructureGeneration({
       userId,
       plannedWorkoutId: id,
       source: 'api'
     })
-    const handle = await tasks.trigger(
-      'generate-structured-workout',
-      {
-        plannedWorkoutId: id,
-        quotaCheckedAtEnqueue: true
-      },
-      {
-        concurrencyKey: userId,
-        tags
-      }
-    )
-
-    await publishTaskRunStartedEvent(userId, 'generate-structured-workout', handle, { tags })
+    if (queued.status !== 'queued') throw new Error(queued.error)
 
     return {
       success: true,
-      taskId: handle.id,
+      taskId: queued.runId,
       message: 'Workout structure generation started'
     }
   } catch (error) {

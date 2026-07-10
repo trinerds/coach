@@ -8,6 +8,9 @@ import {
 import { prisma } from '../server/utils/db'
 import { userReportsQueue } from './queues'
 import { publishActivityEvent } from '../server/utils/activity-realtime'
+import { writeCanonicalPlannedWorkoutStructure } from '../server/utils/canonical-planned-workout-write'
+import { sportSettingsRepository } from '../server/utils/repositories/sportSettingsRepository'
+import { resolveWorkoutTargeting } from './utils/workout-targeting'
 
 const messageGenerationSchema = {
   type: 'object',
@@ -97,12 +100,32 @@ export const generateWorkoutMessagesTask = task({
       messages: result.messages
     }
 
-    const updatedWorkout = await prisma.plannedWorkout.update({
-      where: { id: plannedWorkoutId },
-      data: {
-        structuredWorkout: updatedStructure as any
-      }
+    const sportSettings = await sportSettingsRepository.getForActivityType(
+      workout.userId,
+      workout.type || ''
+    )
+    const { targetPolicy } = resolveWorkoutTargeting(sportSettings)
+    await writeCanonicalPlannedWorkoutStructure({
+      plannedWorkoutId,
+      source: 'MANUAL_EDIT',
+      structure: updatedStructure,
+      zoneProfileSnapshot: structure.zoneProfileSnapshot,
+      syncStatus: workout.syncStatus,
+      allowDiagnostics: true,
+      refs: {
+        ftp: Number(sportSettings?.ftp || 250),
+        lthr: Number(sportSettings?.lthr || 0),
+        maxHr: Number(sportSettings?.maxHr || 0),
+        thresholdPace: Number(sportSettings?.thresholdPace || 0)
+      },
+      fallbackOrder: targetPolicy.fallbackOrder as Array<'power' | 'heartRate' | 'pace' | 'rpe'>,
+      preservePlannedDuration: workout.durationSec
     })
+
+    const updatedWorkout = await prisma.plannedWorkout.findUnique({
+      where: { id: plannedWorkoutId }
+    })
+    if (!updatedWorkout) throw new Error('Workout not found after message update')
 
     await publishActivityEvent(updatedWorkout.userId, {
       scope: 'calendar',

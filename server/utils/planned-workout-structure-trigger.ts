@@ -2,12 +2,12 @@ import { generateStructuredWorkoutTask } from '../../trigger/generate-structured
 import { publishTaskRunStartedEvent } from './task-run-events'
 import { structureGenerationRunTags, type StructureRunSource } from './trigger-run-tags'
 import type { WorkoutTargetingOverride } from '../../trigger/utils/workout-targeting'
+import { prisma } from './db'
 
 export type StructureGenerationStatus = 'queued' | 'skipped' | 'failed' | 'exists'
 
 export type StructureEnqueueResult =
-  | { status: 'queued'; runId: string }
-  | { status: 'failed'; error: string }
+  { status: 'queued'; runId: string } | { status: 'failed'; error: string }
 
 function formatTriggerError(error: unknown): string {
   if (error instanceof Error && error.message) return error.message
@@ -23,6 +23,11 @@ export async function enqueuePlannedWorkoutStructureGeneration(options: {
   const { userId, plannedWorkoutId, targetingOverride = null, source = 'chat' } = options
 
   try {
+    const workout = await prisma.plannedWorkout.update({
+      where: { id: plannedWorkoutId },
+      data: { generationRevision: { increment: 1 } },
+      select: { generationRevision: true }
+    })
     const tags = structureGenerationRunTags({
       userId,
       plannedWorkoutId,
@@ -31,7 +36,8 @@ export async function enqueuePlannedWorkoutStructureGeneration(options: {
     const handle = await generateStructuredWorkoutTask.trigger(
       {
         plannedWorkoutId,
-        targetingOverride
+        targetingOverride,
+        generationRevision: workout.generationRevision
       },
       {
         tags,

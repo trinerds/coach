@@ -43,21 +43,12 @@ import { deduplicateWorkoutsTask } from '../../../trigger/deduplicate-workouts'
 import { shouldAutoDeduplicateWorkoutsAfterIngestion } from '../ingestion-settings'
 import { isTaskRunning } from '../trigger-check'
 import { shouldIngestWellness } from '../integration-settings'
-import {
-  buildRemoteStructureCreateFields,
-  buildRemoteStructureMergeFields
-} from '../planned-workout-structure-sync'
+import { buildIntervalsImportPersistenceFields } from '../canonical-planned-workout-write'
 import { roundToTwoDecimals } from '../number'
 import { summarizePowerFromWatts } from '../power-metrics'
 import { bodyMeasurementService } from './bodyMeasurementService'
 import { mergeWorkoutTags } from '../workout-tags'
-
-function preserveLocallyEditedStructureMetadata(updateData: Record<string, any>) {
-  delete updateData.durationSec
-  delete updateData.distanceMeters
-  delete updateData.tss
-  delete updateData.workIntensity
-}
+import { createZoneProfileSnapshot } from '../../../shared/structured-workout-contract'
 
 function parseIntervalsActivityDate(activity: any): Date | null {
   const rawDate = activity?.start_date || activity?.start_date_local
@@ -1275,7 +1266,15 @@ export const IntervalsService = {
         continue
       }
 
-      const normalizedPlanned = normalizeIntervalsPlannedWorkout(planned, userId)
+      const plannedSettings = await sportSettingsRepository.getForActivityType(
+        userId,
+        planned.type || ''
+      )
+      const normalizedPlanned = normalizeIntervalsPlannedWorkout(
+        planned,
+        userId,
+        createZoneProfileSnapshot(plannedSettings)
+      )
 
       // Preserve local exercises/instructions if remote has no structure (Text-only sync)
       const existingRecord = existingMap.get(normalizedPlanned.externalId) as any
@@ -1300,22 +1299,12 @@ export const IntervalsService = {
 
       const seenAt = new Date()
       if (existingRecord) {
-        const updateData: Record<string, any> = { ...normalizedPlanned }
-        if (newStruct && typeof newStruct === 'object') {
-          const remoteMerge = buildRemoteStructureMergeFields(existingRecord, newStruct, seenAt)
-          if (!('structuredWorkout' in remoteMerge.fields)) {
-            delete updateData.structuredWorkout
-          }
-          if (
-            remoteMerge.decision.reason === 'local_modified' ||
-            remoteMerge.decision.reason === 'local_unpublished_changes'
-          ) {
-            preserveLocallyEditedStructureMetadata(updateData)
-          }
-          Object.assign(updateData, remoteMerge.fields)
-        } else {
-          updateData.lastRemoteStructureSeenAt = seenAt
-        }
+        const updateData = buildIntervalsImportPersistenceFields({
+          existingRecord,
+          normalizedPlanned,
+          sportSettings: plannedSettings,
+          seenAt
+        })
         await prisma.plannedWorkout.update({
           where: {
             userId_externalId: {
@@ -1327,10 +1316,12 @@ export const IntervalsService = {
         })
       } else {
         await prisma.plannedWorkout.create({
-          data: {
-            ...normalizedPlanned,
-            ...buildRemoteStructureCreateFields(normalizedPlanned.structuredWorkout, seenAt)
-          }
+          data: buildIntervalsImportPersistenceFields({
+            existingRecord: null,
+            normalizedPlanned,
+            sportSettings: plannedSettings,
+            seenAt
+          })
         })
       }
       plannedUpserted++
@@ -1876,7 +1867,15 @@ export const IntervalsService = {
               continue
             }
 
-            const normalizedPlanned = normalizeIntervalsPlannedWorkout(planned, userId)
+            const plannedSettings = await sportSettingsRepository.getForActivityType(
+              userId,
+              planned.type || ''
+            )
+            const normalizedPlanned = normalizeIntervalsPlannedWorkout(
+              planned,
+              userId,
+              createZoneProfileSnapshot(plannedSettings)
+            )
 
             let existingRecord = existingMap.get(normalizedPlanned.externalId) as any
             if (!existingRecord && hasHumangoSignature(planned)) {
@@ -1965,26 +1964,12 @@ export const IntervalsService = {
 
             const seenAt = new Date()
             if (existingRecord) {
-              const updateData: Record<string, any> = { ...normalizedPlanned }
-              if (newStruct && typeof newStruct === 'object') {
-                const remoteMerge = buildRemoteStructureMergeFields(
-                  existingRecord,
-                  newStruct,
-                  seenAt
-                )
-                if (!('structuredWorkout' in remoteMerge.fields)) {
-                  delete updateData.structuredWorkout
-                }
-                if (
-                  remoteMerge.decision.reason === 'local_modified' ||
-                  remoteMerge.decision.reason === 'local_unpublished_changes'
-                ) {
-                  preserveLocallyEditedStructureMetadata(updateData)
-                }
-                Object.assign(updateData, remoteMerge.fields)
-              } else {
-                updateData.lastRemoteStructureSeenAt = seenAt
-              }
+              const updateData = buildIntervalsImportPersistenceFields({
+                existingRecord,
+                normalizedPlanned,
+                sportSettings: plannedSettings,
+                seenAt
+              })
               if (existingRecord.externalId === normalizedPlanned.externalId) {
                 await prisma.plannedWorkout.update({
                   where: {
@@ -2003,10 +1988,12 @@ export const IntervalsService = {
               }
             } else {
               await prisma.plannedWorkout.create({
-                data: {
-                  ...normalizedPlanned,
-                  ...buildRemoteStructureCreateFields(normalizedPlanned.structuredWorkout, seenAt)
-                }
+                data: buildIntervalsImportPersistenceFields({
+                  existingRecord: null,
+                  normalizedPlanned,
+                  sportSettings: plannedSettings,
+                  seenAt
+                })
               })
             }
 
