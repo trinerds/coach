@@ -19,6 +19,38 @@ const BATCH_SIZE = 500 // rows per INSERT batch
 const VACUUM_EVERY = 10 // vacuum V1 after this many batches
 const DRY_RUN = process.argv.includes('--dry-run')
 
+// Converts JSONB arrays to native PG arrays, skipping nested arrays/objects (prod data quirk).
+const MIGRATION_SELECT = `
+        SELECT
+          gen_random_uuid()::text, ws."workoutId",
+          COALESCE(CASE WHEN jsonb_typeof(ws.time) = 'array' THEN ARRAY(SELECT (elem #>> '{}')::integer FROM jsonb_array_elements(ws.time) elem WHERE jsonb_typeof(elem) IN ('number', 'string')) END, ARRAY[]::integer[]),
+          COALESCE(CASE WHEN jsonb_typeof(ws.distance) = 'array' THEN ARRAY(SELECT (elem #>> '{}')::double precision FROM jsonb_array_elements(ws.distance) elem WHERE jsonb_typeof(elem) IN ('number', 'string')) END, ARRAY[]::double precision[]),
+          COALESCE(CASE WHEN jsonb_typeof(ws.velocity) = 'array' THEN ARRAY(SELECT (elem #>> '{}')::double precision FROM jsonb_array_elements(ws.velocity) elem WHERE jsonb_typeof(elem) IN ('number', 'string')) END, ARRAY[]::double precision[]),
+          COALESCE(CASE WHEN jsonb_typeof(ws.heartrate) = 'array' THEN ARRAY(SELECT (elem #>> '{}')::integer FROM jsonb_array_elements(ws.heartrate) elem WHERE jsonb_typeof(elem) IN ('number', 'string')) END, ARRAY[]::integer[]),
+          COALESCE(CASE WHEN jsonb_typeof(ws.cadence) = 'array' THEN ARRAY(SELECT (elem #>> '{}')::integer FROM jsonb_array_elements(ws.cadence) elem WHERE jsonb_typeof(elem) IN ('number', 'string')) END, ARRAY[]::integer[]),
+          COALESCE(CASE WHEN jsonb_typeof(ws.watts) = 'array' THEN ARRAY(SELECT (elem #>> '{}')::integer FROM jsonb_array_elements(ws.watts) elem WHERE jsonb_typeof(elem) IN ('number', 'string')) END, ARRAY[]::integer[]),
+          COALESCE(CASE WHEN jsonb_typeof(ws.altitude) = 'array' THEN ARRAY(SELECT (elem #>> '{}')::double precision FROM jsonb_array_elements(ws.altitude) elem WHERE jsonb_typeof(elem) IN ('number', 'string')) END, ARRAY[]::double precision[]),
+          COALESCE(CASE WHEN jsonb_typeof(ws.latlng) = 'array' THEN ARRAY(SELECT (elem->>0)::double precision FROM jsonb_array_elements(ws.latlng) AS elem WHERE jsonb_typeof(elem) = 'array' AND elem->0 IS NOT NULL AND elem->1 IS NOT NULL) END, ARRAY[]::double precision[]),
+          COALESCE(CASE WHEN jsonb_typeof(ws.latlng) = 'array' THEN ARRAY(SELECT (elem->>1)::double precision FROM jsonb_array_elements(ws.latlng) AS elem WHERE jsonb_typeof(elem) = 'array' AND elem->0 IS NOT NULL AND elem->1 IS NOT NULL) END, ARRAY[]::double precision[]),
+          COALESCE(CASE WHEN jsonb_typeof(ws.grade) = 'array' THEN ARRAY(SELECT (elem #>> '{}')::double precision FROM jsonb_array_elements(ws.grade) elem WHERE jsonb_typeof(elem) IN ('number', 'string')) END, ARRAY[]::double precision[]),
+          COALESCE(CASE WHEN jsonb_typeof(ws.moving) = 'array' THEN ARRAY(SELECT (elem #>> '{}')::boolean FROM jsonb_array_elements(ws.moving) elem WHERE jsonb_typeof(elem) IN ('boolean', 'string')) END, ARRAY[]::boolean[]),
+          COALESCE(CASE WHEN jsonb_typeof(ws.temp) = 'array' THEN ARRAY(SELECT (elem #>> '{}')::integer FROM jsonb_array_elements(ws.temp) elem WHERE jsonb_typeof(elem) IN ('number', 'string')) END, ARRAY[]::integer[]),
+          COALESCE(CASE WHEN jsonb_typeof(ws.torque) = 'array' THEN ARRAY(SELECT (elem #>> '{}')::integer FROM jsonb_array_elements(ws.torque) elem WHERE jsonb_typeof(elem) IN ('number', 'string')) END, ARRAY[]::integer[]),
+          COALESCE(CASE WHEN jsonb_typeof(ws."leftRightBalance") = 'array' THEN ARRAY(SELECT (elem #>> '{}')::integer FROM jsonb_array_elements(ws."leftRightBalance") elem WHERE jsonb_typeof(elem) IN ('number', 'string')) END, ARRAY[]::integer[]),
+          COALESCE(CASE WHEN jsonb_typeof(ws.hrv) = 'array' THEN ARRAY(SELECT (elem #>> '{}')::double precision FROM jsonb_array_elements(ws.hrv) elem WHERE jsonb_typeof(elem) IN ('number', 'string')) END, ARRAY[]::double precision[]),
+          COALESCE(CASE WHEN jsonb_typeof(ws.respiration) = 'array' THEN ARRAY(SELECT (elem #>> '{}')::double precision FROM jsonb_array_elements(ws.respiration) elem WHERE jsonb_typeof(elem) IN ('number', 'string')) END, ARRAY[]::double precision[]),
+          COALESCE(CASE WHEN jsonb_typeof(ws."targetPower") = 'array' THEN ARRAY(SELECT (elem #>> '{}')::integer FROM jsonb_array_elements(ws."targetPower") elem WHERE jsonb_typeof(elem) IN ('number', 'string')) END, ARRAY[]::integer[]),
+          ws."avgPacePerKm", ws."paceVariability",
+          ws."lapSplits", ws."paceZones", ws."pacingStrategy", ws.surges,
+          ws."hrZoneTimes", ws."powerZoneTimes", ws."extrasMeta",
+          ws."createdAt", ws."updatedAt"
+        FROM "WorkoutStream" ws
+        WHERE NOT EXISTS (
+          SELECT 1 FROM "WorkoutStreamV2" v2 WHERE v2."workoutId" = ws."workoutId"
+        )
+        LIMIT $1
+`
+
 async function diskFree(prisma: any): Promise<string> {
   const [row] = await prisma.$queryRaw<[{ v1: string; v2: string }]>`
     SELECT
@@ -64,8 +96,8 @@ async function main() {
 
     try {
       // 1. Insert batch into V2
-      const inserted = await prisma.$executeRaw`
-        INSERT INTO "WorkoutStreamV2" (
+      const inserted = await prisma.$executeRawUnsafe(
+        `INSERT INTO "WorkoutStreamV2" (
           "id", "workoutId",
           "time", "distance", "velocity",
           "heartrate", "cadence", "watts",
@@ -77,35 +109,9 @@ async function main() {
           "hrZoneTimes", "powerZoneTimes", "extrasMeta",
           "createdAt", "updatedAt"
         )
-        SELECT
-          gen_random_uuid()::text, ws."workoutId",
-          COALESCE(CASE WHEN jsonb_typeof(ws.time) = 'array' THEN ARRAY(SELECT v::integer FROM jsonb_array_elements_text(ws.time) v) END, ARRAY[]::integer[]),
-          COALESCE(CASE WHEN jsonb_typeof(ws.distance) = 'array' THEN ARRAY(SELECT v::double precision FROM jsonb_array_elements_text(ws.distance) v) END, ARRAY[]::double precision[]),
-          COALESCE(CASE WHEN jsonb_typeof(ws.velocity) = 'array' THEN ARRAY(SELECT v::double precision FROM jsonb_array_elements_text(ws.velocity) v) END, ARRAY[]::double precision[]),
-          COALESCE(CASE WHEN jsonb_typeof(ws.heartrate) = 'array' THEN ARRAY(SELECT v::integer FROM jsonb_array_elements_text(ws.heartrate) v) END, ARRAY[]::integer[]),
-          COALESCE(CASE WHEN jsonb_typeof(ws.cadence) = 'array' THEN ARRAY(SELECT v::integer FROM jsonb_array_elements_text(ws.cadence) v) END, ARRAY[]::integer[]),
-          COALESCE(CASE WHEN jsonb_typeof(ws.watts) = 'array' THEN ARRAY(SELECT v::integer FROM jsonb_array_elements_text(ws.watts) v) END, ARRAY[]::integer[]),
-          COALESCE(CASE WHEN jsonb_typeof(ws.altitude) = 'array' THEN ARRAY(SELECT v::double precision FROM jsonb_array_elements_text(ws.altitude) v) END, ARRAY[]::double precision[]),
-          COALESCE(CASE WHEN jsonb_typeof(ws.latlng) = 'array' AND jsonb_array_length(ws.latlng) > 0 THEN ARRAY(SELECT (elem->>0)::double precision FROM jsonb_array_elements(ws.latlng) AS elem) END, ARRAY[]::double precision[]),
-          COALESCE(CASE WHEN jsonb_typeof(ws.latlng) = 'array' AND jsonb_array_length(ws.latlng) > 0 THEN ARRAY(SELECT (elem->>1)::double precision FROM jsonb_array_elements(ws.latlng) AS elem) END, ARRAY[]::double precision[]),
-          COALESCE(CASE WHEN jsonb_typeof(ws.grade) = 'array' THEN ARRAY(SELECT v::double precision FROM jsonb_array_elements_text(ws.grade) v) END, ARRAY[]::double precision[]),
-          COALESCE(CASE WHEN jsonb_typeof(ws.moving) = 'array' THEN ARRAY(SELECT v::boolean FROM jsonb_array_elements_text(ws.moving) v) END, ARRAY[]::boolean[]),
-          COALESCE(CASE WHEN jsonb_typeof(ws.temp) = 'array' THEN ARRAY(SELECT v::integer FROM jsonb_array_elements_text(ws.temp) v) END, ARRAY[]::integer[]),
-          COALESCE(CASE WHEN jsonb_typeof(ws.torque) = 'array' THEN ARRAY(SELECT v::integer FROM jsonb_array_elements_text(ws.torque) v) END, ARRAY[]::integer[]),
-          COALESCE(CASE WHEN jsonb_typeof(ws."leftRightBalance") = 'array' THEN ARRAY(SELECT v::integer FROM jsonb_array_elements_text(ws."leftRightBalance") v) END, ARRAY[]::integer[]),
-          COALESCE(CASE WHEN jsonb_typeof(ws.hrv) = 'array' THEN ARRAY(SELECT v::double precision FROM jsonb_array_elements_text(ws.hrv) v) END, ARRAY[]::double precision[]),
-          COALESCE(CASE WHEN jsonb_typeof(ws.respiration) = 'array' THEN ARRAY(SELECT v::double precision FROM jsonb_array_elements_text(ws.respiration) v) END, ARRAY[]::double precision[]),
-          COALESCE(CASE WHEN jsonb_typeof(ws."targetPower") = 'array' THEN ARRAY(SELECT v::integer FROM jsonb_array_elements_text(ws."targetPower") v) END, ARRAY[]::integer[]),
-          ws."avgPacePerKm", ws."paceVariability",
-          ws."lapSplits", ws."paceZones", ws."pacingStrategy", ws.surges,
-          ws."hrZoneTimes", ws."powerZoneTimes", ws."extrasMeta",
-          ws."createdAt", ws."updatedAt"
-        FROM "WorkoutStream" ws
-        WHERE NOT EXISTS (
-          SELECT 1 FROM "WorkoutStreamV2" v2 WHERE v2."workoutId" = ws."workoutId"
-        )
-        LIMIT ${BATCH_SIZE}
-      `
+        ${MIGRATION_SELECT}`,
+        BATCH_SIZE
+      )
 
       if (inserted === 0) break
 
