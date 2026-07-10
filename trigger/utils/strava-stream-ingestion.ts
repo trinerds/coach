@@ -21,6 +21,7 @@ export async function ingestStravaStreamsForWorkout(payload: {
   workoutId: string
   activityId: number
   integration: any
+  skipStressRecalc?: boolean
 }) {
   logger.log('Fetching streams from Strava API', {
     workoutId: payload.workoutId,
@@ -118,23 +119,25 @@ export async function ingestStravaStreamsForWorkout(payload: {
     surges
   })
 
-  try {
-    const tssResult = await normalizeTSS(payload.workoutId, payload.userId)
-    logger.log('TSS normalization complete', {
-      workoutId: payload.workoutId,
-      tss: tssResult.tss,
-      source: tssResult.source,
-      confidence: tssResult.confidence
-    })
+  if (!payload.skipStressRecalc) {
+    try {
+      const tssResult = await normalizeTSS(payload.workoutId, payload.userId)
+      logger.log('TSS normalization complete', {
+        workoutId: payload.workoutId,
+        tss: tssResult.tss,
+        source: tssResult.source,
+        confidence: tssResult.confidence
+      })
 
-    if (tssResult.tss !== null) {
-      await calculateWorkoutStress(payload.workoutId, payload.userId)
+      if (tssResult.tss !== null) {
+        await calculateWorkoutStress(payload.workoutId, payload.userId)
+      }
+    } catch (error: any) {
+      logger.error('Failed to normalize TSS', {
+        workoutId: payload.workoutId,
+        error: error.message
+      })
     }
-  } catch (error: any) {
-    logger.error('Failed to normalize TSS', {
-      workoutId: payload.workoutId,
-      error: error.message
-    })
   }
 
   return {

@@ -20,6 +20,7 @@ import backfillChatEmptyFailuresCommand from './chat-empty-failures'
 import backfillWorkoutSummaryNotesCommand from './workout-summary-notes'
 import removeWorkoutSummaryNotesCommand from './remove-workout-summary-notes'
 import backfillPowerSummaryFromStreamsCommand from './power-summary-from-streams'
+import backfillStravaStreamsCommand from './strava-streams'
 import backfillFitExtrasMetaCommand from './fit-extras-meta'
 import backfillElevationGainCommand from './elevation-gain'
 import backfillPBCommand from './pb'
@@ -53,6 +54,7 @@ backfill
   .addCommand(backfillWorkoutSummaryNotesCommand)
   .addCommand(removeWorkoutSummaryNotesCommand)
   .addCommand(backfillPowerSummaryFromStreamsCommand)
+  .addCommand(backfillStravaStreamsCommand)
   .addCommand(backfillFitExtrasMetaCommand)
   .addCommand(backfillElevationGainCommand)
   .addCommand(backfillPBCommand)

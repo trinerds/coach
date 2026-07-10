@@ -1,79 +1,52 @@
 /**
- * Backfill HR stream data for existing Strava workouts
- * Usage: npx tsx scripts/backfill-strava-streams.ts
+ * @deprecated Use `coach backfill strava-streams` instead.
+ *
+ * Inline batch backfill with per-user Strava rate limiting — no Trigger.dev jobs.
  */
 
 import { config } from 'dotenv'
+
 config()
 
-async function backfillStreams() {
-  const { prisma } = await import('../server/utils/db')
-  const { tasks } = await import('@trigger.dev/sdk/v3')
+async function main() {
+  const connectionString = process.env.DATABASE_URL
+  if (!connectionString) {
+    console.error('DATABASE_URL is not defined.')
+    process.exit(1)
+  }
 
-  console.log('🔍 Finding Strava workouts missing stream data...\n')
+  process.env.DATABASE_URL = connectionString
 
-  // Find all Strava workouts with no streams
-  const workouts = await prisma.workout.findMany({
-    where: {
-      source: 'strava',
-      streams: null,
-      streamsV2: null
-    },
-    orderBy: {
-      date: 'desc'
-    },
-    select: {
-      id: true,
-      userId: true,
-      externalId: true,
-      title: true,
-      type: true,
-      date: true,
-      averageHr: true,
-      averageWatts: true
+  const { PrismaClient } = await import('@prisma/client')
+  const { PrismaPg } = await import('@prisma/adapter-pg')
+  const pg = await import('pg')
+
+  const pool = new pg.default.Pool({ connectionString })
+  const adapter = new PrismaPg(pool)
+  const prisma = new PrismaClient({ adapter })
+  globalThis.prismaGlobalV2 = prisma
+
+  const { runStravaStreamBackfill } = await import('./lib/backfill-strava-streams')
+
+  console.log('Running inline Strava stream backfill (deprecated script wrapper)\n')
+  console.log('Prefer: coach backfill strava-streams [--prod] [--dry-run] [--last-days 30]\n')
+
+  const result = await runStravaStreamBackfill(prisma, {
+    skipStressRecalc: true,
+    onProgress: (event) => {
+      if (event.phase === 'scan') {
+        console.log(event.message || `Found ${event.total} workouts`)
+      }
     }
   })
 
-  if (workouts.length === 0) {
-    console.log('✅ All workouts already have stream data!')
-    return
-  }
-
-  console.log(`Found ${workouts.length} workouts missing streams:\n`)
-
-  workouts.forEach((w, i) => {
-    console.log(`${i + 1}. ${w.title} (${w.date.toLocaleDateString()})`)
-    console.log(
-      `   Type: ${w.type}${w.averageHr ? `, HR: ${w.averageHr}` : ''}${w.averageWatts ? `, Power: ${w.averageWatts}` : ''}`
-    )
-  })
-
-  console.log(`\n🚀 Triggering stream ingestion for ${workouts.length} workouts...\n`)
-
-  for (const workout of workouts) {
-    const activityId = parseInt(workout.externalId)
-
-    if (isNaN(activityId)) {
-      console.log(`⚠️  Skipping ${workout.title} - invalid Strava ID`)
-      continue
-    }
-
-    console.log(`   Triggering: ${workout.title}`)
-
-    await tasks.trigger('ingest-strava-streams', {
-      userId: workout.userId,
-      workoutId: workout.id,
-      activityId
-    })
-
-    // Small delay to avoid overwhelming the system
-    await new Promise((resolve) => setTimeout(resolve, 100))
-  }
-
-  console.log('\n✅ All stream ingestion jobs triggered!')
-  console.log('Check trigger.dev dashboard to monitor progress')
+  console.log('\nSummary:', result)
 
   await prisma.$disconnect()
+  await pool.end()
 }
 
-backfillStreams().catch(console.error)
+main().catch((error) => {
+  console.error(error)
+  process.exit(1)
+})
