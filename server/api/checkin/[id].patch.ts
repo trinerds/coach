@@ -5,7 +5,7 @@ import { dailyCheckinRepository } from '../../utils/repositories/dailyCheckinRep
 const questionSchema = z.object({
   id: z.string(),
   text: z.string(),
-  reasoningText: z.string().optional(),
+  reasoning: z.string().optional(),
   answer: z.enum(['YES', 'NO']).nullable().optional()
 })
 

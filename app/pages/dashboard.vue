@@ -200,10 +200,7 @@
                 :settings="nutritionSettings"
                 :weight="userStore.currentWeightKg || 75"
                 :loading="loadingNutrition"
-                @refresh="
-                  trackWidgetClick('nutrition_fueling', 'refresh')
-                  fetchTodayNutrition()
-                "
+                @refresh="handleNutritionRefresh"
               />
             </div>
 
@@ -267,10 +264,7 @@
                         v-for="workout in upcomingWorkouts"
                         :key="workout.id"
                         class="py-3 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer -mx-4 px-4 rounded-lg transition-colors group relative"
-                        @click="
-                          trackWidgetClick('upcoming_workouts', 'open_workout')
-                          navigateTo(`/workouts/planned/${workout.id}`)
-                        "
+                        @click="handleUpcomingWorkoutClick(workout.id)"
                       >
                         <!-- Date Box (Standardized) -->
                         <div
@@ -577,6 +571,11 @@
     }
   }
 
+  function handleNutritionRefresh() {
+    trackWidgetClick('nutrition_fueling', 'refresh')
+    return fetchTodayNutrition()
+  }
+
   async function fetchUpcomingWorkouts() {
     loadingUpcoming.value = true
     try {
@@ -599,6 +598,11 @@
 
   function formatDateDay(d: string) {
     return formatDateUTC(d, 'd')
+  }
+
+  function handleUpcomingWorkoutClick(workoutId: string) {
+    trackWidgetClick('upcoming_workouts', 'open_workout')
+    return navigateTo(`/workouts/planned/${workoutId}`)
   }
 
   // Initial data fetch

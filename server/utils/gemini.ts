@@ -58,10 +58,10 @@ async function logLlmUsage(params: {
         operation: params.operation,
         entityType: params.entityType,
         entityId: params.entityId,
-        inputTokens: params.inputTokens,
-        outputTokens: params.outputTokens,
+        promptTokens: params.promptTokens,
+        completionTokens: params.completionTokens,
         cachedTokens: params.cachedTokens || 0,
-        reasoningTokens: params.outputTokenDetails.reasoningTokens || 0,
+        reasoningTokens: params.reasoningTokens || 0,
         totalTokens: params.totalTokens,
         estimatedCost: params.estimatedCost,
         durationMs: params.durationMs,
@@ -91,6 +91,22 @@ function getPreview(text: string, maxLength: number = 500): string {
   return text.substring(0, maxLength) + '...'
 }
 
+type AiSdkUsage = {
+  inputTokens?: number
+  outputTokens?: number
+  inputTokenDetails?: { cacheReadTokens?: number }
+  outputTokenDetails?: { reasoningTokens?: number }
+}
+
+function normalizeAiSdkUsage(usage?: AiSdkUsage) {
+  return {
+    inputTokens: usage?.inputTokens ?? 0,
+    outputTokens: usage?.outputTokens ?? 0,
+    cachedTokens: usage?.inputTokenDetails?.cacheReadTokens ?? 0,
+    reasoningTokens: usage?.outputTokenDetails?.reasoningTokens ?? 0
+  }
+}
+
 /**
  * Internal helper to log usage from Vercel AI SDK events
  */
@@ -104,19 +120,21 @@ async function logUsage(params: {
   prompt: string
   text?: string
   usage: {
-    promptTokens: number
-    completionTokens: number
+    inputTokens: number
+    outputTokens: number
     cachedTokens?: number
     reasoningTokens?: number
   }
   success: boolean
   error?: any
+  durationMs?: number
 }) {
-  const durationMs = (params as any).durationMs || 0 // Use passed duration or 0
+  const durationMs = params.durationMs || 0
+  const reasoningTokens = params.usage.reasoningTokens ?? 0
   const estimatedCost = calculateLlmCost(
     params.modelId,
     params.usage.inputTokens,
-    params.usage.outputTokens + (params.usage.outputTokenDetails.reasoningTokens || 0),
+    params.usage.outputTokens + reasoningTokens,
     params.usage.cachedTokens || 0
   )
 
@@ -127,11 +145,11 @@ async function logUsage(params: {
     operation: params.operation,
     entityType: params.entityType,
     entityId: params.entityId,
-    inputTokens: params.usage.inputTokens,
-    outputTokens: params.usage.outputTokens,
+    promptTokens: params.usage.inputTokens,
+    completionTokens: params.usage.outputTokens,
     cachedTokens: params.usage.cachedTokens || 0,
-    reasoningTokens: params.usage.outputTokenDetails.reasoningTokens || 0,
-    totalTokens: params.usage.inputTokens + params.usage.outputTokens,
+    reasoningTokens,
+    totalTokens: params.usage.inputTokens + params.usage.outputTokens + reasoningTokens,
     estimatedCost,
     durationMs,
     retryCount: 0,
@@ -285,8 +303,8 @@ async function retryWithBackoff<T>(
           operation: trackingParams.operation,
           entityType: trackingParams.entityType,
           entityId: trackingParams.entityId,
-          inputTokens,
-          outputTokens,
+          promptTokens,
+          completionTokens,
           cachedTokens,
           reasoningTokens,
           totalTokens,
@@ -479,15 +497,10 @@ export async function generateCoachAnalysis(
         entityId: trackingContext.entityId,
         prompt: prompt,
         text: text,
-        usage: {
-          inputTokens: usage.inputTokens || 0,
-          outputTokens: usage.outputTokens || 0,
-          cachedTokens: usage.inputTokenDetails?.cacheReadTokens || 0,
-          reasoningTokens: (usage as any).outputTokenDetails.outputTokenDetails.reasoningTokens || 0
-        },
+        usage: normalizeAiSdkUsage(usage),
         success: true,
         durationMs: Date.now() - startTime
-      } as any)
+      })
     }
 
     return text
@@ -509,7 +522,7 @@ export async function generateCoachAnalysis(
         success: false,
         error,
         durationMs: Date.now() - startTime
-      } as any)
+      })
     }
     throw error
   }
@@ -554,15 +567,10 @@ export async function generateStructuredAnalysis<T>(
         entityId: trackingContext.entityId,
         prompt: prompt,
         text: JSON.stringify(object),
-        usage: {
-          inputTokens: usage.inputTokens || 0,
-          outputTokens: usage.outputTokens || 0,
-          cachedTokens: usage.inputTokenDetails?.cacheReadTokens || 0,
-          reasoningTokens: (usage as any).outputTokenDetails.outputTokenDetails.reasoningTokens || 0
-        },
+        usage: normalizeAiSdkUsage(usage),
         success: true,
         durationMs: Date.now() - startTime
-      } as any)
+      })
     }
 
     return object as T
@@ -584,7 +592,7 @@ export async function generateStructuredAnalysis<T>(
         success: false,
         error,
         durationMs: Date.now() - startTime
-      } as any)
+      })
     }
     throw error
   }

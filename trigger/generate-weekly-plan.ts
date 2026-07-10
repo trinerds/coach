@@ -95,7 +95,7 @@ const weeklyPlanSchema = {
           'title',
           'description',
           'durationMinutes',
-          'reasoning'
+          'reasoningText'
         ]
       }
     }

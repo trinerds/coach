@@ -49,7 +49,7 @@ const checkinSchema = {
         properties: {
           id: { type: 'string' },
           text: { type: 'string' },
-          reasoningText: { type: 'string' }
+          reasoning: { type: 'string' }
         },
         required: ['id', 'text', 'reasoning']
       }
@@ -63,7 +63,7 @@ interface CheckinAnalysis {
   questions: Array<{
     id: string
     text: string
-    reasoningText: string
+    reasoning: string
   }>
 }
 
