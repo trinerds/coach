@@ -770,8 +770,53 @@
     return value
   }
 
+  const BASIC_PROFILE_FIELDS = [
+    'name',
+    'sex',
+    'dob',
+    'weight',
+    'weightUnits',
+    'height',
+    'heightUnits',
+    'uiLanguage',
+    'language',
+    'timezone',
+    'distanceUnits',
+    'temperatureUnits',
+    'city',
+    'state',
+    'country',
+    'visibility',
+    'teamVisibility'
+  ] as const
+
+  function sanitizeOptionalNumber(value: unknown): number | null {
+    if (value === null || value === undefined || value === '') return null
+    if (typeof value === 'number' && Number.isFinite(value)) return value
+    return null
+  }
+
+  function pickBasicProfilePayload(profile: Record<string, unknown>) {
+    const payload: Record<string, unknown> = {}
+
+    for (const key of BASIC_PROFILE_FIELDS) {
+      if (key in profile) {
+        payload[key] = profile[key]
+      }
+    }
+
+    payload.weight = sanitizeOptionalNumber(payload.weight)
+    payload.height = sanitizeOptionalNumber(payload.height)
+
+    for (const key of ['name', 'dob', 'city', 'state', 'country'] as const) {
+      if (payload[key] === '') payload[key] = null
+    }
+
+    return payload
+  }
+
   function saveProfile() {
-    emit('update:modelValue', { ...localProfile.value })
+    emit('update:modelValue', pickBasicProfilePayload(localProfile.value))
   }
 </script>
 

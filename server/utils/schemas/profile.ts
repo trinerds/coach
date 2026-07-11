@@ -1,15 +1,28 @@
 import { z } from 'zod/v3'
 
+function emptyStringToNull(value: unknown) {
+  return value === '' ? null : value
+}
+
+function emptyStringToUndefined(value: unknown) {
+  return value === '' ? undefined : value
+}
+
+function finiteNumberOrNull(value: unknown) {
+  if (typeof value === 'number' && !Number.isFinite(value)) return null
+  return value
+}
+
 export const profileUpdateSchema = z.object({
   // Basic Settings
-  name: z.string().min(2).nullable().optional(),
+  name: z.preprocess(emptyStringToNull, z.string().min(2).nullable().optional()),
   nickname: z.string().max(50).nullable().optional(),
   language: z.string().optional(),
   uiLanguage: z.string().optional(),
-  weight: z.number().nullable().optional(),
+  weight: z.preprocess(finiteNumberOrNull, z.number().nullable().optional()),
   weightUnits: z.enum(['Kilograms', 'Pounds']).optional(),
   weightSourceMode: z.enum(['AUTO', 'PROFILE_LOCK']).optional(),
-  height: z.number().nullable().optional(),
+  height: z.preprocess(finiteNumberOrNull, z.number().nullable().optional()),
   heightUnits: z.enum(['cm', 'ft/in']).optional(),
   distanceUnits: z.enum(['Kilometers', 'Miles']).optional(),
   temperatureUnits: z.enum(['Celsius', 'Fahrenheit']).optional(),
@@ -29,13 +42,13 @@ export const profileUpdateSchema = z.object({
   publicDisplayName: z.string().max(120).nullable().optional(),
   publicBio: z.string().max(4000).nullable().optional(),
   publicLocation: z.string().max(160).nullable().optional(),
-  publicWebsiteUrl: z.string().url().nullable().optional(),
+  publicWebsiteUrl: z.preprocess(emptyStringToNull, z.string().url().nullable().optional()),
   publicCoachingBrand: z.string().max(160).nullable().optional(),
   publicSocialLinks: z
     .array(
       z.object({
         label: z.string().max(60),
-        url: z.string().url()
+        url: z.preprocess(emptyStringToUndefined, z.string().url())
       })
     )
     .max(6)

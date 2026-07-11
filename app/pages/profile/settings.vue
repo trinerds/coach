@@ -337,8 +337,12 @@
     await Promise.all([refreshProfile(), refreshNutrition()])
   }
 
+  function snapshotState<T>(value: T): T {
+    return JSON.parse(JSON.stringify(toRaw(value)))
+  }
+
   async function handleProfileUpdate(newProfile: any) {
-    const previousProfile = structuredClone(profile.value)
+    const previousProfile = snapshotState(profile.value)
     Object.assign(profile.value, newProfile)
     savingProfile.value = true
 
@@ -384,8 +388,8 @@
   async function handleAutodetect(updatedProfile: any) {
     if (!updatedProfile) return
 
-    const previousProfile = structuredClone(profile.value)
-    const previousSportSettings = structuredClone(sportSettings.value)
+    const previousProfile = snapshotState(profile.value)
+    const previousSportSettings = snapshotState(sportSettings.value)
 
     if (updatedProfile.sportSettings) {
       sportSettings.value = updatedProfile.sportSettings

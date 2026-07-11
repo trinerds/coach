@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { useTranslate } from '@tolgee/vue'
   import { z } from 'zod'
-  import type { FormSubmitEvent } from '#ui/types'
+  import type { FormErrorEvent, FormSubmitEvent } from '#ui/types'
 
   const { t } = useTranslate('profile')
   const tr = (key: string, fallback: string, params?: Record<string, any>) =>
@@ -30,6 +30,14 @@
     { label: tr('comm_day_sun', 'Sun'), value: 'SUNDAY' }
   ])
 
+  const optionalDailyCoachTime = z.preprocess(
+    (value) => (value === '' || value == null ? undefined : value),
+    z
+      .string()
+      .regex(/^([01]\d|2[0-3]):([0-5]\d)$/)
+      .optional()
+  )
+
   const schema = z.object({
     workoutAnalysis: z.boolean(),
     thresholdUpdates: z.boolean(),
@@ -38,10 +46,7 @@
     productUpdates: z.boolean(),
     retentionNudges: z.boolean(),
     dailyCoach: z.boolean(),
-    dailyCoachTime: z
-      .string()
-      .regex(/^([01]\d|2[0-3]):([0-5]\d)$/)
-      .optional(),
+    dailyCoachTime: optionalDailyCoachTime,
     dailyCoachDays: z.array(z.enum(daysEnums)),
     marketing: z.boolean(),
     globalUnsubscribe: z.boolean()
@@ -113,6 +118,17 @@
     }
   )
 
+  function onValidationError(event: FormErrorEvent) {
+    const firstError = event.errors[0]?.message
+    toast.add({
+      title: tr('comm_toast_failed_title', 'Save failed'),
+      description:
+        firstError ||
+        tr('comm_toast_validation_desc', 'Please fix the highlighted fields and try again.'),
+      color: 'error'
+    })
+  }
+
   async function onSubmit(event: FormSubmitEvent<Schema>) {
     isSaving.value = true
     try {
@@ -153,7 +169,7 @@
 
 <template>
   <div v-if="!isLoading" class="space-y-6">
-    <UForm :schema="schema" :state="state" @submit="onSubmit">
+    <UForm :schema="schema" :state="state" @submit="onSubmit" @error="onValidationError">
       <div class="space-y-6">
         <!-- Global Override Card -->
         <UCard>
