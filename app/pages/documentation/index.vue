@@ -16,8 +16,8 @@
         Coach Watts Documentation
       </h1>
       <p class="text-xl text-gray-500 dark:text-gray-400">
-        Welcome to our documentation center. We have organized our resources into two main sections
-        to help you find exactly what you need.
+        Welcome to our documentation center. We have organized our resources into three main
+        sections to help you find exactly what you need.
       </p>
     </header>
 
@@ -43,8 +43,8 @@
         </template>
 
         <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-          Learn how to set up your account, sync your devices (Strava, Garmin, Oura), and interpret
-          your training scores.
+          Learn how to set up your account, sync your devices (Strava, Garmin, Oura), connect AI
+          assistants via MCP, and interpret your training scores.
         </p>
 
         <template #footer>
@@ -133,13 +133,20 @@
 
     <div class="mt-16 pt-8 border-t border-gray-100 dark:border-gray-900">
       <h3 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-6">Quick Links</h3>
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
         <UButton
           to="/documentation/athletes/getting-started"
           variant="ghost"
           color="neutral"
           class="justify-start"
           >Getting Started</UButton
+        >
+        <UButton
+          to="/documentation/athletes/mcp-server"
+          variant="ghost"
+          color="neutral"
+          class="justify-start"
+          >AI Assistants (MCP)</UButton
         >
         <UButton
           to="/documentation/developers/api-reference"

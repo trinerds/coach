@@ -259,6 +259,7 @@
   "dev_button_revoke": "Key widerrufen",
   "dev_button_view_data": "Daten anzeigen",
   "dev_button_view_docs": "Dokumentation ansehen",
+  "dev_button_mcp_server": "MCP-Server",
   "dev_description": "Verwalten Sie Ihre API-Schlüssel und greifen Sie auf die Entwicklerdokumentation zu.",
   "dev_form_key_name": "Schlüsselname",
   "dev_form_key_placeholder": "Namen eingeben",

@@ -68,7 +68,7 @@ Dynamic client registration (DCR) is **enabled by default**. Cursor and other MC
 {
   "mcpServers": {
     "coach-watts": {
-      "url": "https://app.coachwatts.com/mcp"
+      "url": "https://coachwatts.com/mcp"
     }
   }
 }

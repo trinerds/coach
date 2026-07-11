@@ -259,6 +259,7 @@
   "dev_button_revoke": "キーを取り消す",
   "dev_button_view_data": "データを表示",
   "dev_button_view_docs": "ドキュメントを見る",
+  "dev_button_mcp_server": "MCPサーバー",
   "dev_description": "API キーを管理し、開発者向けドキュメントにアクセスします。",
   "dev_form_key_name": "キー名",
   "dev_form_key_placeholder": "名前を入力してください",

@@ -259,6 +259,7 @@
   "dev_button_revoke": "撤销密钥",
   "dev_button_view_data": "查看数据",
   "dev_button_view_docs": "查看文档",
+  "dev_button_mcp_server": "MCP 服务器",
   "dev_description": "管理您的 API 密钥并访问开发者文档。",
   "dev_form_key_name": "键名",
   "dev_form_key_placeholder": "请输入姓名",

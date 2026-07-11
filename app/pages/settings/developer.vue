@@ -74,17 +74,29 @@
             </p>
           </div>
         </div>
-        <UButton
-          to="/_docs/scalar"
-          target="_blank"
-          color="neutral"
-          variant="outline"
-          icon="i-heroicons-arrow-top-right-on-square"
-          size="sm"
-          class="font-bold shrink-0"
-        >
-          {{ t('dev_button_view_docs') }}
-        </UButton>
+        <div class="flex flex-wrap gap-2">
+          <UButton
+            to="/_docs/scalar"
+            target="_blank"
+            color="neutral"
+            variant="outline"
+            icon="i-heroicons-arrow-top-right-on-square"
+            size="sm"
+            class="font-bold shrink-0"
+          >
+            {{ t('dev_button_view_docs') }}
+          </UButton>
+          <UButton
+            to="/documentation/developers/mcp-server"
+            color="neutral"
+            variant="outline"
+            icon="i-heroicons-cpu-chip"
+            size="sm"
+            class="font-bold shrink-0"
+          >
+            {{ t('dev_button_mcp_server') }}
+          </UButton>
+        </div>
       </div>
     </UCard>
 

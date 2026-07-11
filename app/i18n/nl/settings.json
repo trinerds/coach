@@ -259,6 +259,7 @@
   "dev_button_revoke": "Sleutel intrekken",
   "dev_button_view_data": "Gegevens bekijken",
   "dev_button_view_docs": "Bekijk documentatie",
+  "dev_button_mcp_server": "MCP-server",
   "dev_description": "Beheer uw API-sleutels en krijg toegang tot documentatie voor ontwikkelaars.",
   "dev_form_key_name": "Sleutelnaam",
   "dev_form_key_placeholder": "Voer een naam in",

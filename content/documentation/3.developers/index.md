@@ -9,5 +9,6 @@ Welcome to the Coach Watts developer documentation. This section is designed for
 
 - **Authentication**: Learn how to authenticate your requests.
 - **API Reference**: Explore our REST API endpoints.
+- **MCP Server**: Connect AI assistants via the remote Model Context Protocol endpoint.
 - **Webhooks**: Listen to real-time events from our system.
 - **Timezone Handling**: Understand how we manage dates and times globally.

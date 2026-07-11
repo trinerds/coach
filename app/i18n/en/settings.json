@@ -274,6 +274,7 @@
   "dev_button_revoke": "Revoke Key",
   "dev_button_view_data": "View Data",
   "dev_button_view_docs": "View Docs",
+  "dev_button_mcp_server": "MCP Server",
   "dev_copy": "Copy",
   "dev_description": "Manage your API keys and access developer documentation.",
   "dev_form_key_name": "Key Name",

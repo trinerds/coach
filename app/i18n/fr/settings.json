@@ -259,6 +259,7 @@
   "dev_button_revoke": "Révoquer la clé",
   "dev_button_view_data": "Afficher les données",
   "dev_button_view_docs": "Voir la documentation",
+  "dev_button_mcp_server": "Serveur MCP",
   "dev_description": "Gérez vos clés API et accédez à la documentation développeur.",
   "dev_form_key_name": "Nom de la clé",
   "dev_form_key_placeholder": "Saisir un nom",

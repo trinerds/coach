@@ -259,6 +259,7 @@
   "dev_button_revoke": "Отменить ключ",
   "dev_button_view_data": "Просмотреть данные",
   "dev_button_view_docs": "Просмотреть документы",
+  "dev_button_mcp_server": "MCP-сервер",
   "dev_description": "Управляйте своими API-ключами и получайте доступ к документации для разработчиков.",
   "dev_form_key_name": "Имя ключа",
   "dev_form_key_placeholder": "Введите имя",

@@ -259,6 +259,7 @@
   "dev_button_revoke": "Revoca chiave",
   "dev_button_view_data": "Visualizza dati",
   "dev_button_view_docs": "Visualizza documentazione",
+  "dev_button_mcp_server": "Server MCP",
   "dev_description": "Gestisci le tue chiavi API e accedi alla documentazione per sviluppatori.",
   "dev_form_key_name": "Nome chiave",
   "dev_form_key_placeholder": "Inserisci un nome",

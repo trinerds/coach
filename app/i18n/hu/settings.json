@@ -259,6 +259,7 @@
   "dev_button_revoke": "Kulcs visszavonása",
   "dev_button_view_data": "Adatok megtekintése",
   "dev_button_view_docs": "Dokumentáció megtekintése",
+  "dev_button_mcp_server": "MCP-szerver",
   "dev_description": "Kezelje API-kulcsait és érje el a fejlesztői dokumentációt.",
   "dev_form_key_name": "Kulcs neve",
   "dev_form_key_placeholder": "Adjon meg egy nevet",
