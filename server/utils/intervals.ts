@@ -769,7 +769,6 @@ export async function fetchIntervalsAthleteProfile(integration: Integration) {
       hrZones: currentHrZones,
       powerZones: currentPowerZones,
       paceZones: currentPaceZones,
-      paceZoneUnit: 'm/s',
       thresholdPace: currentThresholdPace,
 
       // Extended Power
