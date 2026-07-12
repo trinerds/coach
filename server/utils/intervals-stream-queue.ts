@@ -8,7 +8,7 @@ export type IntervalsStreamJobData = {
 }
 
 export function intervalsStreamJobId(activityId: string) {
-  return `intervals-stream:${activityId}`
+  return `intervals-stream-${activityId}`
 }
 
 export async function enqueueIntervalsStreamSync(input: {

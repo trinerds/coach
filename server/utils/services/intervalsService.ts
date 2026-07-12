@@ -1894,15 +1894,10 @@ export const IntervalsService = {
               userId,
               planned.type || ''
             )
-            await ensureSportSettingsForIntervalsImport(userId, planned.type || '')
-            const refreshedSettings = await sportSettingsRepository.getForActivityType(
-              userId,
-              planned.type || ''
-            )
             const normalizedPlanned = normalizeIntervalsPlannedWorkout(
               planned,
               userId,
-              createZoneProfileSnapshot(refreshedSettings || plannedSettings)
+              createZoneProfileSnapshot(plannedSettings)
             )
 
             let existingRecord = existingMap.get(normalizedPlanned.externalId) as any

@@ -18,7 +18,7 @@ describe('intervals stream queue', () => {
   })
 
   it('builds a stable dedupe job id per activity', () => {
-    expect(intervalsStreamJobId('i123')).toBe('intervals-stream:i123')
+    expect(intervalsStreamJobId('i123')).toBe('intervals-stream-i123')
   })
 
   it('enqueues stream sync jobs with dedupe job id', async () => {
@@ -38,7 +38,7 @@ describe('intervals stream queue', () => {
         workoutId: 'workout-1',
         activityId: 'i123'
       },
-      { jobId: 'intervals-stream:i123' }
+      { jobId: 'intervals-stream-i123' }
     )
   })
 

@@ -32,7 +32,7 @@ export const startCommand = new Command('start')
       retryStrategy: (times) => getRedisRetryDelay(times)
     })
 
-    const concurrency = parseInt(process.env.CW_WORKER_QUEUE_WEBHOOK_CONCURRENCY || '1')
+    const concurrency = parseInt(process.env.CW_WORKER_QUEUE_WEBHOOK_CONCURRENCY || '5')
     const streamConcurrency = parseInt(process.env.CW_WORKER_QUEUE_STREAM_CONCURRENCY || '2')
     let restartRequested = false
 

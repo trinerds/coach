@@ -188,6 +188,7 @@ const INTERVALS_MAX_REQUESTS_PER_SECOND = 10
 const INTERVALS_MAX_REQUESTS_PER_TEN_SECONDS = 100
 const INTERVALS_REQUEST_WINDOW_MS = 1000
 const INTERVALS_REQUEST_WINDOW_LONG_MS = 10_000
+const INTERVALS_FETCH_TIMEOUT_MS = 30_000
 
 const intervalsRequestTimestamps: number[] = []
 let intervalsRateLimitQueue: Promise<void> = Promise.resolve()
@@ -241,6 +242,17 @@ async function waitForIntervalsRateLimitSlot(): Promise<void> {
   await scheduled
 }
 
+function withFetchTimeout(options: RequestInit = {}): RequestInit {
+  if (options.signal) {
+    return options
+  }
+
+  return {
+    ...options,
+    signal: AbortSignal.timeout(INTERVALS_FETCH_TIMEOUT_MS)
+  }
+}
+
 export function normalizeIntervalsCalendarNote(event: IntervalsPlannedWorkout, userId: string) {
   // Parse the local date string (YYYY-MM-DDTHH:mm:ss) and force to UTC midnight
   // for day-granular notes to avoid timezone shifting in the UI.
@@ -276,7 +288,7 @@ async function fetchWithRetry(
 ): Promise<Response> {
   try {
     await waitForIntervalsRateLimitSlot()
-    const response = await fetch(url, options)
+    const response = await fetch(url, withFetchTimeout(options))
 
     if (response.status === 429 && retries > 0) {
       const retryAfter = response.headers.get('Retry-After')

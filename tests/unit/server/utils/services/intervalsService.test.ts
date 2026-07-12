@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { prisma } from '../../../../../server/utils/db'
 import {
   normalizeIntervalsWorkout,
+  normalizeIntervalsPlannedWorkout,
   fetchIntervalsActivity,
   fetchIntervalsWorkouts
 } from '../../../../../server/utils/intervals'
@@ -60,6 +61,19 @@ vi.mock('../../../../../server/utils/repositories/workoutRepository', () => ({
     upsert: vi.fn(),
     getByExternalId: vi.fn(),
     update: vi.fn()
+  }
+}))
+
+vi.mock('../../../../../server/utils/repositories/sportSettingsRepository', () => ({
+  sportSettingsRepository: {
+    getForActivityType: vi.fn().mockResolvedValue({ paceZones: [{ min: 0, max: 1 }] })
+  }
+}))
+
+vi.mock('../../../../../server/utils/repositories/calendarNoteRepository', () => ({
+  calendarNoteRepository: {
+    upsert: vi.fn(),
+    deleteExternal: vi.fn()
   }
 }))
 
@@ -367,5 +381,33 @@ describe('IntervalsService CALENDAR_UPDATED', () => {
     expect(deleteSpy).toHaveBeenCalledWith(userId, ['102317301', '102184251'])
 
     deleteSpy.mockRestore()
+  })
+
+  it('does not refresh Intervals sport settings during calendar webhook import', async () => {
+    const syncProfileSpy = vi.spyOn(IntervalsService, 'syncProfile').mockResolvedValue({} as any)
+    vi.mocked(prisma.plannedWorkout.findMany).mockResolvedValue([])
+    vi.mocked(prisma.plannedWorkout.upsert).mockResolvedValue({ id: 'pw-1' } as any)
+    vi.mocked(normalizeIntervalsPlannedWorkout).mockReturnValue({
+      externalId: '12345',
+      title: 'Endurance',
+      date: new Date('2026-07-13T08:00:00Z'),
+      type: 'Ride',
+      userId
+    } as any)
+
+    await IntervalsService.processWebhookEvent(userId, 'CALENDAR_UPDATED', {
+      events: [
+        {
+          id: 12345,
+          name: 'Endurance',
+          type: 'Ride',
+          category: 'WORKOUT',
+          start_date_local: '2026-07-13T08:00:00'
+        }
+      ]
+    })
+
+    expect(syncProfileSpy).not.toHaveBeenCalled()
+    syncProfileSpy.mockRestore()
   })
 })
