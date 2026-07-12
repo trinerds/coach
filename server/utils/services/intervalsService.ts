@@ -1575,16 +1575,8 @@ export const IntervalsService = {
             )
           }
 
-          if (Array.isArray(activity.stream_types) && activity.stream_types.length > 0) {
-            try {
-              await IntervalsService.syncActivityStream(userId, record.id, activityId)
-            } catch (error) {
-              console.error(
-                `[IntervalsService] Failed to sync stream for workout ${record.id}`,
-                error
-              )
-            }
-          }
+          // Webhook path: upsert activity summary from payload only. Stream fetch/sync is
+          // deferred to full ingestion (ingest-intervals) or ingest-intervals-streams.
         } else if (activityId && activity) {
           console.warn(
             `[IntervalsService] ${type} activity ${activityId} still lacks a usable date after fallback; applying delta-only patch path`

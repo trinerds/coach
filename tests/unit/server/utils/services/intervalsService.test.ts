@@ -137,6 +137,34 @@ describe('IntervalsService ACTIVITY_UPDATED', () => {
     streamSpy.mockRestore()
   })
 
+  it('does not sync activity streams on webhook even when stream_types are present', async () => {
+    vi.mocked(prisma.plannedWorkout.findUnique).mockResolvedValue(null as any)
+    vi.mocked(workoutRepository.upsert).mockResolvedValue({
+      record: { id: 'w-stream' } as any,
+      isNew: true
+    })
+
+    const streamSpy = vi
+      .spyOn(IntervalsService, 'syncActivityStream')
+      .mockResolvedValue(null as any)
+
+    await IntervalsService.processWebhookEvent(userId, 'ACTIVITY_UPLOADED', {
+      activity: {
+        id: 'i555',
+        name: 'Long Ride',
+        type: 'Ride',
+        start_date: '2026-01-21T10:00:00Z',
+        moving_time: 7200,
+        stream_types: ['time', 'watts', 'heartrate']
+      }
+    })
+
+    expect(workoutRepository.upsert).toHaveBeenCalledTimes(1)
+    expect(streamSpy).not.toHaveBeenCalled()
+
+    streamSpy.mockRestore()
+  })
+
   it('applies delta update without sync when payload is thin but workout exists', async () => {
     vi.mocked(workoutRepository.getByExternalId).mockResolvedValue({
       id: 'w-thin',
