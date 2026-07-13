@@ -27,6 +27,7 @@ export type PlannedWorkoutPublishContext = {
     syncStatus: string | null
     syncConflict: boolean
     structuredWorkout: unknown
+    structureRevision: number
     lastGenerationSettingsSnapshot: unknown
     createdFromSettingsSnapshot: unknown
     user: { ftp: number | null; timezone?: string | null } | null

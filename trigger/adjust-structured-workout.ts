@@ -570,7 +570,11 @@ function hasRepeatBlock(steps: any[]): boolean {
   )
 }
 
-function getCoverageBounds(workout: any, plannedDurationSec: number) {
+function getCoverageBounds(workout: any, plannedDurationSec: number, preserveStructure?: boolean) {
+  if (preserveStructure) {
+    return { minCoverage: 0.95, maxCoverage: 1.05 }
+  }
+
   const workoutType = String(workout?.type || '').toLowerCase()
   if (workoutType.includes('gym') || workoutType.includes('weight')) {
     const absoluteToleranceRatio = plannedDurationSec > 0 ? 600 / plannedDurationSec : 0
@@ -595,14 +599,19 @@ function validateStructuredCoverage(params: {
   actualDurationSec: number
   steps: any[]
   workout: any
+  preserveStructure?: boolean
 }) {
-  const { plannedDurationSec, actualDurationSec, steps, workout } = params
+  const { plannedDurationSec, actualDurationSec, steps, workout, preserveStructure } = params
   if (plannedDurationSec <= 0) {
     return { valid: actualDurationSec > 0, reason: actualDurationSec > 0 ? null : 'zero_duration' }
   }
 
   const coverage = actualDurationSec / plannedDurationSec
-  const { minCoverage, maxCoverage } = getCoverageBounds(workout, plannedDurationSec)
+  const { minCoverage, maxCoverage } = getCoverageBounds(
+    workout,
+    plannedDurationSec,
+    preserveStructure
+  )
   if (coverage < minCoverage) {
     return {
       valid: false,
