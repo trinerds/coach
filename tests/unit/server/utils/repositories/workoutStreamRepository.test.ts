@@ -3,6 +3,7 @@ import {
   sanitizeBooleanStreamArray,
   sanitizeFloatStreamArray,
   sanitizeIntStreamArray,
+  splitLatlngPoints,
   workoutStreamRepository
 } from '../../../../../server/utils/repositories/workoutStreamRepository'
 
@@ -66,6 +67,17 @@ describe('workoutStreamRepository', () => {
     })
   })
 
+  describe('splitLatlngPoints', () => {
+    it('skips null lat/lng pairs from Intervals stream payloads', () => {
+      expect(
+        splitLatlngPoints([[48.85, 2.35], null, [48.86, 2.36], [48.87], 'invalid'] as unknown[])
+      ).toEqual({
+        lat: [48.85, 48.86],
+        lng: [2.35, 2.36]
+      })
+    })
+  })
+
   describe('upsert', () => {
     it('sanitizes nullable cadence values before writing to WorkoutStreamV2', async () => {
       await workoutStreamRepository.upsert('workout-1', {
@@ -93,6 +105,21 @@ describe('workoutStreamRepository', () => {
         expect.objectContaining({
           create: expect.objectContaining({
             distance: [0, 0, 100 + 1e-9, 200.5]
+          })
+        })
+      )
+    })
+
+    it('skips null lat/lng pairs when persisting GPS streams', async () => {
+      await workoutStreamRepository.upsert('workout-1', {
+        latlng: [[48.85, 2.35], null, [48.86, 2.36]] as unknown as [number, number][]
+      })
+
+      expect(workoutStreamV2.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          create: expect.objectContaining({
+            lat: [48.85 + 1e-9, 48.86 + 1e-9],
+            lng: [2.35 + 1e-9, 2.36 + 1e-9]
           })
         })
       )

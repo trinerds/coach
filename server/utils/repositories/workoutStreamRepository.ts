@@ -90,6 +90,31 @@ export function sanitizeBooleanStreamArray(values: boolean[] | null | undefined)
   return values.map((value) => value === true)
 }
 
+/** Intervals stream payloads can include null lat/lng pairs; skip invalid points instead of throwing. */
+export function splitLatlngPoints(latlng: readonly unknown[] | null | undefined): {
+  lat: number[]
+  lng: number[]
+} {
+  if (!latlng?.length) return { lat: [], lng: [] }
+
+  const lat: number[] = []
+  const lng: number[] = []
+
+  for (const point of latlng) {
+    if (!Array.isArray(point) || point.length < 2) continue
+
+    const latVal = point[0]
+    const lngVal = point[1]
+    if (latVal == null || lngVal == null) continue
+    if (!Number.isFinite(Number(latVal)) || !Number.isFinite(Number(lngVal))) continue
+
+    lat.push(Number(latVal))
+    lng.push(Number(lngVal))
+  }
+
+  return { lat, lng }
+}
+
 export async function attachStreamToWorkout<T extends { id: string }>(
   workout: T
 ): Promise<T & { streams: NormalizedStream | null }> {
@@ -254,8 +279,7 @@ export const workoutStreamRepository = {
       targetPower,
       ...meta
     } = data
-    const lat = latlng?.map(([latVal]) => latVal) ?? []
-    const lng = latlng?.map(([, lngVal]) => lngVal) ?? []
+    const { lat, lng } = splitLatlngPoints(latlng)
 
     const writeData: any = {
       ...meta,
