@@ -1,5 +1,46 @@
 import { convertToModelMessages } from 'ai'
 
+function toJsonSafe(value: any, seen: WeakSet<object> = new WeakSet()): any {
+  if (value === null) return null
+
+  const t = typeof value
+  if (t === 'string' || t === 'number' || t === 'boolean') return value
+  if (t === 'bigint') return value.toString()
+  if (t === 'undefined') return null
+  if (t === 'function' || t === 'symbol') return null
+
+  if (value instanceof Date) return value.toISOString()
+  if (value instanceof Error) {
+    return {
+      name: value.name,
+      message: value.message,
+      stack: value.stack
+    }
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((v) => toJsonSafe(v, seen))
+  }
+
+  if (t === 'object') {
+    if (seen.has(value)) return '[Circular]'
+    seen.add(value)
+
+    const out: Record<string, any> = {}
+    for (const [k, v] of Object.entries(value)) {
+      out[k] = toJsonSafe(v, seen)
+    }
+    return out
+  }
+
+  // Fallback for weird host objects
+  try {
+    return JSON.parse(JSON.stringify(value))
+  } catch {
+    return String(value)
+  }
+}
+
 function getUiToolName(part: any) {
   if (part?.toolName || part?.name) {
     return part.toolName || part.name
@@ -184,11 +225,16 @@ export async function transformHistoryToCoreMessages(historyMessages: any[]) {
       continue
     }
 
+    // The Vercel AI SDK validates message schemas via Zod and rejects non-JSON
+    // values like Date objects. History messages can contain Date fields
+    // (createdAt/updatedAt) and tool outputs may include Dates too.
+    const safeMsg = toJsonSafe(msg)
+
     // Use SDK helper
-    const converted = await convertToModelMessages([msg])
+    const converted = await convertToModelMessages([safeMsg])
 
     // Pre-calculate extracted results for this message (if any)
-    const toolResultParts = (msg.parts || []).filter(
+    const toolResultParts = (safeMsg.parts || []).filter(
       (p: any) => p.type === 'tool-invocation' && p.state === 'result'
     )
 
@@ -206,7 +252,7 @@ export async function transformHistoryToCoreMessages(historyMessages: any[]) {
           ;(coreMsg as any).content = []
         }
 
-        const uiParts = (msg.parts || []) as any[]
+        const uiParts = (safeMsg.parts || []) as any[]
 
         // A. Rehydrate raw tool-call metadata from persisted UI parts when available.
         const coreContent = (coreMsg as any).content as any[]
@@ -240,7 +286,9 @@ export async function transformHistoryToCoreMessages(historyMessages: any[]) {
         if (toolParts.length > 0) {
           // Look ahead in history to see if this tool call was actually executed/responded to
           const currentMsgIndex = historyMessages.indexOf(msg)
-          const subsequentMessages = historyMessages.slice(currentMsgIndex + 1)
+          const subsequentMessages = historyMessages
+            .slice(currentMsgIndex + 1)
+            .map((m) => (m && typeof m === 'object' ? toJsonSafe(m) : m))
 
           const validToolParts = toolParts.filter((tp: any) => {
             const id = tp.toolCallId || tp.approvalId
@@ -288,7 +336,9 @@ export async function transformHistoryToCoreMessages(historyMessages: any[]) {
 
         // C. Sanitize: Remove tool calls that have NO result (Dangling calls)
         const currentMsgIndex = historyMessages.indexOf(msg)
-        const subsequentMessages = historyMessages.slice(currentMsgIndex + 1)
+        const subsequentMessages = historyMessages
+          .slice(currentMsgIndex + 1)
+          .map((m) => (m && typeof m === 'object' ? toJsonSafe(m) : m))
 
         // Collect approval-responded tool call IDs — these represent pending execution
         // (the tool call was approved but not yet executed, so streamText must run it this turn).

@@ -23,7 +23,6 @@ export function lttb<T>(
   const bucketSize = (length - 2) / (targetPoints - 2)
 
   let a = 0 // Point A (the last sampled point)
-  let nextA = 0
 
   for (let i = 0; i < targetPoints - 2; i++) {
     // Calculate point average for next bucket (middle bucket)
@@ -45,13 +44,14 @@ export function lttb<T>(
     // Get the range for this bucket
     let rangeOffs = Math.floor(i * bucketSize) + 1
     const rangeTo = Math.floor((i + 1) * bucketSize) + 1
+    let nextA = rangeOffs
 
     // Point A
     const pointAX = xAccessor(data[a]!)
     const pointAY = yAccessor(data[a]!)
 
     let maxArea = -1
-    let area = -1
+    let area: number
 
     for (; rangeOffs < rangeTo; rangeOffs++) {
       // Calculate triangle area over three buckets
@@ -72,7 +72,7 @@ export function lttb<T>(
   }
 
   // Always include the last point
-  sampled[sampledIndex++] = data[length - 1]!
+  sampled[sampledIndex] = data[length - 1]!
 
   return sampled
 }
