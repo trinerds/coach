@@ -12,7 +12,11 @@ const isTaskRunningMock = vi.hoisted(() => vi.fn())
 
 vi.stubGlobal('prisma', prismaMock)
 
-vi.mock('../../../../../server/utils/trigger-check', () => ({
+vi.mock('../../../../server/utils/db', () => ({
+  prisma: prismaMock
+}))
+
+vi.mock('../../../../server/utils/trigger-check', () => ({
   isTaskRunning: isTaskRunningMock
 }))
 
@@ -26,7 +30,7 @@ describe('integration-sync-guard', () => {
     isTaskRunningMock.mockResolvedValue(false)
 
     const { resolveProviderSyncBlock } =
-      await import('../../../../../server/utils/integration-sync-guard')
+      await import('../../../../server/utils/integration-sync-guard')
 
     const result = await resolveProviderSyncBlock('user-1', {
       id: 'integration-oura',
@@ -48,7 +52,7 @@ describe('integration-sync-guard', () => {
     isTaskRunningMock.mockImplementation(async (taskId: string) => taskId === 'ingest-oura')
 
     const { resolveProviderSyncBlock } =
-      await import('../../../../../server/utils/integration-sync-guard')
+      await import('../../../../server/utils/integration-sync-guard')
 
     const result = await resolveProviderSyncBlock('user-1', {
       id: 'integration-oura',
@@ -66,8 +70,7 @@ describe('integration-sync-guard', () => {
       { id: 'integration-oura', provider: 'oura', syncStatus: 'SYNCING' }
     ])
 
-    const { resolveSyncAllBlock } =
-      await import('../../../../../server/utils/integration-sync-guard')
+    const { resolveSyncAllBlock } = await import('../../../../server/utils/integration-sync-guard')
 
     const result = await resolveSyncAllBlock('user-1')
 
@@ -79,8 +82,7 @@ describe('integration-sync-guard', () => {
     isTaskRunningMock.mockImplementation(async (taskId: string) => taskId === 'ingest-all')
     prismaMock.integration.findFirst.mockResolvedValue({ provider: 'oura' })
 
-    const { resolveSyncAllBlock } =
-      await import('../../../../../server/utils/integration-sync-guard')
+    const { resolveSyncAllBlock } = await import('../../../../server/utils/integration-sync-guard')
 
     const result = await resolveSyncAllBlock('user-1')
 

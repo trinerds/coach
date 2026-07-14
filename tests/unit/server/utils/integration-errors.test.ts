@@ -3,7 +3,7 @@ import {
   IntegrationAuthError,
   IntegrationProviderError,
   shouldReportIntegrationErrorToSentry
-} from '../../../server/utils/integration-errors'
+} from '../../../../server/utils/integration-errors'
 
 describe('integration-errors', () => {
   it('does not report revoked integration auth errors to Sentry', () => {

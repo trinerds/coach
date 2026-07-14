@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   WORKER_MONITORING_THRESHOLDS,
   workerMonitoringHttpStatus
-} from '../../../../../server/utils/worker-monitoring'
+} from '../../../../server/utils/worker-monitoring'
 
 describe('worker monitoring', () => {
   it('maps critical status to HTTP 503', () => {

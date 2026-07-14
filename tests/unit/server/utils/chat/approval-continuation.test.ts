@@ -8,12 +8,12 @@ const { prismaMock } = vi.hoisted(() => ({
   }
 }))
 
-vi.mock('../../../../server/utils/db', () => ({
+vi.mock('../../../../../server/utils/db', () => ({
   prisma: prismaMock
 }))
 
 const { buildCanonicalApprovalResponse } =
-  await import('../../../server/utils/chat/approval-continuation')
+  await import('../../../../../server/utils/chat/approval-continuation')
 
 describe('buildCanonicalApprovalResponse', () => {
   beforeEach(() => {

@@ -1,6 +1,6 @@
 import { createHmac } from 'crypto'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { generateWsToken, verifyWsToken } from '../../../server/utils/ws-auth'
+import { generateWsToken, verifyWsToken } from '../../../../server/utils/ws-auth'
 
 describe('ws-auth', () => {
   beforeEach(() => {

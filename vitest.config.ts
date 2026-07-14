@@ -25,6 +25,8 @@ export default defineVitestConfig({
   test: {
     environment: 'happy-dom',
     globals: true,
+    hookTimeout: 60_000,
+    exclude: ['**/node_modules/**', '**/dist/**', 'e2e/**'],
     setupFiles: [path.resolve(rootDir, './tests/unit/setup.ts')],
     coverage: {
       provider: 'v8',

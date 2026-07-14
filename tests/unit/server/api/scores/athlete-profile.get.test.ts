@@ -44,6 +44,18 @@ vi.mock('../../../../../server/utils/services/pbDetectionService', () => ({
   }
 }))
 
+vi.mock('../../../../../server/utils/repositories/workoutStreamRepository', () => ({
+  attachStreamsToWorkouts: vi.fn(async (workouts) =>
+    workouts.map((workout: any) => ({
+      ...workout,
+      streams: {
+        time: [0, 1180],
+        distance: [0, 5000]
+      }
+    }))
+  )
+}))
+
 const getHandler = async () => {
   const mod = await import('../../../../../server/api/scores/athlete-profile.get')
   return mod.default

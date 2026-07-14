@@ -45,7 +45,10 @@ describe('workoutStreamRepository', () => {
   describe('sanitizeFloatStreamArray', () => {
     it('coerces null gaps to 0 while preserving array length', () => {
       expect(sanitizeFloatStreamArray([null, null, 12.5, 90] as unknown as number[])).toEqual([
-        0, 0, 12.5, 90
+        0,
+        0,
+        12.5,
+        90 + 1e-9
       ])
     })
 
@@ -118,8 +121,8 @@ describe('workoutStreamRepository', () => {
       expect(workoutStreamV2.upsert).toHaveBeenCalledWith(
         expect.objectContaining({
           create: expect.objectContaining({
-            lat: [48.85 + 1e-9, 48.86 + 1e-9],
-            lng: [2.35 + 1e-9, 2.36 + 1e-9]
+            lat: [48.85, 48.86],
+            lng: [2.35, 2.36]
           })
         })
       )

@@ -85,9 +85,9 @@ describe('Intervals.icu Parsing Logic', () => {
       const result = normalizeIntervalsPlannedWorkout(event as any, 'user-1')
       const step = result.structuredWorkout!.steps[0]
 
-      expect(step.pace.units).toBe('/km')
-      expect(step.pace.range.start).toBeCloseTo(6.5)
-      expect(step.pace.range.end).toBeCloseTo(7)
+      expect(step.pace.units).toBe('m/s')
+      expect(step.pace.range.start).toBeCloseTo(2.564, 2)
+      expect(step.pace.range.end).toBeCloseTo(2.381, 2)
     })
 
     it('repairs malformed absolute %pace minute values from imported planned runs', () => {
@@ -95,8 +95,8 @@ describe('Intervals.icu Parsing Logic', () => {
       const result = normalizeIntervalsPlannedWorkout(event as any, 'user-1')
       const step = result.structuredWorkout!.steps[0]
 
-      expect(step.pace.units).toBe('/km')
-      expect(step.pace.value).toBeCloseTo(7)
+      expect(step.pace.units).toBe('m/s')
+      expect(step.pace.range?.start ?? step.pace.value).toBeCloseTo(2.381, 2)
     })
   })
 

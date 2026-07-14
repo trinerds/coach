@@ -3,7 +3,7 @@ import {
   buildSharedChatMessages,
   shouldIncludeMessageInSharedChat,
   sanitizeSharedChatMessage
-} from '../../../../server/utils/chat/share-sanitize'
+} from '../../../../../server/utils/chat/share-sanitize'
 
 describe('share-sanitize', () => {
   it('excludes tool messages and hidden assistant drafts', () => {

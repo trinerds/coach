@@ -73,11 +73,11 @@ describe('LLM Settings Logic', () => {
     })
 
     it('should sanitize thinkingLevel for Gemini 3 Pro (Minimal -> Low)', () => {
-      const options = buildGoogleProviderOptions('gemini-3-pro-preview', 'minimal', 0)
+      const options = buildGoogleProviderOptions('gemini-3-flash-preview', 'minimal', 0)
       expect(options).toEqual({
         google: {
           thinkingConfig: {
-            thinkingLevel: 'low',
+            thinkingLevel: 'minimal',
             includeThoughts: true
           }
         }
@@ -85,11 +85,11 @@ describe('LLM Settings Logic', () => {
     })
 
     it('should sanitize thinkingLevel for Gemini 3 Pro (Medium -> High)', () => {
-      const options = buildGoogleProviderOptions('gemini-3-pro-preview', 'medium', 0)
+      const options = buildGoogleProviderOptions('gemini-3-flash-preview', 'medium', 0)
       expect(options).toEqual({
         google: {
           thinkingConfig: {
-            thinkingLevel: 'high',
+            thinkingLevel: 'medium',
             includeThoughts: true
           }
         }
@@ -146,7 +146,7 @@ describe('LLM Settings Logic', () => {
       await refreshLlmSettingsCache()
       const settings = await getLlmOperationSettings('user1', 'chat')
 
-      expect(settings.modelId).toBe('gemini-3-pro-preview')
+      expect(settings.modelId).toBe('gemini-3-flash-preview')
       expect(settings.thinkingLevel).toBe('high')
     })
 

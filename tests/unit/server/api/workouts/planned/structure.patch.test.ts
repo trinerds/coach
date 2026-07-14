@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { prisma } from '../../../../../../server/utils/db'
 import { getServerSession } from '../../../../../../server/utils/session'
 import { sportSettingsRepository } from '../../../../../../server/utils/repositories/sportSettingsRepository'
+import { writeCanonicalPlannedWorkoutStructure } from '../../../../../../server/utils/canonical-planned-workout-write'
+import { syncManualPlannedWorkoutStructureToIntervalsIfSynced } from '../../../../../../server/utils/planned-workout-manual-structure-edit'
 
 vi.stubGlobal('defineEventHandler', (fn: any) => fn)
 vi.stubGlobal('getRouterParam', (event: any, name: string) => event.params?.[name])
@@ -31,6 +33,18 @@ vi.mock('../../../../../../server/utils/repositories/sportSettingsRepository', (
   sportSettingsRepository: {
     getForActivityType: vi.fn()
   }
+}))
+
+vi.mock('../../../../../../server/utils/structure-generation-run', () => ({
+  hasActiveStructureGenerationRun: vi.fn().mockResolvedValue(false)
+}))
+
+vi.mock('../../../../../../server/utils/planned-workout-manual-structure-edit', () => ({
+  syncManualPlannedWorkoutStructureToIntervalsIfSynced: vi.fn()
+}))
+
+vi.mock('../../../../../../server/utils/canonical-planned-workout-write', () => ({
+  writeCanonicalPlannedWorkoutStructure: vi.fn()
 }))
 
 vi.mock('../../../../../../server/utils/intervals-sync', () => ({
@@ -95,6 +109,19 @@ describe('PATCH /api/workouts/planned/:id/structure', () => {
       structuredWorkout: data.structuredWorkout,
       lastStructureEditSource: data.lastStructureEditSource
     }))
+    vi.mocked(writeCanonicalPlannedWorkoutStructure).mockResolvedValue({
+      workout: {
+        id: 'workout-1',
+        userId: 'user-1',
+        type: 'WeightTraining',
+        durationSec: 1800,
+        syncStatus: 'LOCAL_ONLY',
+        structuredWorkout: {}
+      }
+    } as any)
+    vi.mocked(syncManualPlannedWorkoutStructureToIntervalsIfSynced).mockResolvedValue({
+      synced: false
+    })
   })
 
   it('saves strength-only structure payloads without interval steps', async () => {
@@ -119,11 +146,11 @@ describe('PATCH /api/workouts/planned/:id/structure', () => {
     } as any)
 
     expect(result.success).toBe(true)
-    expect(prisma.plannedWorkout.update).toHaveBeenCalledWith({
-      where: { id: 'workout-1' },
-      data: expect.objectContaining({
-        lastStructureEditSource: 'USER',
-        structuredWorkout: expect.objectContaining({
+    expect(writeCanonicalPlannedWorkoutStructure).toHaveBeenCalledWith(
+      expect.objectContaining({
+        plannedWorkoutId: 'workout-1',
+        source: 'MANUAL_EDIT',
+        structure: expect.objectContaining({
           blocks: expect.arrayContaining([
             expect.objectContaining({
               title: 'Main Lift',
@@ -141,6 +168,6 @@ describe('PATCH /api/workouts/planned/:id/structure', () => {
           ])
         })
       })
-    })
+    )
   })
 })

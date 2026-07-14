@@ -38,8 +38,15 @@ vi.mock('../../../../../server/utils/db', () => ({
 
 vi.mock('@trigger.dev/sdk/v3', () => ({
   tasks: {
-    trigger: vi.fn()
+    trigger: vi.fn(),
+    onFailure: vi.fn()
   }
+}))
+
+vi.mock('../../../../../trigger/init', () => ({}))
+
+vi.mock('../../../../../server/utils/planned-workout-structure-trigger', () => ({
+  enqueuePlannedWorkoutStructureGeneration: vi.fn()
 }))
 
 vi.mock('../../../../../server/utils/intervals-sync', () => ({

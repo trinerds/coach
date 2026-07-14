@@ -3,7 +3,7 @@ import { Chart as ChartJS } from 'chart.js'
 import {
   ensureChartJsAnnotationDefaults,
   safeChartUpdate
-} from '../../app/utils/chartjs-annotation'
+} from '../../../app/utils/chartjs-annotation'
 
 describe('chartjs-annotation', () => {
   it('sets default annotation config on Chart.js', () => {

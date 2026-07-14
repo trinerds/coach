@@ -27,6 +27,10 @@ vi.stubGlobal('createError', (err: any) => {
   return error
 })
 
+vi.mock('../../../../../server/utils/repositories/workoutStreamRepository', () => ({
+  attachStreamToWorkout: vi.fn(async (workout) => ({ ...workout, streams: null }))
+}))
+
 vi.mock('../../../../../server/utils/repositories/workoutRepository', () => ({
   workoutRepository: {
     getById: vi.fn()
@@ -90,9 +94,7 @@ describe('GET /api/share/workouts/[token]/image', () => {
 
     const result = await handler({ params: { token: 'share-123' } })
 
-    expect(workoutRepository.getById).toHaveBeenCalledWith('workout-1', 'user-1', {
-      include: { streams: true }
-    })
+    expect(workoutRepository.getById).toHaveBeenCalledWith('workout-1', 'user-1')
     expect(imageGenerator.generateWorkoutImage).toHaveBeenCalledWith(expect.anything(), {
       variant: 'default',
       style: 'map',

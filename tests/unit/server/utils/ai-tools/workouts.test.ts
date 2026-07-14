@@ -11,6 +11,10 @@ vi.mock('../../../../../server/utils/repositories/workoutRepository', () => ({
   }
 }))
 
+vi.mock('../../../../../server/utils/repositories/workoutStreamRepository', () => ({
+  attachStreamToWorkout: vi.fn(async (workout) => ({ ...workout, streams: null }))
+}))
+
 // Mock prisma
 vi.mock('../../../../../server/utils/db', () => ({
   prisma: {
@@ -100,8 +104,7 @@ describe('workoutTools', () => {
 
       expect(workoutRepository.getById).toHaveBeenCalledWith('w1', userId, {
         include: {
-          plannedWorkout: true,
-          streams: true
+          plannedWorkout: true
         }
       })
       expect(result).toEqual({

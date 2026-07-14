@@ -40,11 +40,12 @@ describe('subscribeWithingsWebhooks', () => {
   })
 
   it('subscribes to weight, activity, and sleep notifications', async () => {
-    vi.mocked(fetch).mockResolvedValue(
-      new Response(JSON.stringify({ status: 0 }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' }
-      })
+    vi.mocked(fetch).mockImplementation(
+      async () =>
+        new Response(JSON.stringify({ status: 0 }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' }
+        })
     )
 
     const result = await subscribeWithingsWebhooks(

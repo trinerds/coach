@@ -17,6 +17,10 @@ vi.stubGlobal('prisma', {
   workout: { findUnique: workoutFindUnique }
 })
 
+vi.mock('../../../../../server/utils/repositories/workoutStreamRepository', () => ({
+  attachStreamToWorkout: vi.fn(async (workout) => ({ ...workout, streams: null }))
+}))
+
 describe('GET /api/share/workouts/[token]', () => {
   beforeEach(() => {
     vi.clearAllMocks()
