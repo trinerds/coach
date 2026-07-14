@@ -210,7 +210,11 @@
           :color="canInteract ? 'primary' : 'neutral'"
           size="sm"
           :disabled="!canInteract"
-          @click.stop="canInteract ? $emit('view', athlete) : null"
+          @click.stop="
+            () => {
+              if (canInteract) $emit('view', athlete)
+            }
+          "
         />
         <UTooltip v-if="canInteract" text="Message Athlete">
           <UButton

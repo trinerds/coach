@@ -108,7 +108,9 @@
     if (trialEnd > new Date()) return
 
     try {
-      summary.value = await $fetch('/api/profile/trial-summary')
+      summary.value = await $fetch<{
+        usage: Array<{ operation: string; count: number }>
+      }>('/api/profile/trial-summary')
     } catch {
       summary.value = null
     }
