@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { sanitizeCallbackUrl } from '~/utils/safe-callback-url'
+  import { sanitizeCallbackUrl } from '#shared/safe-callback-url'
 
   definePageMeta({
     layout: 'home',
