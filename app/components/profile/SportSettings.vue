@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-6 animate-fade-in">
-    <UCard :ui="{ body: 'p-0 sm:p-0' }">
+    <UCard :ui="{ ...profileSettingsCardUi, body: 'p-0 sm:p-0' }">
       <template #header>
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
@@ -1654,6 +1654,7 @@
 
 <script setup lang="ts">
   import { useTranslate } from '@tolgee/vue'
+  import { profileSettingsCardUi } from '~/utils/mobile-surface-ui'
   import { WORKOUT_ICONS } from '~/utils/activity-types'
 
   const { t } = useTranslate('profile')

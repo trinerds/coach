@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import { useTranslate } from '@tolgee/vue'
+  import { profileSettingsCardUi } from '~/utils/mobile-surface-ui'
   import { z } from 'zod'
   import type { FormErrorEvent, FormSubmitEvent } from '#ui/types'
 
@@ -172,7 +173,7 @@
     <UForm :schema="schema" :state="state" @submit="onSubmit" @error="onValidationError">
       <div class="space-y-6">
         <!-- Global Override Card -->
-        <UCard>
+        <UCard :ui="profileSettingsCardUi">
           <template #header>
             <div class="flex items-center gap-2">
               <UIcon name="i-heroicons-no-symbol" class="w-5 h-5 text-error-500" />
@@ -193,7 +194,7 @@
         </UCard>
 
         <!-- Training Insights Card -->
-        <UCard>
+        <UCard :ui="profileSettingsCardUi">
           <template #header>
             <div class="flex items-center gap-2">
               <UIcon name="i-heroicons-academic-cap" class="w-5 h-5 text-primary-500" />
@@ -286,7 +287,7 @@
         </UCard>
 
         <!-- Product & Marketing Card -->
-        <UCard>
+        <UCard :ui="profileSettingsCardUi">
           <template #header>
             <div class="flex items-center gap-2">
               <UIcon name="i-heroicons-sparkles" class="w-5 h-5 text-warning-500" />
@@ -317,7 +318,7 @@
         </UCard>
 
         <!-- Required Card -->
-        <UCard :ui="{ body: 'opacity-75' }">
+        <UCard :ui="{ ...profileSettingsCardUi, body: 'px-0 py-4 opacity-75 sm:px-6 sm:py-6' }">
           <template #header>
             <div class="flex items-center gap-2">
               <UIcon name="i-heroicons-credit-card" class="w-5 h-5 text-gray-400" />

@@ -14,7 +14,6 @@
                 variant="outline"
                 size="sm"
                 square
-                class="size-11 min-h-11 min-w-11"
                 :aria-label="t('share_footer_button')"
                 @click="
                   () => {
@@ -32,7 +31,7 @@
               color="neutral"
               variant="outline"
               size="sm"
-              class="flex size-11 min-h-11 min-w-11 font-bold"
+              class="font-bold"
               :aria-label="t('header_upload')"
             >
               <span class="hidden md:inline">{{ t('header_upload') }}</span>
@@ -45,7 +44,7 @@
               variant="outline"
               icon="i-heroicons-arrow-path"
               size="sm"
-              class="size-11 min-h-11 min-w-11 font-bold"
+              class="font-bold"
               :aria-label="t('header_sync_data')"
               @click="
                 () => {

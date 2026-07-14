@@ -1,7 +1,7 @@
 # Systematic App Review — Progress Tracker
 
 **Started:** 2026-07-08  
-**Last updated:** 2026-07-14 (mobile creation and transactional UI — issues 295–300 filed)
+**Last updated:** 2026-07-14 (issues 304–306 fixed — mobile card density)
 
 **Goal:** Comprehensive bug/UI/security audit across the full Coach Watts codebase. Documentation only — no refactors.
 
@@ -10,10 +10,10 @@
 | Metric                                             | Value                                                                   |
 | -------------------------------------------------- | ----------------------------------------------------------------------- |
 | Structure-generation issues                        | 001–038 ([issues.md](./issues.md)) — **37 / 38 fixed** (only 012 open)  |
-| App-review issues filed                            | 039–300                                                                 |
+| App-review issues filed                            | 039–306                                                                 |
 | **Postponed** (auth / third-party / OAuth / Yazio) | **21** — see [Postponed cluster](#postponed-auth--third-party-deferred) |
-| **Active (Open)**                                  | **105** app-review issues                                               |
-| **Total documented issues**                        | **300**                                                                 |
+| **Active (Open)**                                  | **80** app-review issues                                                |
+| **Total documented issues**                        | **306**                                                                 |
 | Review phases complete                             | 5 / 5 (core)                                                            |
 | **Overall review progress**                        | **~96%**                                                                |
 
@@ -59,6 +59,8 @@
 | 28  | Mobile navigation follow-up     | ✅ Done    | 290–291                                           | 17      |
 | 29  | Mobile discovery batch          | ✅ Done    | 292–294                                           | 18      |
 | 30  | Mobile creation and overlays    | ✅ Done    | 295–300                                           | 19      |
+| 31  | Mobile patch validation         | ✅ Done    | 301–303                                           | 20      |
+| 32  | Mobile card-density review      | ✅ Done    | 304–306 (filed + fixed)                           | 21–22   |
 
 **Legend:** ✅ Done · 🔄 Partial · ⏳ Pending
 
@@ -117,6 +119,9 @@
 | 2026-07-14 | 17      | Mobile navigation follow-up: header pointer collision, sidebar hierarchy, active-route visibility, and fixed footer                                     | 290–291    |
 | 2026-07-14 | 18      | Mobile discovery batch: Library, Coaching, Help Center, sidebar search, Profile Settings, and all nested Settings routes                                | 292–294    |
 | 2026-07-14 | 19      | Mobile creation and transactional UI: onboarding consent, manual connections, Exercise editor, plan wizard, Plan Architect overlays and cancellation    | 295–300    |
+| 2026-07-14 | 20      | Post-implementation mobile validation of navbar titles, sidebar slideover title, and footer accessible labels                                           | 301–303    |
+| 2026-07-14 | 21      | High-frequency mobile card-density review: Dashboard, Recovery, Profile surfaces, performance, activities, workouts, nutrition, and plan details        | 304–306    |
+| 2026-07-14 | 22      | Fix mobile card density — Athlete Profile divider modules, Profile Settings single gutter, Recovery flat context/filters                                | 304–306    |
 
 ## Postponed: auth & third-party (deferred 2026-07-08)
 
@@ -145,7 +150,7 @@ Skipped for now — auth/integration hardening may break ingest or requires prov
 | 070 | Yazio password plaintext storage     | Accepted for now; Yazio ingest works |
 | 158 | Developer GET leaks webhook secret   | OAuth developer portal batch         |
 
-## Next issue ID: 301
+## Next issue ID: 307
 
 ## Remaining optional work (~5%)
 
@@ -157,7 +162,7 @@ Skipped for now — auth/integration hardening may break ingest or requires prov
 
 ## Related docs
 
-- [app-review-issues.md](./app-review-issues.md) — Master index (039–300)
+- [app-review-issues.md](./app-review-issues.md) — Master index (039–306)
 - [issues.md](./issues.md) — Structure generation (001–038)
 - [issue-management.md](../04-guides/issue-management.md)
 - [SENTRY-ISSUES.md](../../SENTRY-ISSUES.md)

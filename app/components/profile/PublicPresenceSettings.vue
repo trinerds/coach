@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-8">
     <section class="space-y-6">
-      <UCard>
+      <UCard :ui="profileSettingsCardUi">
         <template #header>
           <div class="flex items-start justify-between gap-4">
             <div>
@@ -130,7 +130,7 @@
         </div>
       </UCard>
 
-      <UCard>
+      <UCard :ui="profileSettingsCardUi">
         <template #header>
           <div class="flex items-start justify-between gap-4">
             <div>
@@ -192,7 +192,7 @@
         </div>
       </UCard>
 
-      <UCard>
+      <UCard :ui="profileSettingsCardUi">
         <template #header>
           <div class="flex items-start justify-between gap-4">
             <div>
@@ -388,7 +388,7 @@
         </div>
       </UCard>
 
-      <UCard>
+      <UCard :ui="profileSettingsCardUi">
         <template #header>
           <div class="flex items-start justify-between gap-4">
             <div>
@@ -494,7 +494,7 @@
       </UCard>
     </section>
 
-    <UCard>
+    <UCard :ui="profileSettingsCardUi">
       <template #header>
         <div>
           <h3 class="text-lg font-semibold text-highlighted">How it works</h3>
@@ -538,6 +538,7 @@
     buildPublicCoachStartPath,
     buildPublicCoachPath
   } from '#shared/public-presence'
+  import { profileSettingsCardUi } from '~/utils/mobile-surface-ui'
   import {
     formatPublicPresenceApiError,
     getFirstValidationMessage,

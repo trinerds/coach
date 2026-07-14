@@ -17,7 +17,7 @@
               color="neutral"
               variant="outline"
               size="sm"
-              class="size-11 min-h-11 min-w-11 font-bold"
+              class="font-bold"
               :aria-label="t('nav_history')"
             >
               <span class="hidden md:inline">{{ t('nav_history') }}</span>
@@ -28,7 +28,7 @@
               color="neutral"
               variant="outline"
               size="sm"
-              class="size-11 min-h-11 min-w-11 font-bold"
+              class="font-bold"
               :loading="loading"
               :aria-label="t('nav_refresh')"
               @click="

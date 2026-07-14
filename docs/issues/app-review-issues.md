@@ -1,10 +1,10 @@
 # App Review — Issue Tracker
 
-Last reviewed: 2026-07-14 (mobile onboarding, overlays, workout, and plan creation review — issues 295–300 filed)
+Last reviewed: 2026-07-14 (issues 304–306 fixed — mobile card density)
 
-Documents app-wide issues **039–300** from systematic codebase and live UI review. Complements structure-generation tracker [issues.md](./issues.md) (001–038, **37 / 38 fixed**).
+Documents app-wide issues **039–306** from systematic codebase and live UI review. Complements structure-generation tracker [issues.md](./issues.md) (001–038, **37 / 38 fixed**).
 
-**Progress:** [REVIEW-PROGRESS.md](./REVIEW-PROGRESS.md) (~95% complete)
+**Progress:** [REVIEW-PROGRESS.md](./REVIEW-PROGRESS.md) (~96% complete)
 
 **Postponed:** 21 issues deferred (auth, webhooks, OAuth, Yazio credential storage) — ingest/integration flows unchanged until coordinated.
 
@@ -538,6 +538,22 @@ Post-implementation browser validation at 390×844 on localhost found regression
 - **Confirmed fixed:** #278 profile tabs, #286 apps copy, #292 exercise filter sheet, #285 reports mobile cards, #290–291 sidebar grouping/footer, overflow menus (#276 core behavior).
 - **Required follow-up fixes:** #301 (`app.config.ts` title slot), #302 (`:menu` title override), #303 (computed aria-label fallback).
 - **Remaining watch item:** `LayoutPageNavbarActions` uses the `lg` breakpoint while navbar titles previously hid below `sm` — consider aligning breakpoints if tablet layouts look inconsistent between 640–1024px.
+
+## Issues 304–306 (high-frequency mobile card density — 2026-07-14)
+
+Live 390×844 comparison of Dashboard, Recovery, Profile Settings, Athlete Profile, Performance, Activities, Workouts, Nutrition, Training Plan, and completed/planned workout details. Issues were filed only where stacked containment materially reduced usable width; single-layer cards on Performance, Nutrition, Workouts, and workout details remain useful reference implementations.
+
+| ID                                                                  | Title                                                 | Priority | Type    | Status |
+| ------------------------------------------------------------------- | ----------------------------------------------------- | -------- | ------- | ------ |
+| [304](./304-dashboard-athlete-profile-nested-cards-mobile.md)       | Dashboard Athlete Profile double-cards mobile content | Medium   | UI / UX | Fixed  |
+| [305](./305-profile-pages-stack-mobile-gutters-and-card-padding.md) | Profile pages stack mobile gutters and card padding   | Medium   | UI / UX | Fixed  |
+| [306](./306-recovery-page-triple-frames-empty-context-mobile.md)    | Recovery page triple-frames empty context on mobile   | Medium   | UI / UX | Fixed  |
+
+### Validation notes (304–306)
+
+- **304:** Athlete Profile uses one outer card on mobile; modules are divider-separated below `sm`. Metric grids switch to two columns on phones.
+- **305:** Shared `profileSettingsCardUi` / `athleteProfileCardUi` in `app/utils/mobile-surface-ui.ts`; single 16 px gutter on all Profile Settings tabs.
+- **306:** Recovery Context empty state flattened; mobile filters use a border-separated control row instead of a full card.
 
 ## Recommended fix order (app review)
 

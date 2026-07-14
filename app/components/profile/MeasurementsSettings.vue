@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-6">
-    <UCard>
+    <UCard :ui="profileSettingsCardUi">
       <template #header>
         <div>
           <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">
@@ -118,7 +118,7 @@
       </div>
     </UCard>
 
-    <UCard>
+    <UCard :ui="profileSettingsCardUi">
       <template #header>
         <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">
           {{ t('measurements_latest_title') }}
@@ -175,7 +175,7 @@
       </p>
     </UCard>
 
-    <UCard>
+    <UCard :ui="profileSettingsCardUi">
       <template #header>
         <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">
           {{ t('measurements_history_title') }}
@@ -406,6 +406,7 @@
 
 <script setup lang="ts">
   import { useTranslate } from '@tolgee/vue'
+  import { profileSettingsCardUi } from '~/utils/mobile-surface-ui'
   import { cmToFtIn, ftInToCm, LBS_TO_KG } from '~/utils/metrics'
 
   const { t } = useTranslate('profile')

@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-6 animate-fade-in">
     <!-- Personal Information Card -->
-    <UCard>
+    <UCard :ui="profileSettingsCardUi">
       <template #header>
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
@@ -65,7 +65,7 @@
     </UCard>
 
     <!-- Body Metrics Card -->
-    <UCard>
+    <UCard :ui="profileSettingsCardUi">
       <template #header>
         <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div>
@@ -168,7 +168,7 @@
     </UCard>
 
     <!-- Localization & Preferences Card -->
-    <UCard>
+    <UCard :ui="profileSettingsCardUi">
       <template #header>
         <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">
           {{ t('basic_localization_title') }}
@@ -277,7 +277,7 @@
     </UCard>
 
     <!-- Privacy & Location Card -->
-    <UCard>
+    <UCard :ui="profileSettingsCardUi">
       <template #header>
         <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">
           Privacy & Location
@@ -345,7 +345,7 @@
     </UCard>
 
     <!-- Login Methods Card -->
-    <UCard>
+    <UCard :ui="profileSettingsCardUi">
       <template #header>
         <div class="flex items-center justify-between">
           <div>
@@ -549,6 +549,7 @@
   import { countries } from '~/utils/countries'
   import { cmToFtIn, ftInToCm, LBS_TO_KG } from '~/utils/metrics'
   import { useTranslate } from '@tolgee/vue'
+  import { profileSettingsCardUi } from '~/utils/mobile-surface-ui'
 
   const { t } = useTranslate('profile')
 

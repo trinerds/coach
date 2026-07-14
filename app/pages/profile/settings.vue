@@ -18,8 +18,8 @@
     </template>
 
     <template #body>
-      <div class="flex-1 overflow-y-auto p-4 sm:p-6">
-        <div class="max-w-4xl mx-auto space-y-8">
+      <div class="flex-1 overflow-y-auto p-0 sm:p-6">
+        <div class="max-w-4xl mx-auto space-y-8 px-4 sm:px-0">
           <ProfileBasicSettings
             v-if="activeTab === 'basic'"
             :model-value="profile"
@@ -31,7 +31,7 @@
           />
 
           <div v-show="activeTab === 'availability'" class="space-y-4">
-            <UCard :ui="{ body: 'p-0 sm:p-0' }">
+            <UCard :ui="{ ...profileSettingsCardUi, body: 'p-0 sm:p-0' }">
               <template #header>
                 <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">
                   {{ t('availability_header_title') }}
@@ -182,6 +182,7 @@
   import ProfileCommunicationSettings from '~/components/profile/CommunicationSettings.vue'
   import ProfileMeasurementsSettings from '~/components/profile/MeasurementsSettings.vue'
   import ProfilePublicPresenceSettings from '~/components/profile/PublicPresenceSettings.vue'
+  import { profileSettingsCardUi } from '~/utils/mobile-surface-ui'
 
   const { t } = useTranslate('profile')
   const { data } = useAuth()

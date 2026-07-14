@@ -79,40 +79,76 @@
         <template v-else>
           <RecoveryContextStrip :items="activeToday" @select="openRecoveryItem" />
 
-          <UCard :ui="{ root: 'rounded-none sm:rounded-lg shadow-none sm:shadow', body: 'p-4' }">
-            <div class="grid gap-4 md:grid-cols-3">
-              <div>
-                <label
-                  class="mb-1 block text-xs font-semibold uppercase tracking-widest text-gray-500"
-                >
-                  {{ tr('recovery_filter_source', 'Source') }}
-                </label>
-                <USelect v-model="sourceFilter" :items="sourceOptions" />
+          <div class="px-4 sm:px-0">
+            <div class="space-y-3 border-y border-gray-200 py-4 dark:border-gray-800 sm:hidden">
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label
+                    class="mb-1 block text-xs font-semibold uppercase tracking-widest text-gray-500"
+                  >
+                    {{ tr('recovery_filter_source', 'Source') }}
+                  </label>
+                  <USelect v-model="sourceFilter" :items="sourceOptions" class="w-full" />
+                </div>
+                <div>
+                  <label
+                    class="mb-1 block text-xs font-semibold uppercase tracking-widest text-gray-500"
+                  >
+                    {{ tr('recovery_filter_type', 'Type') }}
+                  </label>
+                  <USelect v-model="kindFilter" :items="kindOptions" class="w-full" />
+                </div>
               </div>
-              <div>
-                <label
-                  class="mb-1 block text-xs font-semibold uppercase tracking-widest text-gray-500"
-                >
-                  {{ tr('recovery_filter_type', 'Type') }}
-                </label>
-                <USelect v-model="kindFilter" :items="kindOptions" />
-              </div>
-              <div class="flex items-end">
-                <UButton
-                  color="neutral"
-                  variant="ghost"
-                  size="sm"
-                  @click="
-                    () => {
-                      void resetFilters()
-                    }
-                  "
-                >
-                  {{ tr('recovery_reset_filters', 'Reset filters') }}
-                </UButton>
-              </div>
+              <UButton
+                color="neutral"
+                variant="ghost"
+                size="sm"
+                class="min-h-11 w-full justify-center"
+                @click="
+                  () => {
+                    void resetFilters()
+                  }
+                "
+              >
+                {{ tr('recovery_reset_filters', 'Reset filters') }}
+              </UButton>
             </div>
-          </UCard>
+
+            <UCard class="hidden sm:block" :ui="{ root: 'rounded-lg shadow', body: 'p-4' }">
+              <div class="grid gap-4 md:grid-cols-3">
+                <div>
+                  <label
+                    class="mb-1 block text-xs font-semibold uppercase tracking-widest text-gray-500"
+                  >
+                    {{ tr('recovery_filter_source', 'Source') }}
+                  </label>
+                  <USelect v-model="sourceFilter" :items="sourceOptions" />
+                </div>
+                <div>
+                  <label
+                    class="mb-1 block text-xs font-semibold uppercase tracking-widest text-gray-500"
+                  >
+                    {{ tr('recovery_filter_type', 'Type') }}
+                  </label>
+                  <USelect v-model="kindFilter" :items="kindOptions" />
+                </div>
+                <div class="flex items-end">
+                  <UButton
+                    color="neutral"
+                    variant="ghost"
+                    size="sm"
+                    @click="
+                      () => {
+                        void resetFilters()
+                      }
+                    "
+                  >
+                    {{ tr('recovery_reset_filters', 'Reset filters') }}
+                  </UButton>
+                </div>
+              </div>
+            </UCard>
+          </div>
 
           <RecoveryContextTimeline
             :items="filteredItems"

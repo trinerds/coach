@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-6">
-    <UCard>
+    <UCard :ui="profileSettingsCardUi">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-3">
           <div>
@@ -37,7 +37,7 @@
       ]"
     />
 
-    <UCard>
+    <UCard :ui="profileSettingsCardUi">
       <template #header>
         <div class="flex items-center justify-between">
           <div>
@@ -268,7 +268,7 @@
       </div>
     </UCard>
 
-    <UCard>
+    <UCard :ui="profileSettingsCardUi">
       <template #header>
         <div class="flex items-center justify-between">
           <div>
@@ -324,7 +324,7 @@
       </div>
     </UCard>
 
-    <UCard>
+    <UCard :ui="profileSettingsCardUi">
       <template #header>
         <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">
           {{ t('nutrition_header_constraints') }}
@@ -417,7 +417,7 @@
       </div>
     </UCard>
 
-    <UCard class="border-primary-200 dark:border-primary-800 border-2">
+    <UCard class="border-primary-200 dark:border-primary-800 border-2" :ui="profileSettingsCardUi">
       <template #header>
         <div class="flex items-center justify-between">
           <div>
@@ -606,7 +606,7 @@
       </div>
     </UCard>
 
-    <UCard class="border-primary-200 dark:border-primary-800 border-2">
+    <UCard class="border-primary-200 dark:border-primary-800 border-2" :ui="profileSettingsCardUi">
       <template #header>
         <div class="flex items-center justify-between">
           <div>
@@ -832,7 +832,7 @@
       </div>
     </UCard>
 
-    <UCard>
+    <UCard :ui="profileSettingsCardUi">
       <template #header>
         <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">
           {{ t('nutrition_header_hydration') }}
@@ -926,6 +926,7 @@
 
 <script setup lang="ts">
   import { useTranslate } from '@tolgee/vue'
+  import { profileSettingsCardUi } from '~/utils/mobile-surface-ui'
   import { ftInToCm, cmToFtIn, LBS_TO_KG } from '~/utils/metrics'
 
   const { t } = useTranslate('profile')

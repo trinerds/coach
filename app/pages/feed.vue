@@ -17,7 +17,7 @@
               color="neutral"
               variant="outline"
               size="sm"
-              class="size-11 min-h-11 min-w-11 font-black uppercase tracking-widest text-[10px]"
+              class="max-lg:size-11 max-lg:min-h-11 max-lg:min-w-11 font-black uppercase tracking-widest text-[10px]"
               aria-label="Filters"
               @click="
                 () => {

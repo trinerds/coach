@@ -17,7 +17,7 @@
               color="neutral"
               variant="outline"
               size="sm"
-              class="flex size-11 min-h-11 min-w-11 font-black uppercase tracking-widest text-[10px]"
+              class="font-black uppercase tracking-widest text-[10px]"
               :aria-label="t('header_upload')"
             >
               <span class="hidden md:inline">{{ t('header_upload') }}</span>
@@ -29,7 +29,6 @@
                 color="neutral"
                 variant="outline"
                 size="sm"
-                class="size-11 min-h-11 min-w-11"
                 :aria-label="t('header_menu_manage')"
               />
             </UDropdownMenu>

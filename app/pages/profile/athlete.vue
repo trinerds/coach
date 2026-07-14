@@ -82,7 +82,7 @@
     </template>
 
     <template #body>
-      <div class="p-6 max-w-4xl mx-auto">
+      <div class="px-4 py-4 sm:p-6 max-w-4xl mx-auto">
         <div v-if="pending" class="flex justify-center py-20">
           <UIcon name="i-heroicons-arrow-path" class="w-8 h-8 animate-spin text-primary" />
         </div>
@@ -143,7 +143,7 @@
           <!-- Content - Structured Profile Display -->
           <div v-if="profile.status === 'COMPLETED' && profile.analysisJson" class="space-y-6">
             <!-- Executive Summary -->
-            <UCard>
+            <UCard :ui="athleteProfileCardUi">
               <template #header>
                 <h3 class="text-xl font-semibold flex items-center gap-2">
                   <UIcon name="i-heroicons-user-circle" class="w-6 h-6" />
@@ -156,7 +156,7 @@
             </UCard>
 
             <!-- Current Fitness -->
-            <UCard v-if="profile.analysisJson.current_fitness">
+            <UCard v-if="profile.analysisJson.current_fitness" :ui="athleteProfileCardUi">
               <template #header>
                 <div class="flex items-center justify-between">
                   <h3 class="text-xl font-semibold flex items-center gap-2">
@@ -188,7 +188,7 @@
             </UCard>
 
             <!-- Training Characteristics -->
-            <UCard v-if="profile.analysisJson.training_characteristics">
+            <UCard v-if="profile.analysisJson.training_characteristics" :ui="athleteProfileCardUi">
               <template #header>
                 <h3 class="text-xl font-semibold flex items-center gap-2">
                   <UIcon name="i-heroicons-academic-cap" class="w-6 h-6" />
@@ -245,7 +245,7 @@
             </UCard>
 
             <!-- Recovery Profile -->
-            <UCard v-if="profile.analysisJson.recovery_profile">
+            <UCard v-if="profile.analysisJson.recovery_profile" :ui="athleteProfileCardUi">
               <template #header>
                 <h3 class="text-xl font-semibold flex items-center gap-2">
                   <UIcon name="i-heroicons-heart" class="w-6 h-6" />
@@ -306,7 +306,7 @@
             </UCard>
 
             <!-- Nutrition Profile -->
-            <UCard v-if="profile.analysisJson.nutrition_profile">
+            <UCard v-if="profile.analysisJson.nutrition_profile" :ui="athleteProfileCardUi">
               <template #header>
                 <h3 class="text-xl font-semibold flex items-center gap-2">
                   <UIcon name="i-heroicons-cake" class="w-6 h-6" />
@@ -370,7 +370,7 @@
             </UCard>
 
             <!-- Recent Performance -->
-            <UCard v-if="profile.analysisJson.recent_performance">
+            <UCard v-if="profile.analysisJson.recent_performance" :ui="athleteProfileCardUi">
               <template #header>
                 <div class="flex items-center justify-between">
                   <h3 class="text-xl font-semibold flex items-center gap-2">
@@ -434,7 +434,7 @@
             </UCard>
 
             <!-- Recommendations Summary -->
-            <UCard v-if="profile.analysisJson.recommendations_summary">
+            <UCard v-if="profile.analysisJson.recommendations_summary" :ui="athleteProfileCardUi">
               <template #header>
                 <h3 class="text-xl font-semibold flex items-center gap-2">
                   <UIcon name="i-heroicons-light-bulb" class="w-6 h-6" />
@@ -485,7 +485,7 @@
             </UCard>
 
             <!-- Planning Context -->
-            <UCard v-if="profile.analysisJson.planning_context">
+            <UCard v-if="profile.analysisJson.planning_context" :ui="athleteProfileCardUi">
               <template #header>
                 <h3 class="text-xl font-semibold flex items-center gap-2">
                   <UIcon name="i-heroicons-calendar" class="w-6 h-6" />
@@ -699,6 +699,7 @@
 
 <script setup lang="ts">
   import { type DateValue, getLocalTimeZone, today as getTodayDate } from '@internationalized/date'
+  import { athleteProfileCardUi } from '~/utils/mobile-surface-ui'
 
   const toast = useToast()
   const { formatDate, formatShortDate } = useFormat()

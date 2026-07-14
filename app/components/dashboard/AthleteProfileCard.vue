@@ -1,7 +1,11 @@
 <template>
   <UCard
     v-if="isOnboarded"
-    :ui="{ root: 'rounded-none sm:rounded-lg shadow-none sm:shadow' }"
+    :ui="{
+      root: 'rounded-none sm:rounded-lg shadow-none sm:shadow',
+      header: 'px-4 sm:px-6',
+      body: 'p-0 sm:p-4 sm:pt-0'
+    }"
     class="flex flex-col overflow-hidden"
   >
     <template #header>
@@ -38,7 +42,10 @@
     </template>
 
     <!-- Loading skeleton -->
-    <div v-if="userStore?.loading && !userStore?.profile" class="space-y-4 animate-pulse flex-grow">
+    <div
+      v-if="userStore?.loading && !userStore?.profile"
+      class="space-y-4 animate-pulse flex-grow px-4 sm:px-0"
+    >
       <div>
         <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-32 mb-2" />
         <div class="text-xs text-gray-400">{{ t('athlete_profile_loading') }}</div>
@@ -60,12 +67,9 @@
     </div>
 
     <!-- Actual profile data -->
-    <div v-else-if="userStore?.profile" class="space-y-4 flex-grow">
+    <div v-else-if="userStore?.profile" class="space-y-0 sm:space-y-4 flex-grow">
       <!-- Profile Info Card - Clickable -->
-      <NuxtLink
-        to="/profile/athlete"
-        class="group block w-full text-left p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 ring-1 ring-inset ring-gray-200 dark:ring-gray-700 hover:ring-primary-500/50 transition-all duration-200"
-      >
+      <NuxtLink to="/profile/athlete" :class="profileModuleClass">
         <div class="flex items-center justify-between mb-3">
           <p
             class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest"
@@ -119,7 +123,7 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-3 gap-3">
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <div
             v-for="metric in getVisibleMetrics('profileInfo')"
             :key="metric.key"
@@ -201,7 +205,7 @@
 
       <!-- Training Load & Form Section -->
       <button
-        class="group block w-full text-left p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 ring-1 ring-inset ring-gray-200 dark:ring-gray-700 hover:ring-primary-500/50 transition-all duration-200"
+        :class="profileModuleClass"
         @click="
           () => {
             void $emit('open-training-load')
@@ -220,11 +224,11 @@
           />
         </div>
 
-        <div v-if="pmcLoading" class="grid grid-cols-3 gap-3 animate-pulse">
+        <div v-if="pmcLoading" class="grid grid-cols-2 sm:grid-cols-3 gap-3 animate-pulse">
           <div v-for="i in 3" :key="i" class="h-8 bg-gray-200 dark:bg-gray-700 rounded-lg" />
         </div>
 
-        <div v-else-if="pmcData?.summary" class="grid grid-cols-3 gap-3">
+        <div v-else-if="pmcData?.summary" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <div
             v-for="metric in getVisibleMetrics('trainingLoad')"
             :key="metric.key"
@@ -295,10 +299,7 @@
       </button>
 
       <!-- Performance Section - Clickable -->
-      <NuxtLink
-        to="/performance"
-        class="group block w-full text-left p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 ring-1 ring-inset ring-gray-200 dark:ring-gray-700 hover:ring-primary-500/50 transition-all duration-200"
-      >
+      <NuxtLink to="/performance" :class="profileModuleClass">
         <div class="flex items-center justify-between mb-3">
           <p
             class="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-widest"
@@ -310,7 +311,7 @@
             class="w-4 h-4 text-gray-500 dark:text-gray-400 group-hover:text-primary-500 transition-colors"
           />
         </div>
-        <div class="grid grid-cols-3 gap-3">
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <div
             v-for="metric in getVisibleMetrics('corePerformance')"
             :key="metric.key"
@@ -450,7 +451,7 @@
       <!-- Wellness Section - Clickable -->
       <button
         v-if="hasWellnessSummary"
-        class="group w-full text-left p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 ring-1 ring-inset ring-gray-200 dark:ring-gray-700 hover:ring-primary-500/50 transition-all duration-200"
+        :class="profileModuleClass"
         @click="
           () => {
             void $emit('open-wellness')
@@ -480,7 +481,7 @@
           />
         </div>
 
-        <div class="grid grid-cols-3 gap-4">
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
           <div v-for="metric in getVisibleMetrics('wellness')" :key="metric.key" class="space-y-1">
             <div class="flex items-center gap-1 text-[10px] font-bold text-gray-500 uppercase">
               <UIcon :name="metricConfigs[metric.key].icon" class="w-3 h-3 text-indigo-500" />
@@ -662,10 +663,7 @@
       </button>
 
       <!-- Upcoming Events Section -->
-      <div
-        v-if="showHydrationSection"
-        class="w-full p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 ring-1 ring-inset ring-gray-200 dark:ring-gray-700"
-      >
+      <div v-if="showHydrationSection" :class="profileModuleStaticClass">
         <DashboardHydrationQuickCard
           :nutrition="todayNutrition"
           :date="todayNutritionDate"
@@ -677,10 +675,7 @@
       </div>
 
       <!-- Upcoming Events Section -->
-      <div
-        v-if="showUpcomingEventsSection"
-        class="w-full p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 ring-1 ring-inset ring-gray-200 dark:ring-gray-700"
-      >
+      <div v-if="showUpcomingEventsSection" :class="profileModuleStaticClass">
         <div class="flex items-center justify-between mb-3">
           <div class="flex items-center gap-2">
             <p
@@ -750,6 +745,12 @@
 
   const { t } = useTranslate('dashboard')
   const userStore = useUserStore()
+
+  const profileModuleClass =
+    'group block w-full text-left px-4 py-4 sm:p-4 border-b border-gray-200 dark:border-gray-800 sm:border-b-0 last:border-b-0 sm:rounded-xl sm:bg-gray-50 sm:dark:bg-gray-800/50 sm:ring-1 sm:ring-inset sm:ring-gray-200 sm:dark:ring-gray-700 sm:hover:ring-primary-500/50 transition-all duration-200'
+
+  const profileModuleStaticClass =
+    'w-full px-4 py-4 sm:p-4 border-b border-gray-200 dark:border-gray-800 sm:border-b-0 last:border-b-0 sm:rounded-xl sm:bg-gray-50 sm:dark:bg-gray-800/50 sm:ring-1 sm:ring-inset sm:ring-gray-200 sm:dark:ring-gray-700'
   const integrationStore = useIntegrationStore()
   const { formatDate, formatDateUTC, getUserLocalDate } = useFormat()
   const { checkProfileStale, checkWellnessStale } = useDataStatus()
