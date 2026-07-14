@@ -190,5 +190,15 @@
   "quick_capture_placeholder_ask": "有什么问题可以问，或者可以记录数据吗？",
   "quick_capture_placeholder_reply": "输入回复……",
   "quick_capture_preview_header": "教练预览",
-  "quick_capture_thinking": "教练正在思考……"
+  "quick_capture_thinking": "教练正在思考……",
+  "navigation_section_primary": "仪表板",
+  "navigation_section_today": "Today",
+  "navigation_section_analysis": "Analysis",
+  "navigation_section_account": "Account",
+  "navbar_more_actions": "More actions",
+  "sidebar_account_menu": "Account menu",
+  "sidebar_community_discord": "Discord",
+  "sidebar_community_github": "GitHub",
+  "sidebar_attribution_strava": "Powered by Strava",
+  "sidebar_attribution_garmin": "Works with Garmin"
 }

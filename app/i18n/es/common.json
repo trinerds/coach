@@ -190,5 +190,15 @@
   "quick_capture_placeholder_ask": "Pregunte cualquier cosa o registre datos...",
   "quick_capture_placeholder_reply": "Escribe una respuesta...",
   "quick_capture_preview_header": "Vista previa del entrenador",
-  "quick_capture_thinking": "El entrenador está pensando..."
+  "quick_capture_thinking": "El entrenador está pensando...",
+  "navigation_section_primary": "Panel",
+  "navigation_section_today": "Today",
+  "navigation_section_analysis": "Analysis",
+  "navigation_section_account": "Account",
+  "navbar_more_actions": "More actions",
+  "sidebar_account_menu": "Account menu",
+  "sidebar_community_discord": "Discord",
+  "sidebar_community_github": "GitHub",
+  "sidebar_attribution_strava": "Powered by Strava",
+  "sidebar_attribution_garmin": "Works with Garmin"
 }

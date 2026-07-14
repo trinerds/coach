@@ -190,5 +190,15 @@
   "quick_capture_placeholder_ask": "Vraag alles of log gegevens...",
   "quick_capture_placeholder_reply": "Typ een antwoord...",
   "quick_capture_preview_header": "Coach-voorvertoning",
-  "quick_capture_thinking": "Coach is aan het nadenken..."
+  "quick_capture_thinking": "Coach is aan het nadenken...",
+  "navigation_section_primary": "Dashboard",
+  "navigation_section_today": "Today",
+  "navigation_section_analysis": "Analysis",
+  "navigation_section_account": "Account",
+  "navbar_more_actions": "More actions",
+  "sidebar_account_menu": "Account menu",
+  "sidebar_community_discord": "Discord",
+  "sidebar_community_github": "GitHub",
+  "sidebar_attribution_strava": "Powered by Strava",
+  "sidebar_attribution_garmin": "Works with Garmin"
 }

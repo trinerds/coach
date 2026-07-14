@@ -150,8 +150,6 @@
   "navigation_coaching_calendar": "Naptár",
   "navigation_coaching_athletes": "Atléták",
   "navigation_coaching_team": "Csapat",
-  "navigation_analytics": "Analitika",
-  "navigation_charts": "Grafikonok",
   "navigation_dashboard": "Vezérlőpult",
   "navigation_events": "Események",
   "navigation_fitness": "Fitnesz",
@@ -200,5 +198,15 @@
   "quick_capture_placeholder_ask": "Kérdezz bármit vagy rögzíts adatokat...",
   "quick_capture_placeholder_reply": "Válasz írása...",
   "quick_capture_preview_header": "Coach előnézet",
-  "quick_capture_thinking": "A coach gondolkodik..."
+  "quick_capture_thinking": "A coach gondolkodik...",
+  "navigation_section_primary": "Vezérlőpult",
+  "navigation_section_today": "Today",
+  "navigation_section_analysis": "Analysis",
+  "navigation_section_account": "Account",
+  "navbar_more_actions": "More actions",
+  "sidebar_account_menu": "Account menu",
+  "sidebar_community_discord": "Discord",
+  "sidebar_community_github": "GitHub",
+  "sidebar_attribution_strava": "Powered by Strava",
+  "sidebar_attribution_garmin": "Works with Garmin"
 }

@@ -6,7 +6,7 @@
           <UDashboardSidebarCollapse />
         </template>
         <template #right>
-          <div class="flex items-center gap-3">
+          <LayoutPageNavbarActions :overflow-items="workoutsOverflowItems">
             <ClientOnly>
               <DashboardTriggerMonitorButton />
             </ClientOnly>
@@ -15,7 +15,7 @@
               v-model="selectedPeriod"
               :items="periodOptions"
               size="sm"
-              class="w-32"
+              class="hidden w-32 md:block"
               color="neutral"
               variant="outline"
             />
@@ -33,8 +33,7 @@
                 }
               "
             >
-              <span class="hidden sm:inline">Analyze Last 10</span>
-              <span class="sm:hidden">Sync</span>
+              <span class="hidden md:inline">Analyze Last 10</span>
             </UButton>
 
             <UButton
@@ -50,10 +49,27 @@
                 }
               "
             >
-              <span class="hidden sm:inline">Generate Insights</span>
-              <span class="sm:hidden">AI</span>
+              <span class="hidden md:inline">Generate Insights</span>
+              <span class="md:hidden">AI</span>
             </UButton>
-          </div>
+
+            <template #mobile>
+              <UButton
+                :loading="generatingExplanations"
+                color="primary"
+                variant="solid"
+                icon="i-heroicons-sparkles"
+                size="sm"
+                class="font-bold"
+                aria-label="Generate Insights"
+                @click="
+                  () => {
+                    void generateExplanations()
+                  }
+                "
+              />
+            </template>
+          </LayoutPageNavbarActions>
         </template>
       </UDashboardNavbar>
     </template>
@@ -1859,6 +1875,32 @@
     { label: 'Year to Date', value: 'YTD' },
     { label: 'All Time', value: 3650 }
   ]
+
+  const { toggle: toggleTriggerMonitor } = useTriggerMonitor()
+
+  const workoutsOverflowItems = computed(() => [
+    [
+      {
+        label: 'Tasks',
+        icon: 'i-heroicons-cpu-chip',
+        onSelect: () => toggleTriggerMonitor()
+      },
+      {
+        label: 'Analyze Last 10',
+        icon: 'i-heroicons-cpu-chip',
+        onSelect: () => {
+          void analyzeAllWorkouts()
+        }
+      },
+      ...periodOptions.map((option) => ({
+        label: option.label,
+        icon: 'i-heroicons-calendar-days',
+        onSelect: () => {
+          selectedPeriod.value = option.value
+        }
+      }))
+    ]
+  ])
 
   // Watch filters and reset to page 1
   watch([filterType, filterAnalysis, filterSource, selectedWorkoutTags], () => {

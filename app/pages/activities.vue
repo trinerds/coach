@@ -6,7 +6,7 @@
           <UDashboardSidebarCollapse />
         </template>
         <template #right>
-          <div class="flex items-center gap-2">
+          <LayoutPageNavbarActions :overflow-items="activitiesOverflowItems">
             <ClientOnly>
               <DashboardTriggerMonitorButton />
             </ClientOnly>
@@ -17,18 +17,20 @@
               color="neutral"
               variant="outline"
               size="sm"
-              class="flex font-black uppercase tracking-widest text-[10px]"
+              class="flex size-11 min-h-11 min-w-11 font-black uppercase tracking-widest text-[10px]"
+              :aria-label="t('header_upload')"
             >
-              <span class="hidden sm:inline">{{ t('header_upload') }}</span>
+              <span class="hidden md:inline">{{ t('header_upload') }}</span>
             </UButton>
 
-            <!-- Secondary Actions Dropdown -->
             <UDropdownMenu :items="activityMenuItems">
               <UButton
                 icon="i-heroicons-ellipsis-vertical"
                 color="neutral"
                 variant="outline"
                 size="sm"
+                class="size-11 min-h-11 min-w-11"
+                :aria-label="t('header_menu_manage')"
               />
             </UDropdownMenu>
 
@@ -39,13 +41,14 @@
               size="sm"
               class="font-black uppercase tracking-widest text-[10px]"
               :loading="status === 'pending' || integrationStore.syncingData"
+              :aria-label="t('header_refresh')"
               @click="
                 () => {
                   void handleRefresh()
                 }
               "
             >
-              <span class="hidden sm:inline">{{ t('header_refresh') }}</span>
+              <span class="hidden md:inline">{{ t('header_refresh') }}</span>
             </UButton>
 
             <UButton
@@ -55,17 +58,46 @@
               variant="solid"
               size="sm"
               class="font-black uppercase tracking-widest text-[10px]"
+              :aria-label="t('header_new_chat')"
             >
-              <span class="hidden sm:inline">{{ t('header_new_chat') }}</span>
-              <span class="sm:hidden">{{ t('header_chat') }}</span>
+              <span class="hidden md:inline">{{ t('header_new_chat') }}</span>
+              <span class="md:hidden">{{ t('header_chat') }}</span>
             </UButton>
-          </div>
+
+            <template #mobile>
+              <UButton
+                icon="i-heroicons-arrow-path"
+                color="neutral"
+                variant="outline"
+                size="sm"
+                class="size-11 min-h-11 min-w-11"
+                :loading="status === 'pending' || integrationStore.syncingData"
+                :aria-label="t('header_refresh')"
+                @click="
+                  () => {
+                    void handleRefresh()
+                  }
+                "
+              />
+              <UButton
+                to="/chat"
+                icon="i-heroicons-chat-bubble-left-right"
+                color="primary"
+                variant="solid"
+                size="sm"
+                class="size-11 min-h-11 min-w-11 font-black uppercase tracking-widest text-[10px]"
+                :aria-label="t('header_new_chat')"
+              >
+                <span class="sr-only">{{ t('header_new_chat') }}</span>
+              </UButton>
+            </template>
+          </LayoutPageNavbarActions>
         </template>
       </UDashboardNavbar>
     </template>
 
     <template #body>
-      <div class="h-full flex flex-col">
+      <div class="h-full flex flex-col quick-capture-inset">
         <Head>
           <Title>{{ t('meta_title') }}</Title>
           <Meta name="description" :content="t('meta_description')" />
@@ -161,6 +193,8 @@
               :color="isWorkoutDrawerVisible ? 'primary' : 'neutral'"
               variant="ghost"
               size="sm"
+              class="size-11 min-h-11 min-w-11"
+              :aria-label="t('controls_workout_library')"
               @click="
                 () => {
                   void toggleWorkoutDrawerFromHeader()
@@ -176,6 +210,8 @@
               color="neutral"
               variant="ghost"
               size="sm"
+              class="size-11 min-h-11 min-w-11"
+              :aria-label="t('controls_calendar_settings')"
               @click="
                 () => {
                   showCalendarSettingsModal = true
@@ -192,7 +228,8 @@
                 :color="viewMode === 'calendar' ? 'primary' : 'neutral'"
                 variant="ghost"
                 size="sm"
-                class="rounded-lg"
+                class="size-11 min-h-11 min-w-11 rounded-lg"
+                :aria-label="t('controls_view_calendar')"
                 @click="
                   () => {
                     viewMode = 'calendar'
@@ -204,7 +241,8 @@
                 :color="viewMode === 'list' ? 'primary' : 'neutral'"
                 variant="ghost"
                 size="sm"
-                class="rounded-lg"
+                class="size-11 min-h-11 min-w-11 rounded-lg"
+                :aria-label="t('controls_view_list')"
                 @click="
                   () => {
                     viewMode = 'list'
@@ -234,7 +272,8 @@
                 icon="i-heroicons-chevron-left"
                 variant="ghost"
                 size="sm"
-                class="rounded-lg"
+                class="size-11 min-h-11 min-w-11 rounded-lg"
+                :aria-label="t('controls_previous_month')"
                 @click="
                   () => {
                     void prevMonth()
@@ -250,7 +289,8 @@
                 icon="i-heroicons-chevron-right"
                 variant="ghost"
                 size="sm"
-                class="rounded-lg"
+                class="size-11 min-h-11 min-w-11 rounded-lg"
+                :aria-label="t('controls_next_month')"
                 @click="
                   () => {
                     void nextMonth()
@@ -274,7 +314,7 @@
             <!-- Calendar View -->
             <div
               v-if="viewMode === 'calendar'"
-              class="overflow-x-auto overflow-y-auto h-full relative"
+              class="overflow-x-hidden overflow-y-auto h-full relative lg:overflow-x-auto"
             >
               <!-- Loading Overlay -->
               <div
@@ -585,9 +625,9 @@
                             <div class="min-w-0 flex-1">
                               <div class="text-xs font-bold truncate">{{ activity.title }}</div>
 
-                              <div class="mt-1 flex items-center justify-between gap-2 min-w-0">
+                              <div class="mt-1 space-y-2">
                                 <div
-                                  class="text-[10px] text-gray-500 truncate flex items-center gap-1"
+                                  class="text-[10px] text-gray-500 flex flex-wrap items-center gap-1"
                                 >
                                   <template
                                     v-for="(item, i) in [
@@ -619,7 +659,7 @@
                                   </template>
                                 </div>
 
-                                <div class="flex items-center gap-2 shrink-0">
+                                <div class="flex items-center justify-end gap-2">
                                   <UButton
                                     v-if="activity.id"
                                     :icon="
@@ -629,11 +669,12 @@
                                     "
                                     color="neutral"
                                     :variant="isWorkoutInComparison(activity.id) ? 'soft' : 'ghost'"
-                                    size="xs"
+                                    size="sm"
+                                    class="size-11 min-h-11 min-w-11"
                                     :aria-label="
                                       isWorkoutInComparison(activity.id)
-                                        ? 'Remove from comparison'
-                                        : 'Add to comparison'
+                                        ? t('controls_remove_comparison')
+                                        : t('controls_add_comparison')
                                     "
                                     @click.stop="toggleWorkoutComparison(activity)"
                                   />
@@ -642,16 +683,16 @@
                                     :workout="activity"
                                     :sport-settings="getActivityZones(activity)"
                                     :preference="getActivityChartPreference(activity)"
-                                    class="w-12 h-8 opacity-75"
+                                    class="hidden sm:block w-12 h-8 opacity-75"
                                   />
                                   <UButton
                                     v-if="isMobileDraggableActivity(activity)"
                                     icon="i-heroicons-bars-3"
                                     color="neutral"
                                     variant="ghost"
-                                    size="xs"
-                                    aria-label="Drag to reschedule workout"
-                                    class="touch-none"
+                                    size="sm"
+                                    class="size-11 min-h-11 min-w-11 touch-none"
+                                    :aria-label="t('controls_drag_reschedule')"
                                     @click.stop.prevent
                                     @touchstart.stop.prevent="
                                       onMobileActivityDragStart($event, activity)
@@ -1327,7 +1368,27 @@
       }
     })
 
-    return items
+    return [items]
+  })
+
+  const { toggle: toggleTriggerMonitor } = useTriggerMonitor()
+
+  const activitiesOverflowItems = computed(() => {
+    const isTReady = typeof t.value === 'function'
+    const items = [
+      {
+        label: isTReady ? t.value('navbar_tasks') : 'Tasks',
+        icon: 'i-heroicons-cpu-chip',
+        onSelect: () => toggleTriggerMonitor()
+      },
+      {
+        label: isTReady ? t.value('header_upload') : 'Upload',
+        icon: 'i-heroicons-cloud-arrow-up',
+        to: '/workouts/upload'
+      },
+      ...(activityMenuItems.value[0] || [])
+    ]
+    return [items]
   })
 
   function parseCalendarDate(dateParam: unknown) {

@@ -190,5 +190,15 @@
   "quick_capture_placeholder_ask": "Demandez n'importe quoi ou consignez des données...",
   "quick_capture_placeholder_reply": "Saisissez une réponse...",
   "quick_capture_preview_header": "Aperçu coach",
-  "quick_capture_thinking": "Le coach réfléchit..."
+  "quick_capture_thinking": "Le coach réfléchit...",
+  "navigation_section_primary": "Tableau de bord",
+  "navigation_section_today": "Today",
+  "navigation_section_analysis": "Analysis",
+  "navigation_section_account": "Account",
+  "navbar_more_actions": "More actions",
+  "sidebar_account_menu": "Account menu",
+  "sidebar_community_discord": "Discord",
+  "sidebar_community_github": "GitHub",
+  "sidebar_attribution_strava": "Powered by Strava",
+  "sidebar_attribution_garmin": "Works with Garmin"
 }

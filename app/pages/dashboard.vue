@@ -6,7 +6,7 @@
           <UDashboardSidebarCollapse />
         </template>
         <template #right>
-          <div class="flex items-center gap-3">
+          <LayoutPageNavbarActions :overflow-items="dashboardOverflowItems">
             <ClientOnly>
               <UButton
                 icon="i-lucide-heart"
@@ -14,6 +14,7 @@
                 variant="outline"
                 size="sm"
                 square
+                class="size-11 min-h-11 min-w-11"
                 :aria-label="t('share_footer_button')"
                 @click="
                   () => {
@@ -31,9 +32,10 @@
               color="neutral"
               variant="outline"
               size="sm"
-              class="flex font-bold"
+              class="flex size-11 min-h-11 min-w-11 font-bold"
+              :aria-label="t('header_upload')"
             >
-              <span class="hidden sm:inline">{{ t('header_upload') }}</span>
+              <span class="hidden md:inline">{{ t('header_upload') }}</span>
             </UButton>
             <UButton
               v-if="isOnboarded"
@@ -43,15 +45,15 @@
               variant="outline"
               icon="i-heroicons-arrow-path"
               size="sm"
-              class="font-bold"
-              aria-label="Sync data"
+              class="size-11 min-h-11 min-w-11 font-bold"
+              :aria-label="t('header_sync_data')"
               @click="
                 () => {
                   void handleSync()
                 }
               "
             >
-              <span class="hidden sm:inline">{{ t('header_sync_data') }}</span>
+              <span class="hidden md:inline">{{ t('header_sync_data') }}</span>
             </UButton>
             <UButton
               to="/chat"
@@ -61,324 +63,360 @@
               size="sm"
               class="font-bold"
             >
-              <span class="hidden sm:inline">{{ t('header_new_chat') }}</span>
-              <span class="sm:hidden">{{ t('header_chat') }}</span>
+              <span class="hidden md:inline">{{ t('header_new_chat') }}</span>
+              <span class="md:hidden">{{ t('header_chat') }}</span>
             </UButton>
-          </div>
+
+            <template #mobile>
+              <UButton
+                v-if="isOnboarded"
+                :loading="integrationStore.syncingData"
+                :disabled="integrationStore.syncingData"
+                color="neutral"
+                variant="outline"
+                icon="i-heroicons-arrow-path"
+                size="sm"
+                class="size-11 min-h-11 min-w-11"
+                :aria-label="t('header_sync_data')"
+                @click="
+                  () => {
+                    void handleSync()
+                  }
+                "
+              />
+              <UButton
+                to="/chat"
+                icon="i-heroicons-chat-bubble-left-right"
+                color="primary"
+                variant="solid"
+                size="sm"
+                class="font-bold"
+              >
+                <span class="sr-only">{{ t('header_new_chat') }}</span>
+              </UButton>
+            </template>
+          </LayoutPageNavbarActions>
         </template>
       </UDashboardNavbar>
     </template>
 
     <template #body>
-      <ClientOnly>
-        <!-- Loading State -->
-        <div v-if="isLoading" class="flex justify-center items-center py-24 min-h-[60vh]">
-          <UIcon name="i-heroicons-arrow-path" class="w-10 h-10 animate-spin text-primary-500" />
-        </div>
-
-        <!-- Onboarding View (New User) -->
-        <div v-else-if="!isOnboarded" class="p-4 sm:p-6 max-w-6xl mx-auto">
-          <DashboardOnboardingView />
-        </div>
-
-        <!-- Dashboard Grid (Connected User) -->
-        <template v-else>
-          <!-- Garmin Attribution -->
-          <div v-if="isGarminConnected" class="flex justify-end px-4 sm:px-6 pt-1 pb-0">
-            <div class="flex items-center gap-1.5">
-              <span
-                class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest"
-                >{{ t('attribution_garmin') }}</span
-              >
-              <img
-                src="/images/logos/Garmin-Tag-black-high-res.png"
-                class="h-5 w-auto dark:hidden"
-                alt="Garmin"
-              />
-              <img
-                src="/images/logos/Garmin-Tag-white-high-res.png"
-                class="h-5 w-auto hidden dark:block"
-                alt="Garmin"
-              />
-            </div>
+      <div class="quick-capture-inset">
+        <ClientOnly>
+          <!-- Loading State -->
+          <div v-if="isLoading" class="flex justify-center items-center py-24 min-h-[60vh]">
+            <UIcon name="i-heroicons-arrow-path" class="w-10 h-10 animate-spin text-primary-500" />
           </div>
 
-          <div class="p-0 sm:p-6 !pt-0 space-y-4 sm:space-y-8">
-            <div v-if="userStore.isTrialActive" class="px-4 sm:px-0">
-              <div
-                class="relative overflow-hidden rounded-xl p-4 sm:p-6 shadow-lg group"
-                :class="isTrialEndingSoon ? 'bg-amber-600' : 'bg-primary-600'"
-              >
-                <!-- Decorative Icon -->
-                <div
-                  class="absolute -right-4 -bottom-4 opacity-10 transform -rotate-12 group-hover:scale-110 transition-transform duration-700"
+          <!-- Onboarding View (New User) -->
+          <div v-else-if="!isOnboarded" class="p-4 sm:p-6 max-w-6xl mx-auto">
+            <DashboardOnboardingView />
+          </div>
+
+          <!-- Dashboard Grid (Connected User) -->
+          <template v-else>
+            <!-- Garmin Attribution -->
+            <div v-if="isGarminConnected" class="flex justify-end px-4 sm:px-6 pt-1 pb-0">
+              <div class="flex items-center gap-1.5">
+                <span
+                  class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest"
+                  >{{ t('attribution_garmin') }}</span
                 >
-                  <UIcon name="i-heroicons-sparkles" class="w-32 h-32 text-white" />
-                </div>
-
-                <div
-                  class="relative flex flex-col md:flex-row md:items-center justify-between gap-4"
-                >
-                  <div class="flex items-start gap-4">
-                    <div class="p-3 bg-white/20 rounded-xl backdrop-blur-sm shrink-0">
-                      <UIcon name="i-heroicons-bolt-solid" class="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <div class="flex flex-wrap items-center gap-2">
-                        <h3 class="text-white font-black tracking-tight text-lg">
-                          {{ trialAccessTitle }}
-                        </h3>
-                        <UBadge
-                          color="neutral"
-                          variant="subtle"
-                          size="xs"
-                          class="bg-white/12 text-white ring-white/20"
-                        >
-                          {{ t('trial_badge') }}
-                        </UBadge>
-                      </div>
-                      <p class="text-white/80 text-sm font-medium leading-relaxed max-w-xl">
-                        {{
-                          isTrialEndingSoon
-                            ? t('trial_ending_soon_desc', {
-                                date: trialEndsAtLabel
-                              })
-                            : t('trial_unlock_improvement')
-                        }}
-                      </p>
-                    </div>
-                  </div>
-                  <div
-                    class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0"
-                  >
-                    <UButton
-                      to="/settings/ai"
-                      color="neutral"
-                      variant="subtle"
-                      size="sm"
-                      class="justify-center bg-white/10 hover:bg-white/20 text-white font-bold border-none"
-                    >
-                      {{ t('trial_view_usage') }}
-                    </UButton>
-                    <UButton
-                      to="/settings/billing"
-                      color="neutral"
-                      variant="solid"
-                      size="sm"
-                      class="justify-center bg-white text-primary-600 hover:bg-gray-100 font-bold border-none"
-                    >
-                      {{ t('trial_keep_access') }}
-                    </UButton>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <DashboardSystemMessageCard />
-
-            <DashboardMissingDataBanner
-              v-if="missingFields.length > 0"
-              :missing-fields="missingFields"
-            />
-
-            <!-- Row 1: Athlete Profile / Today's Training / Performance Overview & Comparison -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8 items-stretch">
-              <!-- Athlete Profile Card - shown when connected -->
-              <DashboardAthleteProfileCard
-                @open-wellness="openWellnessModal"
-                @open-training-load="openTrainingLoadModal"
-              />
-
-              <!-- Today's Recommendation Card -->
-              <DashboardTrainingRecommendationCard
-                @open-details="openRecommendationModal"
-                @open-checkin="openCheckinModal"
-              />
-
-              <div class="space-y-4 sm:space-y-8 flex flex-col">
-                <!-- Monthly Progress Comparison -->
-                <DashboardMonthlyComparisonCard v-if="isOnboarded" />
-
-                <!-- Performance Overview Card -->
-                <DashboardPerformanceScoresCard
-                  @open-score-modal="openScoreModal"
-                  @open-training-load="openTrainingLoadModal"
+                <img
+                  src="/images/logos/Garmin-Tag-black-high-res.png"
+                  class="h-5 w-auto dark:hidden"
+                  alt="Garmin"
+                />
+                <img
+                  src="/images/logos/Garmin-Tag-white-high-res.png"
+                  class="h-5 w-auto hidden dark:block"
+                  alt="Garmin"
                 />
               </div>
             </div>
 
-            <!-- Row 2: Fueling & Hydration -->
-            <div v-if="nutritionEnabled">
-              <DashboardNutritionFuelingCard
-                :nutrition="todayNutrition"
-                :workouts="todayWorkouts"
-                :settings="nutritionSettings"
-                :weight="userStore.currentWeightKg || 75"
-                :loading="loadingNutrition"
-                @refresh="handleNutritionRefresh"
-              />
-            </div>
-
-            <!-- Row 3: Recent Activity / Next Steps / Connection Status -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8">
-              <!-- Recent Activity Card -->
-              <DashboardRecentActivityCard />
-
-              <div class="space-y-4 sm:space-y-8">
-                <!-- Upcoming Workouts Card -->
-                <UCard
-                  :ui="{
-                    root: 'rounded-none sm:rounded-lg shadow-none sm:shadow',
-                    body: 'p-4 sm:p-6'
-                  }"
-                  class="flex flex-col"
+            <div class="p-0 sm:p-6 !pt-0 space-y-4 sm:space-y-8">
+              <div v-if="userStore.isTrialActive" class="px-4 sm:px-0">
+                <div
+                  class="relative overflow-hidden rounded-xl p-4 sm:p-6 shadow-lg group"
+                  :class="isTrialEndingSoon ? 'bg-amber-600' : 'bg-primary-600'"
                 >
-                  <template #header>
-                    <div class="flex items-center justify-between">
-                      <h3
-                        class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest flex items-center gap-2"
-                      >
-                        <UIcon name="i-heroicons-calendar-days" class="w-4 h-4" />
-                        {{ t('upcoming_workouts_header') }}
-                      </h3>
-                      <UButton
-                        to="/plan"
-                        variant="ghost"
-                        color="neutral"
-                        size="xs"
-                        icon="i-heroicons-arrow-right"
-                        trailing
-                      />
-                    </div>
-                  </template>
+                  <!-- Decorative Icon -->
+                  <div
+                    class="absolute -right-4 -bottom-4 opacity-10 transform -rotate-12 group-hover:scale-110 transition-transform duration-700"
+                  >
+                    <UIcon name="i-heroicons-sparkles" class="w-32 h-32 text-white" />
+                  </div>
 
-                  <div class="flex-1 space-y-4">
-                    <div v-if="loadingUpcoming" class="space-y-3">
-                      <div v-for="i in 3" :key="i" class="flex items-center gap-3">
-                        <USkeleton class="w-10 h-10 rounded-lg" />
-                        <div class="flex-1 space-y-2">
-                          <USkeleton class="h-3 w-3/4" />
-                          <USkeleton class="h-2 w-1/2" />
-                        </div>
+                  <div
+                    class="relative flex flex-col md:flex-row md:items-center justify-between gap-4"
+                  >
+                    <div class="flex items-start gap-4">
+                      <div class="p-3 bg-white/20 rounded-xl backdrop-blur-sm shrink-0">
+                        <UIcon name="i-heroicons-bolt-solid" class="w-6 h-6 text-white" />
                       </div>
-                    </div>
-
-                    <div v-else-if="upcomingWorkouts.length === 0" class="text-center py-8">
-                      <UIcon
-                        name="i-heroicons-calendar"
-                        class="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-2"
-                      />
-                      <p class="text-sm text-gray-500">{{ t('upcoming_workouts_empty') }}</p>
-                      <UButton to="/plans" variant="link" color="primary" size="xs" class="mt-2">{{
-                        t('upcoming_workouts_view_plans')
-                      }}</UButton>
-                    </div>
-
-                    <div v-else class="divide-y divide-gray-100 dark:divide-gray-800 -mx-4 px-4">
-                      <div
-                        v-for="workout in upcomingWorkouts"
-                        :key="workout.id"
-                        class="py-3 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer -mx-4 px-4 rounded-lg transition-colors group relative"
-                        @click="
-                          () => {
-                            void handleUpcomingWorkoutClick(workout.id)
-                          }
-                        "
-                      >
-                        <!-- Date Box (Standardized) -->
-                        <div
-                          class="flex flex-col items-center justify-center w-10 h-10 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-700 text-gray-600 dark:text-gray-400 shrink-0 shadow-sm"
-                        >
-                          <span class="text-[10px] font-bold uppercase leading-none">{{
-                            formatDayShort(workout.date)
-                          }}</span>
-                          <span class="text-sm font-bold">{{ formatDateDay(workout.date) }}</span>
-                        </div>
-
-                        <!-- Workout Icon -->
-                        <UTooltip :text="workout.type" class="shrink-0">
-                          <div class="flex items-center justify-center w-8 h-8">
-                            <UIcon
-                              :name="getWorkoutIcon(workout.type)"
-                              class="w-5 h-5"
-                              :class="getWorkoutColorClass(workout.type)"
-                            />
-                          </div>
-                        </UTooltip>
-
-                        <!-- Workout Details -->
-                        <div class="flex-1 min-w-0">
-                          <div class="flex items-center gap-2">
-                            <div class="text-sm font-bold text-gray-900 dark:text-white truncate">
-                              {{ workout.title }}
-                            </div>
-                            <UTooltip
-                              v-if="workout.planName"
-                              :text="
-                                t('upcoming_workouts_plan_part_of', { name: workout.planName })
-                              "
-                            >
-                              <UIcon
-                                name="i-heroicons-trophy"
-                                class="w-3.5 h-3.5 text-primary shrink-0"
-                              />
-                            </UTooltip>
-                          </div>
-                          <div
-                            class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-3 mt-0.5"
+                      <div>
+                        <div class="flex flex-wrap items-center gap-2">
+                          <h3 class="text-white font-black tracking-tight text-lg">
+                            {{ trialAccessTitle }}
+                          </h3>
+                          <UBadge
+                            color="neutral"
+                            variant="subtle"
+                            size="xs"
+                            class="bg-white/12 text-white ring-white/20"
                           >
-                            <div v-if="workout.durationSec" class="flex items-center gap-1">
-                              <UIcon
-                                name="i-tabler-clock"
-                                class="w-3 h-3 opacity-80"
-                                :class="getWorkoutColorClass(workout.type)"
-                              />
-                              <span class="font-medium"
-                                >{{ Math.round(workout.durationSec / 60) }}m</span
-                              >
-                            </div>
-                            <div v-if="workout.tss" class="flex items-center gap-1">
-                              <UIcon
-                                name="i-tabler-bolt"
-                                class="w-3 h-3 opacity-80"
-                                :class="getWorkoutColorClass(workout.type)"
-                              />
-                              <span class="font-medium">{{ Math.round(workout.tss) }} TSS</span>
-                            </div>
-                          </div>
+                            {{ t('trial_badge') }}
+                          </UBadge>
                         </div>
-                        <UIcon
-                          name="i-heroicons-chevron-right"
-                          class="w-4 h-4 text-gray-300 group-hover:text-primary transition-colors"
-                        />
+                        <p class="text-white/80 text-sm font-medium leading-relaxed max-w-xl">
+                          {{
+                            isTrialEndingSoon
+                              ? t('trial_ending_soon_desc', {
+                                  date: trialEndsAtLabel
+                                })
+                              : t('trial_unlock_improvement')
+                          }}
+                        </p>
                       </div>
+                    </div>
+                    <div
+                      class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0"
+                    >
+                      <UButton
+                        to="/settings/ai"
+                        color="neutral"
+                        variant="subtle"
+                        size="sm"
+                        class="justify-center bg-white/10 hover:bg-white/20 text-white font-bold border-none"
+                      >
+                        {{ t('trial_view_usage') }}
+                      </UButton>
+                      <UButton
+                        to="/settings/billing"
+                        color="neutral"
+                        variant="solid"
+                        size="sm"
+                        class="justify-center bg-white text-primary-600 hover:bg-gray-100 font-bold border-none"
+                      >
+                        {{ t('trial_keep_access') }}
+                      </UButton>
                     </div>
                   </div>
-                </UCard>
+                </div>
               </div>
 
-              <!-- Connection Status Card - only shown if syncing is in progress or issues -->
-              <DashboardDataSyncStatusCard v-if="integrationStore.syncingData" />
-            </div>
+              <DashboardSystemMessageCard />
 
-            <DashboardShareFooterCard />
+              <DashboardMissingDataBanner
+                v-if="missingFields.length > 0"
+                :missing-fields="missingFields"
+              />
 
-            <!-- App Info Footer -->
-            <div class="flex justify-center pt-8 pb-12 sm:pb-4">
-              <UButton
-                to="/settings/changelog"
-                variant="link"
-                color="neutral"
-                size="xs"
-                :padded="false"
-                class="text-gray-400 dark:text-gray-500 font-normal hover:text-gray-600 dark:hover:text-gray-400 transition-colors"
-              >
-                {{ buildVersionDisplay }}
-              </UButton>
+              <!-- Row 1: Athlete Profile / Today's Training / Performance Overview & Comparison -->
+              <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8 items-stretch">
+                <!-- Athlete Profile Card - shown when connected -->
+                <DashboardAthleteProfileCard
+                  @open-wellness="openWellnessModal"
+                  @open-training-load="openTrainingLoadModal"
+                />
+
+                <!-- Today's Recommendation Card -->
+                <DashboardTrainingRecommendationCard
+                  @open-details="openRecommendationModal"
+                  @open-checkin="openCheckinModal"
+                />
+
+                <div class="space-y-4 sm:space-y-8 flex flex-col">
+                  <!-- Monthly Progress Comparison -->
+                  <DashboardMonthlyComparisonCard v-if="isOnboarded" />
+
+                  <!-- Performance Overview Card -->
+                  <DashboardPerformanceScoresCard
+                    @open-score-modal="openScoreModal"
+                    @open-training-load="openTrainingLoadModal"
+                  />
+                </div>
+              </div>
+
+              <!-- Row 2: Fueling & Hydration -->
+              <div v-if="nutritionEnabled">
+                <DashboardNutritionFuelingCard
+                  :nutrition="todayNutrition"
+                  :workouts="todayWorkouts"
+                  :settings="nutritionSettings"
+                  :weight="userStore.currentWeightKg || 75"
+                  :loading="loadingNutrition"
+                  @refresh="handleNutritionRefresh"
+                />
+              </div>
+
+              <!-- Row 3: Recent Activity / Next Steps / Connection Status -->
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8">
+                <!-- Recent Activity Card -->
+                <DashboardRecentActivityCard />
+
+                <div class="space-y-4 sm:space-y-8">
+                  <!-- Upcoming Workouts Card -->
+                  <UCard
+                    :ui="{
+                      root: 'rounded-none sm:rounded-lg shadow-none sm:shadow',
+                      body: 'p-4 sm:p-6'
+                    }"
+                    class="flex flex-col"
+                  >
+                    <template #header>
+                      <div class="flex items-center justify-between">
+                        <h3
+                          class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest flex items-center gap-2"
+                        >
+                          <UIcon name="i-heroicons-calendar-days" class="w-4 h-4" />
+                          {{ t('upcoming_workouts_header') }}
+                        </h3>
+                        <UButton
+                          to="/plan"
+                          variant="ghost"
+                          color="neutral"
+                          size="xs"
+                          icon="i-heroicons-arrow-right"
+                          trailing
+                        />
+                      </div>
+                    </template>
+
+                    <div class="flex-1 space-y-4">
+                      <div v-if="loadingUpcoming" class="space-y-3">
+                        <div v-for="i in 3" :key="i" class="flex items-center gap-3">
+                          <USkeleton class="w-10 h-10 rounded-lg" />
+                          <div class="flex-1 space-y-2">
+                            <USkeleton class="h-3 w-3/4" />
+                            <USkeleton class="h-2 w-1/2" />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div v-else-if="upcomingWorkouts.length === 0" class="text-center py-8">
+                        <UIcon
+                          name="i-heroicons-calendar"
+                          class="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-2"
+                        />
+                        <p class="text-sm text-gray-500">{{ t('upcoming_workouts_empty') }}</p>
+                        <UButton
+                          to="/plans"
+                          variant="link"
+                          color="primary"
+                          size="xs"
+                          class="mt-2"
+                          >{{ t('upcoming_workouts_view_plans') }}</UButton
+                        >
+                      </div>
+
+                      <div v-else class="divide-y divide-gray-100 dark:divide-gray-800 -mx-4 px-4">
+                        <div
+                          v-for="workout in upcomingWorkouts"
+                          :key="workout.id"
+                          class="py-3 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer -mx-4 px-4 rounded-lg transition-colors group relative"
+                          @click="
+                            () => {
+                              void handleUpcomingWorkoutClick(workout.id)
+                            }
+                          "
+                        >
+                          <!-- Date Box (Standardized) -->
+                          <div
+                            class="flex flex-col items-center justify-center w-10 h-10 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-700 text-gray-600 dark:text-gray-400 shrink-0 shadow-sm"
+                          >
+                            <span class="text-[10px] font-bold uppercase leading-none">{{
+                              formatDayShort(workout.date)
+                            }}</span>
+                            <span class="text-sm font-bold">{{ formatDateDay(workout.date) }}</span>
+                          </div>
+
+                          <!-- Workout Icon -->
+                          <UTooltip :text="workout.type" class="shrink-0">
+                            <div class="flex items-center justify-center w-8 h-8">
+                              <UIcon
+                                :name="getWorkoutIcon(workout.type)"
+                                class="w-5 h-5"
+                                :class="getWorkoutColorClass(workout.type)"
+                              />
+                            </div>
+                          </UTooltip>
+
+                          <!-- Workout Details -->
+                          <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2">
+                              <div class="text-sm font-bold text-gray-900 dark:text-white truncate">
+                                {{ workout.title }}
+                              </div>
+                              <UTooltip
+                                v-if="workout.planName"
+                                :text="
+                                  t('upcoming_workouts_plan_part_of', { name: workout.planName })
+                                "
+                              >
+                                <UIcon
+                                  name="i-heroicons-trophy"
+                                  class="w-3.5 h-3.5 text-primary shrink-0"
+                                />
+                              </UTooltip>
+                            </div>
+                            <div
+                              class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-3 mt-0.5"
+                            >
+                              <div v-if="workout.durationSec" class="flex items-center gap-1">
+                                <UIcon
+                                  name="i-tabler-clock"
+                                  class="w-3 h-3 opacity-80"
+                                  :class="getWorkoutColorClass(workout.type)"
+                                />
+                                <span class="font-medium"
+                                  >{{ Math.round(workout.durationSec / 60) }}m</span
+                                >
+                              </div>
+                              <div v-if="workout.tss" class="flex items-center gap-1">
+                                <UIcon
+                                  name="i-tabler-bolt"
+                                  class="w-3 h-3 opacity-80"
+                                  :class="getWorkoutColorClass(workout.type)"
+                                />
+                                <span class="font-medium">{{ Math.round(workout.tss) }} TSS</span>
+                              </div>
+                            </div>
+                          </div>
+                          <UIcon
+                            name="i-heroicons-chevron-right"
+                            class="w-4 h-4 text-gray-300 group-hover:text-primary transition-colors"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </UCard>
+                </div>
+
+                <!-- Connection Status Card - only shown if syncing is in progress or issues -->
+                <DashboardDataSyncStatusCard v-if="integrationStore.syncingData" />
+              </div>
+
+              <DashboardShareFooterCard />
+
+              <!-- App Info Footer -->
+              <div class="flex justify-center pt-8 pb-12 sm:pb-4">
+                <UButton
+                  to="/settings/changelog"
+                  variant="link"
+                  color="neutral"
+                  size="xs"
+                  :padded="false"
+                  class="text-gray-400 dark:text-gray-500 font-normal hover:text-gray-600 dark:hover:text-gray-400 transition-colors"
+                >
+                  {{ buildVersionDisplay }}
+                </UButton>
+              </div>
             </div>
-          </div>
-        </template>
-      </ClientOnly>
+          </template>
+        </ClientOnly>
+      </div>
     </template>
   </UDashboardPanel>
 
@@ -751,6 +789,51 @@
 
   // Share Coach Watts modal
   const showShareCoachWattsModal = ref(false)
+  const { openReleaseModal } = useReleaseNotes()
+  const { toggle: toggleTriggerMonitor } = useTriggerMonitor()
+
+  const dashboardOverflowItems = computed(() => {
+    const items: Array<{
+      label: string
+      icon?: string
+      to?: string
+      onSelect?: () => void
+    }> = [
+      {
+        label: t.value('share_footer_button'),
+        icon: 'i-lucide-heart',
+        onSelect: () => {
+          showShareCoachWattsModal.value = true
+        }
+      },
+      {
+        label: t.value('navbar_tasks'),
+        icon: 'i-heroicons-cpu-chip',
+        onSelect: () => {
+          toggleTriggerMonitor()
+        }
+      },
+      {
+        label: t.value('navbar_notifications'),
+        icon: 'i-heroicons-bell',
+        to: '/notifications'
+      },
+      {
+        label: t.value('navbar_whats_new'),
+        icon: 'i-heroicons-gift',
+        onSelect: () => {
+          void openReleaseModal()
+        }
+      },
+      {
+        label: t.value('header_upload'),
+        icon: 'i-heroicons-cloud-arrow-up',
+        to: '/workouts/upload'
+      }
+    ]
+
+    return [items]
+  })
 
   useHead({
     title: 'Dashboard',

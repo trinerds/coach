@@ -1626,6 +1626,44 @@
 
   // Share current chat room
   const isShareModalOpen = ref(false)
+  const { toggle: toggleTriggerMonitor } = useTriggerMonitor()
+
+  const chatOverflowItems = computed(() => [
+    [
+      {
+        label: 'Tasks',
+        icon: 'i-heroicons-cpu-chip',
+        onSelect: () => toggleTriggerMonitor()
+      },
+      {
+        label: 'Notifications',
+        icon: 'i-heroicons-bell',
+        to: '/notifications'
+      },
+      {
+        label: 'Memory',
+        icon: 'i-heroicons-bookmark',
+        disabled: !currentRoomId.value,
+        onSelect: () => {
+          void openMemoryPanel()
+        }
+      },
+      {
+        label: t.value('nav_share'),
+        icon: 'i-heroicons-share',
+        disabled: !currentRoomId.value,
+        onSelect: () => {
+          isShareModalOpen.value = true
+        }
+      },
+      {
+        label: t.value('nav_settings'),
+        icon: 'i-heroicons-cog-6-tooth',
+        to: '/settings/ai'
+      }
+    ]
+  ])
+
   const shareExpiryValue = ref('2592000')
   const isMemoryPanelOpen = ref(false)
   const loadingMemoryPanel = ref(false)
@@ -2192,69 +2230,87 @@
             />
           </template>
           <template #right>
-            <ClientOnly>
-              <DashboardTriggerMonitorButton />
-              <NotificationDropdown />
-            </ClientOnly>
-            <UButton
-              color="neutral"
-              variant="outline"
-              icon="i-heroicons-bookmark"
-              aria-label="Manage Memory"
-              size="sm"
-              class="font-bold"
-              :disabled="!currentRoomId"
-              @click="
-                () => {
-                  void openMemoryPanel()
-                }
-              "
-            >
-              <span class="hidden sm:inline">Memory</span>
-            </UButton>
-            <UButton
-              color="neutral"
-              variant="outline"
-              icon="i-heroicons-share"
-              aria-label="Share Chat"
-              size="sm"
-              class="font-bold"
-              :disabled="!currentRoomId"
-              @click="
-                () => {
-                  isShareModalOpen = true
-                }
-              "
-            >
-              <span class="hidden sm:inline">{{ t('nav_share') }}</span>
-            </UButton>
-            <UButton
-              to="/settings/ai"
-              icon="i-heroicons-cog-6-tooth"
-              color="neutral"
-              variant="outline"
-              size="sm"
-              class="font-bold"
-              aria-label="AI Settings"
-            >
-              <span class="hidden sm:inline">{{ t('nav_settings') }}</span>
-            </UButton>
-            <UButton
-              color="primary"
-              variant="solid"
-              icon="i-heroicons-chat-bubble-left-right"
-              aria-label="New Chat"
-              size="sm"
-              class="font-bold"
-              @click="
-                () => {
-                  void createNewChat()
-                }
-              "
-            >
-              <span class="hidden sm:inline">{{ t('nav_new_chat') }}</span>
-              <span class="sm:hidden">{{ t('controls_chat') }}</span>
-            </UButton>
+            <LayoutPageNavbarActions :overflow-items="chatOverflowItems">
+              <ClientOnly>
+                <DashboardTriggerMonitorButton />
+                <NotificationDropdown />
+              </ClientOnly>
+              <UButton
+                color="neutral"
+                variant="outline"
+                icon="i-heroicons-bookmark"
+                aria-label="Manage Memory"
+                size="sm"
+                class="font-bold"
+                :disabled="!currentRoomId"
+                @click="
+                  () => {
+                    void openMemoryPanel()
+                  }
+                "
+              >
+                <span class="hidden md:inline">Memory</span>
+              </UButton>
+              <UButton
+                color="neutral"
+                variant="outline"
+                icon="i-heroicons-share"
+                aria-label="Share Chat"
+                size="sm"
+                class="font-bold"
+                :disabled="!currentRoomId"
+                @click="
+                  () => {
+                    isShareModalOpen = true
+                  }
+                "
+              >
+                <span class="hidden md:inline">{{ t('nav_share') }}</span>
+              </UButton>
+              <UButton
+                to="/settings/ai"
+                icon="i-heroicons-cog-6-tooth"
+                color="neutral"
+                variant="outline"
+                size="sm"
+                class="font-bold"
+                aria-label="AI Settings"
+              >
+                <span class="hidden md:inline">{{ t('nav_settings') }}</span>
+              </UButton>
+              <UButton
+                color="primary"
+                variant="solid"
+                icon="i-heroicons-chat-bubble-left-right"
+                aria-label="New Chat"
+                size="sm"
+                class="font-bold"
+                @click="
+                  () => {
+                    void createNewChat()
+                  }
+                "
+              >
+                <span class="hidden md:inline">{{ t('nav_new_chat') }}</span>
+                <span class="md:hidden">{{ t('controls_chat') }}</span>
+              </UButton>
+
+              <template #mobile>
+                <UButton
+                  color="primary"
+                  variant="solid"
+                  icon="i-heroicons-chat-bubble-left-right"
+                  aria-label="New Chat"
+                  size="sm"
+                  class="size-11 min-h-11 min-w-11 font-bold"
+                  @click="
+                    () => {
+                      void createNewChat()
+                    }
+                  "
+                />
+              </template>
+            </LayoutPageNavbarActions>
           </template>
         </UDashboardNavbar>
       </div>

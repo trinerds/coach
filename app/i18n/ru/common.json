@@ -190,5 +190,15 @@
   "quick_capture_placeholder_ask": "Задавайте любые вопросы или регистрируйте данные...",
   "quick_capture_placeholder_reply": "Введите ответ...",
   "quick_capture_preview_header": "Предварительный обзор тренера",
-  "quick_capture_thinking": "Тренер думает..."
+  "quick_capture_thinking": "Тренер думает...",
+  "navigation_section_primary": "Панель управления",
+  "navigation_section_today": "Today",
+  "navigation_section_analysis": "Analysis",
+  "navigation_section_account": "Account",
+  "navbar_more_actions": "More actions",
+  "sidebar_account_menu": "Account menu",
+  "sidebar_community_discord": "Discord",
+  "sidebar_community_github": "GitHub",
+  "sidebar_attribution_strava": "Powered by Strava",
+  "sidebar_attribution_garmin": "Works with Garmin"
 }

@@ -6,7 +6,7 @@
           <UDashboardSidebarCollapse />
         </template>
         <template #right>
-          <div class="flex items-center gap-3">
+          <LayoutPageNavbarActions :overflow-items="nutritionOverflowItems">
             <ClientOnly>
               <DashboardTriggerMonitorButton />
             </ClientOnly>
@@ -17,9 +17,10 @@
               color="neutral"
               variant="outline"
               size="sm"
-              class="font-bold"
+              class="size-11 min-h-11 min-w-11 font-bold"
+              :aria-label="t('nav_history')"
             >
-              <span class="hidden sm:inline">{{ t('nav_history') }}</span>
+              <span class="hidden md:inline">{{ t('nav_history') }}</span>
             </UButton>
 
             <UButton
@@ -27,15 +28,16 @@
               color="neutral"
               variant="outline"
               size="sm"
-              class="font-bold"
+              class="size-11 min-h-11 min-w-11 font-bold"
               :loading="loading"
+              :aria-label="t('nav_refresh')"
               @click="
                 () => {
                   void refreshData()
                 }
               "
             >
-              <span class="hidden sm:inline">{{ t('nav_refresh') }}</span>
+              <span class="hidden md:inline">{{ t('nav_refresh') }}</span>
             </UButton>
 
             <UButton
@@ -46,16 +48,43 @@
               size="sm"
               class="font-bold"
             >
-              <span class="hidden sm:inline">{{ t('nav_new_chat') }}</span>
-              <span class="sm:hidden">{{ t('nav_chat') }}</span>
+              <span class="hidden md:inline">{{ t('nav_new_chat') }}</span>
+              <span class="md:hidden">{{ t('nav_chat') }}</span>
             </UButton>
-          </div>
+
+            <template #mobile>
+              <UButton
+                icon="i-lucide-refresh-cw"
+                color="neutral"
+                variant="outline"
+                size="sm"
+                class="size-11 min-h-11 min-w-11"
+                :loading="loading"
+                :aria-label="t('nav_refresh')"
+                @click="
+                  () => {
+                    void refreshData()
+                  }
+                "
+              />
+              <UButton
+                to="/chat"
+                icon="i-heroicons-chat-bubble-left-right"
+                color="primary"
+                variant="solid"
+                size="sm"
+                class="font-bold"
+              >
+                <span class="sr-only">{{ t('nav_new_chat') }}</span>
+              </UButton>
+            </template>
+          </LayoutPageNavbarActions>
         </template>
       </UDashboardNavbar>
     </template>
 
     <template #body>
-      <div class="p-0 sm:p-6 space-y-4 sm:space-y-6">
+      <div class="p-0 sm:p-6 space-y-4 sm:space-y-6 quick-capture-inset">
         <!-- Dashboard Branding -->
         <div class="px-4 sm:px-0">
           <h1 class="text-4xl font-black text-gray-900 dark:text-white uppercase tracking-tight">
@@ -722,6 +751,23 @@
   const loading = computed(
     () => loadingWave.value || loadingStrategy.value || loadingActiveFeed.value
   )
+
+  const { toggle: toggleTriggerMonitor } = useTriggerMonitor()
+
+  const nutritionOverflowItems = computed(() => [
+    [
+      {
+        label: t.value('nav_history'),
+        icon: 'i-lucide-history',
+        to: '/nutrition/history'
+      },
+      {
+        label: 'Tasks',
+        icon: 'i-heroicons-cpu-chip',
+        onSelect: () => toggleTriggerMonitor()
+      }
+    ]
+  ])
 
   const nutritionRecoveryItems = computed<RecoveryContextItem[]>(() =>
     journeyEvents.value.map((event: any) => ({
