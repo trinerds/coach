@@ -2,7 +2,8 @@
 
 **Priority:** Medium  
 **Type:** UI / UX  
-**Status:** Open  
+**Status:** Fixed  
+**Fixed:** 2026-07-14 — Mobile wizard shows compact “Step X of 6 — Label” summary; desktop progress row uses `justify-start` and scrolls to the start on step changes.
 **Area:** `plans, wizard, overlays, mobile`
 
 ## Summary
@@ -30,7 +31,7 @@ Use a compact mobile progress pattern such as “Step 1 of 6 — Goal,” or act
 
 ## Acceptance Criteria
 
-- [ ] The current step name and position are visible when every wizard step opens.
-- [ ] Mobile users are not required to discover horizontal scrolling to understand progress.
-- [ ] The indicator updates and remains correctly oriented through all six steps.
-- [ ] The desktop indicator remains unchanged or equally clear.
+- [x] The current step name and position are visible when every wizard step opens.
+- [x] Mobile users are not required to discover horizontal scrolling to understand progress.
+- [x] The indicator updates and remains correctly oriented through all six steps.
+- [x] The desktop indicator remains unchanged or equally clear.

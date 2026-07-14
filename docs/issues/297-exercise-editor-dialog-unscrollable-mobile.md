@@ -2,7 +2,8 @@
 
 **Priority:** High  
 **Type:** UI / UX  
-**Status:** Open  
+**Status:** Fixed  
+**Fixed:** 2026-07-14 — Exercise editor modal constrained to `100dvh` with scrollable body, sticky action row, and responsive set table (`min-w-0` on mobile).
 **Area:** `library, exercises, overlays, mobile`
 
 ## Summary
@@ -30,7 +31,7 @@ Use a full-screen editor or mobile sheet, or constrain the modal to `100dvh` wit
 
 ## Acceptance Criteria
 
-- [ ] At 360×800 and 390×844, every field and action is reachable by touch scrolling.
-- [ ] The dialog has no unintended horizontal clipping.
-- [ ] Cancel and Create/Save remain reachable with the virtual keyboard open.
-- [ ] Focused fields scroll into view and focus remains trapped within the dialog.
+- [x] At 360×800 and 390×844, every field and action is reachable by touch scrolling.
+- [x] The dialog has no unintended horizontal clipping.
+- [x] Cancel and Create/Save remain reachable with the virtual keyboard open.
+- [x] Focused fields scroll into view and focus remains trapped within the dialog.

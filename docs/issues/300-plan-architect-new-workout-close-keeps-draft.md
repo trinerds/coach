@@ -2,7 +2,8 @@
 
 **Priority:** Medium  
 **Type:** UX / Transactional UI  
-**Status:** Open  
+**Status:** Fixed  
+**Fixed:** 2026-07-14 — Plan Architect uses detached drafts via `beginWorkoutDraft`; cancel/close/Escape discards new items; success toast only after Save.
 **Area:** `plans, architect, workouts, overlays`
 
 ## Summary
@@ -31,8 +32,8 @@ Create a detached draft for the modal and insert it only when the user chooses S
 
 ## Acceptance Criteria
 
-- [ ] Opening and cancelling New workout leaves the plan unchanged.
-- [ ] The success notification appears only after confirmation.
-- [ ] Save inserts exactly one workout with the entered values.
-- [ ] Close, Cancel, Escape, and overlay dismissal have consistent behavior.
-- [ ] Editing and cancelling an existing workout does not silently apply changes.
+- [x] Opening and cancelling New workout leaves the plan unchanged.
+- [x] The success notification appears only after confirmation.
+- [x] Save inserts exactly one workout with the entered values.
+- [x] Close, Cancel, Escape, and overlay dismissal have consistent behavior.
+- [x] Editing and cancelling an existing workout does not silently apply changes.

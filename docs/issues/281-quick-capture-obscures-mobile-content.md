@@ -2,7 +2,7 @@
 
 **Priority:** Medium  
 **Type:** UI / UX  
-**Status:** Open  
+**Status:** Fixed  
 **Area:** `quick-capture, dashboard, activities, nutrition, mobile`
 
 ## Summary
@@ -36,7 +36,7 @@ Expose a shared bottom-inset token for Quick Capture and apply it to every enabl
 
 ## Acceptance Criteria
 
-- [ ] The last page/card action can be scrolled fully above Quick Capture on every enabled route.
-- [ ] Quick Capture does not cover calendar drag/compare actions or chart controls.
-- [ ] Bottom spacing includes `env(safe-area-inset-bottom)` where applicable.
-- [ ] Desktop spacing is unchanged.
+- [x] The last page/card action can be scrolled fully above Quick Capture on every enabled route.
+- [x] Quick Capture does not cover calendar drag/compare actions or chart controls.
+- [x] Bottom spacing includes `env(safe-area-inset-bottom)` where applicable.
+- [x] Desktop spacing is unchanged.

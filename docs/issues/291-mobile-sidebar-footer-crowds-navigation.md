@@ -2,7 +2,8 @@
 
 **Priority:** Medium  
 **Type:** UI / UX  
-**Status:** Open  
+**Status:** Fixed  
+**Fixed:** 2026-07-14 — Replaced multi-row fixed footer with `MobileSidebarFooter` (single compact account row + theme toggle); community/attribution links moved into the account overflow menu.
 **Area:** `sidebar, navigation, mobile`
 
 ## Summary
@@ -41,8 +42,8 @@ Use a compact mobile-specific footer:
 
 ## Acceptance Criteria
 
-- [ ] The fixed mobile footer uses no more than one compact row.
-- [ ] External/community links remain discoverable without permanently reducing the navigation viewport.
-- [ ] Profile, theme, and Sign out remain reachable from a clearly labeled account control.
-- [ ] Required integration attribution remains compliant and accessible.
-- [ ] The sidebar works without content overlap at 360×800 and 390×844.
+- [x] The fixed mobile footer uses no more than one compact row.
+- [x] External/community links remain discoverable without permanently reducing the navigation viewport.
+- [x] Profile, theme, and Sign out remain reachable from a clearly labeled account control.
+- [x] Required integration attribution remains compliant and accessible.
+- [x] The sidebar works without content overlap at 360×800 and 390×844.

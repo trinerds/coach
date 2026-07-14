@@ -2,7 +2,7 @@
 
 **Priority:** Medium  
 **Type:** Bug / i18n  
-**Status:** Open  
+**Status:** Fixed  
 **Area:** `navigation, hydration`
 
 ## Summary
@@ -36,9 +36,9 @@ Ensure the keys exist in the namespace loaded by the layout and make server/clie
 
 ## Acceptance Criteria
 
-- [ ] Sidebar labels remain readable after hydration.
-- [ ] Server and client render identical initial navigation text.
-- [ ] No navigation-related hydration mismatch is logged.
-- [ ] Search/morning-routine groups use the same resolved labels.
-- [ ] The mobile sidebar dialog has a readable localized accessible title and description.
-- [ ] Sidebar search contains no raw key names in dialog metadata, group headings, or results.
+- [x] Sidebar labels remain readable after hydration.
+- [x] Server and client render identical initial navigation text.
+- [x] No navigation-related hydration mismatch is logged.
+- [x] Search/morning-routine groups use the same resolved labels.
+- [x] The mobile sidebar dialog has a readable localized accessible title and description.
+- [x] Sidebar search contains no raw key names in dialog metadata, group headings, or results.

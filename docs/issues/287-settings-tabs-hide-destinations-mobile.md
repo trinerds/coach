@@ -2,7 +2,7 @@
 
 **Priority:** Medium  
 **Type:** UI / UX  
-**Status:** Open  
+**Status:** Fixed  
 **Area:** `settings, mobile`
 
 ## Summary
@@ -32,7 +32,7 @@ Use a responsive select/overflow menu or add edge fades, snapping, and explicit 
 
 ## Acceptance Criteria
 
-- [ ] All Settings destinations are discoverable at 360px and 390px.
-- [ ] No tab label is shown as a misleading clipped fragment.
-- [ ] The active route is visible when opened by deep link.
-- [ ] Danger Zone is reachable without guessing a horizontal swipe gesture.
+- [x] All Settings destinations are discoverable at 360px and 390px.
+- [x] No tab label is shown as a misleading clipped fragment.
+- [x] The active route is visible when opened by deep link.
+- [x] Danger Zone is reachable without guessing a horizontal swipe gesture.

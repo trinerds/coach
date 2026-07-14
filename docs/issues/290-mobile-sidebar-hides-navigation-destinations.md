@@ -2,7 +2,8 @@
 
 **Priority:** High  
 **Type:** UI / UX  
-**Status:** Open  
+**Status:** Fixed  
+**Fixed:** 2026-07-14 — Mobile sidebar uses grouped sections (`MobileSidebarNav`), scroll-into-view for active routes, and a scroll fade affordance; desktop navigation unchanged.
 **Area:** `sidebar, navigation, mobile`
 
 ## Summary
@@ -44,8 +45,8 @@ Validate final grouping with actual usage analytics before permanently demoting 
 
 ## Acceptance Criteria
 
-- [ ] Core destinations and the current location are discoverable at 360×800 and 390×844.
-- [ ] Opening the sidebar on a nested route reveals its active navigation item without manual searching.
-- [ ] Secondary destinations are grouped under understandable, localized section labels.
-- [ ] The menu indicates when additional items are available by scrolling.
-- [ ] Navigation remains fully keyboard- and screen-reader-operable.
+- [x] Core destinations and the current location are discoverable at 360×800 and 390×844.
+- [x] Opening the sidebar on a nested route reveals its active navigation item without manual searching.
+- [x] Secondary destinations are grouped under understandable, localized section labels.
+- [x] The menu indicates when additional items are available by scrolling.
+- [x] Navigation remains fully keyboard- and screen-reader-operable.

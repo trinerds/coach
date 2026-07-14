@@ -2,7 +2,7 @@
 
 **Priority:** Medium  
 **Type:** UI / Content  
-**Status:** Open  
+**Status:** Fixed  
 **Area:** `recommendations`
 
 ## Summary
@@ -29,7 +29,7 @@ Render descriptions through the app's safe Markdown/content component, with link
 
 ## Acceptance Criteria
 
-- [ ] Supported Markdown is formatted consistently in recommendation cards and details.
-- [ ] Raw Markdown delimiters are not visible.
-- [ ] Generated HTML is sanitized.
-- [ ] Card clamping and mobile layout remain intact.
+- [x] Supported Markdown is formatted consistently in recommendation cards and details.
+- [x] Raw Markdown delimiters are not visible.
+- [x] Generated HTML is sanitized.
+- [x] Card clamping and mobile layout remain intact.

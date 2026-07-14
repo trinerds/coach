@@ -2,7 +2,7 @@
 
 **Priority:** High  
 **Type:** Bug  
-**Status:** Open  
+**Status:** Fixed  
 **Area:** `recovery, navigation, head`
 
 ## Summary
@@ -34,7 +34,7 @@ Initialize translation dependencies before registering `useHead`, and pass a sta
 
 ## Acceptance Criteria
 
-- [ ] Leaving `/recovery` produces no `beforeUnmount` or Unhead disposal error.
-- [ ] The destination page completes loading in the same tab.
-- [ ] Recovery's document title is `Recovery History - Coach Watts`.
-- [ ] Repeated Recovery ↔ workout navigation remains stable.
+- [x] Leaving `/recovery` produces no `beforeUnmount` or Unhead disposal error.
+- [x] The destination page completes loading in the same tab.
+- [x] Recovery's document title is `Recovery History - Coach Watts`.
+- [x] Repeated Recovery ↔ workout navigation remains stable.

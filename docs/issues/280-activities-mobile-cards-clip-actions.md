@@ -2,7 +2,7 @@
 
 **Priority:** Medium  
 **Type:** UI / UX  
-**Status:** Open  
+**Status:** Fixed  
 **Area:** `activities, calendar, mobile`
 
 ## Summary
@@ -33,7 +33,7 @@ Give the mobile list its own `overflow-x-hidden` layout and move secondary actio
 
 ## Acceptance Criteria
 
-- [ ] No mobile card child extends outside the calendar viewport at 360px or 390px.
-- [ ] Comparison and reschedule actions remain visible and comfortably tappable.
-- [ ] The mobile list does not require horizontal scrolling.
-- [ ] Long titles and full TSS/duration/distance metadata degrade predictably.
+- [x] No mobile card child extends outside the calendar viewport at 360px or 390px.
+- [x] Comparison and reschedule actions remain visible and comfortably tappable.
+- [x] The mobile list does not require horizontal scrolling.
+- [x] Long titles and full TSS/duration/distance metadata degrade predictably.

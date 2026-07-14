@@ -2,7 +2,7 @@
 
 **Priority:** Medium  
 **Type:** UI / UX  
-**Status:** Open  
+**Status:** Fixed  
 **Area:** `profile, settings, mobile`
 
 ## Summary
@@ -31,7 +31,7 @@ Use a mobile-select/overflow-menu pattern or add a strong scroll affordance with
 
 ## Acceptance Criteria
 
-- [ ] Mobile users can discover all seven settings destinations without guessing that the row is swipeable.
-- [ ] No tab label is presented as a misleading clipped fragment.
-- [ ] A query-string-selected tab is visible on initial render.
-- [ ] Tab targets are comfortably tappable.
+- [x] Mobile users can discover all seven settings destinations without guessing that the row is swipeable.
+- [x] No tab label is presented as a misleading clipped fragment.
+- [x] A query-string-selected tab is visible on initial render.
+- [x] Tab targets are comfortably tappable.

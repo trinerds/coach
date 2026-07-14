@@ -434,11 +434,11 @@ Live responsive audit at 390×844 and 360×800 across `/dashboard`, `/activities
 | ID                                                           | Title                                                     | Priority | Type               | Status |
 | ------------------------------------------------------------ | --------------------------------------------------------- | -------- | ------------------ | ------ |
 | [276](./276-mobile-navbar-actions-overlap-navigation.md)     | Mobile navbar actions overlap and hide primary navigation | High     | UI / UX            | Open   |
-| [277](./277-mobile-icon-actions-small-and-unnamed.md)        | Mobile icon actions are small and lack accessible names   | Medium   | Accessibility / UI | Open   |
-| [278](./278-profile-tabs-hide-destinations-on-mobile.md)     | Profile tabs hide most settings destinations on mobile    | Medium   | UI / UX            | Open   |
-| [279](./279-performance-highlight-filters-clipped-mobile.md) | Performance highlight filters are clipped on mobile       | Medium   | UI / UX            | Open   |
-| [280](./280-activities-mobile-cards-clip-actions.md)         | Activities mobile cards clip chart and reschedule actions | Medium   | UI / UX            | Open   |
-| [281](./281-quick-capture-obscures-mobile-content.md)        | Quick Capture obscures mobile page content                | Medium   | UI / UX            | Open   |
+| [277](./277-mobile-icon-actions-small-and-unnamed.md)        | Mobile icon actions are small and lack accessible names   | Medium   | Accessibility / UI | Fixed  |
+| [278](./278-profile-tabs-hide-destinations-on-mobile.md)     | Profile tabs hide most settings destinations on mobile    | Medium   | UI / UX            | Fixed  |
+| [279](./279-performance-highlight-filters-clipped-mobile.md) | Performance highlight filters are clipped on mobile       | Medium   | UI / UX            | Fixed  |
+| [280](./280-activities-mobile-cards-clip-actions.md)         | Activities mobile cards clip chart and reschedule actions | Medium   | UI / UX            | Fixed  |
+| [281](./281-quick-capture-obscures-mobile-content.md)        | Quick Capture obscures mobile page content                | Medium   | UI / UX            | Fixed  |
 
 ### Suggested fix order (mobile)
 
@@ -453,14 +453,14 @@ Second live batch covering `/fitness`, `/recovery`, `/recommendations`, `/report
 
 | ID                                                      | Title                                                        | Priority | Type          | Status |
 | ------------------------------------------------------- | ------------------------------------------------------------ | -------- | ------------- | ------ |
-| [282](./282-recovery-head-unmount-breaks-navigation.md) | Leaving Recovery can break the next route in a loading state | High     | Bug           | Open   |
-| [283](./283-recommendation-cards-show-raw-markdown.md)  | Recommendation cards show raw Markdown syntax                | Medium   | UI / Content  | Open   |
-| [284](./284-recommendations-heading-clipped-mobile.md)  | Recommendations heading is clipped on mobile                 | Medium   | UI / UX       | Open   |
-| [285](./285-report-event-tables-hide-mobile-actions.md) | Reports and Events tables hide mobile actions                | High     | UI / UX       | Open   |
-| [286](./286-connected-apps-untranslated-keys.md)        | Connected Apps exposes untranslated localization keys        | Medium   | UI / i18n     | Open   |
-| [287](./287-settings-tabs-hide-destinations-mobile.md)  | Settings tabs hide destinations without an affordance        | Medium   | UI / UX       | Open   |
-| [288](./288-feed-document-title-duplicates-brand.md)    | Several pages duplicate the brand in document titles         | Low      | UI / Metadata | Open   |
-| [289](./289-sidebar-translation-hydration-mismatch.md)  | Sidebar translations regress to raw keys during hydration    | Medium   | Bug / i18n    | Open   |
+| [282](./282-recovery-head-unmount-breaks-navigation.md) | Leaving Recovery can break the next route in a loading state | High     | Bug           | Fixed  |
+| [283](./283-recommendation-cards-show-raw-markdown.md)  | Recommendation cards show raw Markdown syntax                | Medium   | UI / Content  | Fixed  |
+| [284](./284-recommendations-heading-clipped-mobile.md)  | Recommendations heading is clipped on mobile                 | Medium   | UI / UX       | Fixed  |
+| [285](./285-report-event-tables-hide-mobile-actions.md) | Reports and Events tables hide mobile actions                | High     | UI / UX       | Fixed  |
+| [286](./286-connected-apps-untranslated-keys.md)        | Connected Apps exposes untranslated localization keys        | Medium   | UI / i18n     | Fixed  |
+| [287](./287-settings-tabs-hide-destinations-mobile.md)  | Settings tabs hide destinations without an affordance        | Medium   | UI / UX       | Fixed  |
+| [288](./288-feed-document-title-duplicates-brand.md)    | Several pages duplicate the brand in document titles         | Low      | UI / Metadata | Fixed  |
+| [289](./289-sidebar-translation-hydration-mismatch.md)  | Sidebar translations regress to raw keys during hydration    | Medium   | Bug / i18n    | Fixed  |
 
 ### Suggested fix order (mobile continuation)
 
@@ -476,8 +476,8 @@ Focused live audit of the dashboard header and open sidebar at 390×844, includi
 
 | ID                                                           | Title                                                   | Priority | Type    | Status |
 | ------------------------------------------------------------ | ------------------------------------------------------- | -------- | ------- | ------ |
-| [290](./290-mobile-sidebar-hides-navigation-destinations.md) | Mobile sidebar hides navigation destinations below fold | High     | UI / UX | Open   |
-| [291](./291-mobile-sidebar-footer-crowds-navigation.md)      | Mobile sidebar footer crowds out core navigation        | Medium   | UI / UX | Open   |
+| [290](./290-mobile-sidebar-hides-navigation-destinations.md) | Mobile sidebar hides navigation destinations below fold | High     | UI / UX | Fixed  |
+| [291](./291-mobile-sidebar-footer-crowds-navigation.md)      | Mobile sidebar footer crowds out core navigation        | Medium   | UI / UX | Fixed  |
 
 ### Suggested fix order (mobile navigation)
 
@@ -492,9 +492,9 @@ Live 390×844 audit of Library Workouts/Exercises/Plans/Charts, Coaching overvie
 
 | ID                                                      | Title                                                  | Priority | Type         | Status |
 | ------------------------------------------------------- | ------------------------------------------------------ | -------- | ------------ | ------ |
-| [292](./292-exercise-library-filters-hidden-mobile.md)  | Exercise Library hides movement filters on mobile      | Medium   | UI / UX      | Open   |
-| [293](./293-coaching-calendar-desktop-layout-mobile.md) | Coaching Calendar preserves a desktop layout on mobile | High     | UI / UX      | Open   |
-| [294](./294-help-center-duplicates-copy-prefixes.md)    | Help Center duplicates Try and Tip prefixes            | Low      | UI / Content | Open   |
+| [292](./292-exercise-library-filters-hidden-mobile.md)  | Exercise Library hides movement filters on mobile      | Medium   | UI / UX      | Fixed  |
+| [293](./293-coaching-calendar-desktop-layout-mobile.md) | Coaching Calendar preserves a desktop layout on mobile | High     | UI / UX      | Fixed  |
+| [294](./294-help-center-duplicates-copy-prefixes.md)    | Help Center duplicates Try and Tip prefixes            | Low      | UI / Content | Fixed  |
 
 ### Suggested fix order (mobile discovery batch)
 

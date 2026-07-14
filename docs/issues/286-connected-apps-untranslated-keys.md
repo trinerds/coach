@@ -2,7 +2,7 @@
 
 **Priority:** Medium  
 **Type:** UI / i18n  
-**Status:** Open  
+**Status:** Fixed  
 **Area:** `settings, connected-apps`
 
 ## Summary
@@ -31,7 +31,7 @@ Add the missing keys to every supported locale or use the project's translation 
 
 ## Acceptance Criteria
 
-- [ ] No `apps_*` identifiers are visible in the English UI.
-- [ ] Website and Disconnect actions have clear localized labels.
-- [ ] Authorized dates interpolate correctly.
-- [ ] Missing secondary-locale values fall back to readable English.
+- [x] No `apps_*` identifiers are visible in the English UI.
+- [x] Website and Disconnect actions have clear localized labels.
+- [x] Authorized dates interpolate correctly.
+- [x] Missing secondary-locale values fall back to readable English.

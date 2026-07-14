@@ -2,7 +2,7 @@
 
 **Priority:** High  
 **Type:** UI / UX  
-**Status:** Open  
+**Status:** Fixed  
 **Area:** `reports, events, mobile`
 
 ## Summary
@@ -33,7 +33,7 @@ Provide dedicated mobile card/list variants that surface status and a labeled ov
 
 ## Acceptance Criteria
 
-- [ ] Report status and primary action are visible without horizontal scrolling.
-- [ ] Event edit/delete actions are reachable from each mobile row.
-- [ ] All mobile row actions have accessible names and comfortable targets.
-- [ ] Desktop table density remains available at larger breakpoints.
+- [x] Report status and primary action are visible without horizontal scrolling.
+- [x] Event edit/delete actions are reachable from each mobile row.
+- [x] All mobile row actions have accessible names and comfortable targets.
+- [x] Desktop table density remains available at larger breakpoints.

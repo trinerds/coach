@@ -2,7 +2,8 @@
 
 **Priority:** Medium  
 **Type:** Accessibility / UX  
-**Status:** Open  
+**Status:** Fixed  
+**Fixed:** 2026-07-14 — Consent checkboxes use `UFormField` with required labels/help; removed ambiguous card-level toggles; validation message explains incomplete consent.
 **Area:** `onboarding, consent, mobile`
 
 ## Summary
@@ -29,7 +30,7 @@ Associate each checkbox with its visible label through `UFormField` or matching 
 
 ## Acceptance Criteria
 
-- [ ] Each checkbox is announced with its visible name and required state.
-- [ ] Tapping either the checkbox or its label toggles exactly once.
-- [ ] The screen clearly distinguishes required consent from optional preferences.
-- [ ] Validation explains what remains incomplete before Continue can be used.
+- [x] Each checkbox is announced with its visible name and required state.
+- [x] Tapping either the checkbox or its label toggles exactly once.
+- [x] The screen clearly distinguishes required consent from optional preferences.
+- [x] Validation explains what remains incomplete before Continue can be used.

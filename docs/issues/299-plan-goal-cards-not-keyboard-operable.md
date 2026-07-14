@@ -2,7 +2,8 @@
 
 **Priority:** Medium  
 **Type:** Accessibility  
-**Status:** Open  
+**Status:** Fixed  
+**Fixed:** 2026-07-14 — Existing goal choices converted to a labeled `radiogroup` of `<button role="radio">` elements with focus and selected styling preserved.
 **Area:** `plans, wizard, forms`
 
 ## Summary
@@ -29,7 +30,7 @@ Model the choices as a labeled radio group, or use buttons with `aria-pressed`/`
 
 ## Acceptance Criteria
 
-- [ ] Every goal choice is reachable and selectable with keyboard input.
-- [ ] A screen reader announces the goal name, group context, and selected state.
-- [ ] Selection has a visible focus and selected treatment.
-- [ ] Pointer and touch behavior remains unchanged.
+- [x] Every goal choice is reachable and selectable with keyboard input.
+- [x] A screen reader announces the goal name, group context, and selected state.
+- [x] Selection has a visible focus and selected treatment.
+- [x] Pointer and touch behavior remains unchanged.

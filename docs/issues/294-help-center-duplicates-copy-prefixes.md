@@ -2,7 +2,7 @@
 
 **Priority:** Low  
 **Type:** UI / Content  
-**Status:** Open  
+**Status:** Fixed  
 **Area:** `help-center, i18n`
 
 ## Summary
@@ -29,5 +29,5 @@ Keep prefixes in one place. Prefer prefix-free example strings so the separately
 
 ## Acceptance Criteria
 
-- [ ] Each example displays exactly one `Try:` or `Tip:` prefix.
-- [ ] Prefix punctuation and spacing remain correct in every supported locale.
+- [x] Each example displays exactly one `Try:` or `Tip:` prefix.
+- [x] Prefix punctuation and spacing remain correct in every supported locale.

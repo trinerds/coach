@@ -2,7 +2,7 @@
 
 **Priority:** Medium  
 **Type:** UI / UX  
-**Status:** Open  
+**Status:** Fixed  
 **Area:** `library, exercises, filters, mobile`
 
 ## Summary
@@ -33,7 +33,7 @@ Use one consistent mobile filter pattern. Prefer a Filter button opening a sheet
 
 ## Acceptance Criteria
 
-- [ ] Core, Carry, and Mobility are discoverable without guessing at an invisible swipe gesture.
-- [ ] Movement and intent filters use a consistent phone interaction pattern.
-- [ ] The active filters remain visible or are summarized near the Filter control.
-- [ ] The filter UI works at 360×800 and 390×844.
+- [x] Core, Carry, and Mobility are discoverable without guessing at an invisible swipe gesture.
+- [x] Movement and intent filters use a consistent phone interaction pattern.
+- [x] The active filters remain visible or are summarized near the Filter control.
+- [x] The filter UI works at 360×800 and 390×844.

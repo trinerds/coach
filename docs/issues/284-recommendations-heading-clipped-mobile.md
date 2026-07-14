@@ -2,7 +2,7 @@
 
 **Priority:** Medium  
 **Type:** UI / UX  
-**Status:** Open  
+**Status:** Fixed  
 **Area:** `recommendations, mobile`
 
 ## Summary
@@ -28,6 +28,6 @@ Use a responsive heading scale such as `text-3xl sm:text-4xl`, or allow safe wra
 
 ## Acceptance Criteria
 
-- [ ] The full heading is visible at 360px and 390px.
-- [ ] Longer translated headings wrap or scale predictably.
-- [ ] Desktop typography is unchanged.
+- [x] The full heading is visible at 360px and 390px.
+- [x] Longer translated headings wrap or scale predictably.
+- [x] Desktop typography is unchanged.

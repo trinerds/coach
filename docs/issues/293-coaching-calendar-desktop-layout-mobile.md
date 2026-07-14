@@ -2,7 +2,8 @@
 
 **Priority:** High  
 **Type:** UI / UX  
-**Status:** Open  
+**Status:** Fixed  
+**Fixed:** 2026-07-14 — Phone mode defaults roster/drawer closed, hides desktop rail on `<lg`, adds left slideover + navbar overflow for workspace panels, compact date toolbar with mobile view selector, and removes header overlap with sidebar control.
 **Area:** `coaching, calendar, navigation, mobile`
 
 ## Summary
@@ -42,8 +43,8 @@ Introduce a dedicated phone mode:
 
 ## Acceptance Criteria
 
-- [ ] Tapping the hamburger always opens the app sidebar.
-- [ ] The initial 390px layout shows one readable, full-width calendar lane.
-- [ ] Roster, workouts, and drawer remain reachable through clearly labeled mobile sheets or menus.
-- [ ] Date navigation does not wrap into a vertical stack.
-- [ ] No toolbar control overlaps navigation at 360×800 or 390×844.
+- [x] Tapping the hamburger always opens the app sidebar.
+- [x] The initial 390px layout shows one readable, full-width calendar lane.
+- [x] Roster, workouts, and drawer remain reachable through clearly labeled mobile sheets or menus.
+- [x] Date navigation does not wrap into a vertical stack.
+- [x] No toolbar control overlaps navigation at 360×800 or 390×844.

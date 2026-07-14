@@ -2,7 +2,7 @@
 
 **Priority:** Medium  
 **Type:** UI / UX  
-**Status:** Open  
+**Status:** Fixed  
 **Area:** `performance, mobile`
 
 ## Summary
@@ -30,6 +30,6 @@ Stack the section title and filters below `sm`, or allow the filter row to wrap 
 
 ## Acceptance Criteria
 
-- [ ] Both filters are fully visible and operable at 360px and 390px.
-- [ ] The section title does not compete with controls for the same horizontal row on narrow screens.
-- [ ] Equivalent filter headers elsewhere on the page use the same mobile layout.
+- [x] Both filters are fully visible and operable at 360px and 390px.
+- [x] The section title does not compete with controls for the same horizontal row on narrow screens.
+- [x] Equivalent filter headers elsewhere on the page use the same mobile layout.

@@ -2,7 +2,7 @@
 
 **Priority:** Medium  
 **Type:** Accessibility / UI  
-**Status:** Open  
+**Status:** Fixed  
 **Area:** `navigation, sidebar, activities, dashboard, library, analytics, mobile`
 
 ## Summary
@@ -46,7 +46,7 @@ Add localized `aria-label` values whenever visible labels are hidden, and provid
 
 ## Acceptance Criteria
 
-- [ ] Every interactive icon has a meaningful accessible name at mobile breakpoints.
-- [ ] Frequently used mobile actions have comfortable, non-overlapping hit areas.
-- [ ] Icon labels are localized and match the action performed.
-- [ ] Automated accessibility checks no longer report unnamed buttons or links on the audited pages.
+- [x] Every interactive icon has a meaningful accessible name at mobile breakpoints.
+- [x] Frequently used mobile actions have comfortable, non-overlapping hit areas.
+- [x] Icon labels are localized and match the action performed.
+- [x] Automated accessibility checks no longer report unnamed buttons or links on the audited pages.

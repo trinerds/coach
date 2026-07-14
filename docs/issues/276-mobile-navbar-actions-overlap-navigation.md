@@ -2,7 +2,8 @@
 
 **Priority:** High  
 **Type:** UI / UX  
-**Status:** Open  
+**Status:** Fixed  
+**Fixed:** 2026-07-14 — Added shared `LayoutPageNavbarActions` with mobile overflow menus across core pages; secondary header actions collapse below `sm` while primary actions (Chat, Sync, Roster) stay visible without overlapping the sidebar control.
 **Area:** `dashboard, navigation, mobile`
 
 ## Summary
@@ -41,8 +42,8 @@ Define a shared mobile navbar policy: preserve the sidebar control, keep at most
 
 ## Acceptance Criteria
 
-- [ ] The sidebar control never overlaps another action at 360px or 390px.
-- [ ] Tapping the hamburger always opens the sidebar and cannot activate an overpainted header action.
-- [ ] No navbar action extends outside the viewport.
-- [ ] Hidden secondary actions remain reachable from a visible overflow menu.
-- [ ] The mobile action order and primary action treatment are consistent across core pages.
+- [x] The sidebar control never overlaps another action at 360px or 390px.
+- [x] Tapping the hamburger always opens the sidebar and cannot activate an overpainted header action.
+- [x] No navbar action extends outside the viewport.
+- [x] Hidden secondary actions remain reachable from a visible overflow menu.
+- [x] The mobile action order and primary action treatment are consistent across core pages.

@@ -2,7 +2,7 @@
 
 **Priority:** Low  
 **Type:** UI / Metadata  
-**Status:** Open  
+**Status:** Fixed  
 **Area:** `feed, library, coaching, metadata`
 
 ## Summary
@@ -27,6 +27,6 @@ Give each route a concise page-local title and allow the global title template t
 
 ## Acceptance Criteria
 
-- [ ] The browser title contains the product name once.
-- [ ] The title follows the same separator convention as other authenticated pages.
-- [ ] Library and Coaching Calendar titles identify the current page rather than only the product.
+- [x] The browser title contains the product name once.
+- [x] The title follows the same separator convention as other authenticated pages.
+- [x] Library and Coaching Calendar titles identify the current page rather than only the product.

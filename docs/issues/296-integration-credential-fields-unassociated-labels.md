@@ -2,7 +2,8 @@
 
 **Priority:** Medium  
 **Type:** Accessibility / UX  
-**Status:** Open  
+**Status:** Fixed  
+**Fixed:** 2026-07-14 — Intervals, Yazio, and Hevy connect forms use `UFormField` with associated labels and intentional autocomplete metadata.
 **Area:** `integrations, forms, mobile`
 
 ## Summary
@@ -31,7 +32,7 @@ Use `UFormField` or stable input IDs with matching `for` attributes. Preserve `a
 
 ## Acceptance Criteria
 
-- [ ] Every credential input is announced with its visible label and required state.
-- [ ] Labels focus their corresponding inputs when tapped.
-- [ ] Password managers and mobile autofill receive intentional metadata.
-- [ ] Placeholder text remains an example or hint, not the only accessible name.
+- [x] Every credential input is announced with its visible label and required state.
+- [x] Labels focus their corresponding inputs when tapped.
+- [x] Password managers and mobile autofill receive intentional metadata.
+- [x] Placeholder text remains an example or hint, not the only accessible name.
