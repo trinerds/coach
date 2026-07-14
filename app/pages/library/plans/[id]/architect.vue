@@ -696,6 +696,7 @@
     <template #footer>
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <UButton
+          v-if="workoutEditorMode === 'edit'"
           color="error"
           variant="ghost"
           icon="i-heroicons-trash"
@@ -707,8 +708,22 @@
         >
           {{ isEditingNote ? 'Delete note' : 'Remove workout' }}
         </UButton>
+        <div v-else />
+
         <div class="flex flex-col gap-2 sm:flex-row">
           <UButton
+            color="neutral"
+            variant="ghost"
+            @click="
+              () => {
+                isWorkoutEditorOpen = false
+              }
+            "
+          >
+            Cancel
+          </UButton>
+          <UButton
+            v-if="workoutEditorMode === 'edit'"
             color="neutral"
             variant="ghost"
             @click="
@@ -728,7 +743,15 @@
               }
             "
           >
-            {{ isEditingNote ? 'Save note' : 'Save workout' }}
+            {{
+              workoutEditorMode === 'create'
+                ? isEditingNote
+                  ? 'Add note'
+                  : 'Add workout'
+                : isEditingNote
+                  ? 'Save note'
+                  : 'Save workout'
+            }}
           </UButton>
         </div>
       </div>
@@ -822,11 +845,13 @@
     duplicateWeek,
     addWorkout,
     addNote,
+    beginWorkoutDraft,
     addWorkoutFromTemplate,
     moveWorkout,
     removeWorkout,
     openWorkoutEditor,
     applyWorkoutEditor,
+    workoutEditorMode,
     savePlan,
     findWeek,
     findBlock,
@@ -1090,15 +1115,12 @@
     dayIndex: number,
     kind: 'workout' | 'note' = 'workout'
   ) {
-    const item = kind === 'note' ? addNote(weekId, dayIndex) : addWorkout(weekId, dayIndex)
-    if (item) {
-      openWorkoutEditor(weekId, dayIndex, item)
-    }
+    beginWorkoutDraft(weekId, dayIndex, kind)
   }
 
   function handleRemoveWorkout() {
-    if (editingWorkout.value && editingWorkoutTarget.value) {
-      removeWorkout(editingWorkoutTarget.value.weekId, editingWorkout.value.id)
+    if (editingWorkout.value && editingWorkoutTarget.value?.workoutId) {
+      removeWorkout(editingWorkoutTarget.value.weekId, editingWorkoutTarget.value.workoutId)
       isWorkoutEditorOpen.value = false
     }
   }

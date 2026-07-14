@@ -3,9 +3,17 @@
     <!-- Scrollable Content -->
     <div class="flex-1 overflow-y-auto px-1 py-2 space-y-6">
       <!-- Progress Indicator -->
+      <p
+        v-if="step <= 5"
+        class="mb-4 text-center text-sm font-semibold text-highlighted sm:hidden"
+        aria-live="polite"
+      >
+        Step {{ step }} of 6 — {{ wizardStepLabels[step - 1] }}
+      </p>
       <div
         v-if="step <= 5"
-        class="flex items-center justify-center gap-2 mb-4 overflow-x-auto pb-2"
+        ref="wizardProgressRef"
+        class="mb-4 hidden items-center justify-start gap-2 overflow-x-auto pb-2 scroll-smooth sm:flex"
       >
         <!-- Step 1 -->
         <div class="flex items-center flex-shrink-0">
@@ -179,11 +187,19 @@
           </button>
 
           <!-- Existing Goals -->
-          <div v-if="goals.length > 0" class="space-y-3">
-            <div
+          <div
+            v-if="goals.length > 0"
+            class="space-y-3"
+            role="radiogroup"
+            aria-label="Choose your goal"
+          >
+            <button
               v-for="goal in goals"
               :key="goal.id"
-              class="p-4 rounded-lg border-2 text-left transition-all cursor-pointer"
+              type="button"
+              role="radio"
+              :aria-checked="selectedGoal?.id === goal.id"
+              class="w-full rounded-lg border-2 p-4 text-left transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               :class="
                 selectedGoal?.id === goal.id
                   ? 'border-primary bg-primary/5 dark:bg-primary/10'
@@ -242,7 +258,7 @@
                 </div>
                 <UBadge :color="getPriorityColor(goal.priority)">{{ goal.priority }}</UBadge>
               </div>
-            </div>
+            </button>
           </div>
         </div>
       </div>
@@ -1164,6 +1180,13 @@
 
   // State
   const step = ref(1)
+  const wizardProgressRef = ref<HTMLElement | null>(null)
+  const wizardStepLabels = ['Goal', 'Strategy', 'Phases', 'Schedule', 'Details', 'Review']
+
+  watch(step, async () => {
+    await nextTick()
+    wizardProgressRef.value?.scrollTo({ left: 0, behavior: 'smooth' })
+  })
   const loadingGoals = ref(false)
   const showCreateGoal = ref(false)
   const goals = ref<any[]>([])

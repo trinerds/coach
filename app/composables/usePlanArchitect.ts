@@ -75,7 +75,14 @@ export function usePlanArchitect(planId: string) {
   const editingWeek = ref<any | null>(null)
   const editingWeekTarget = ref<{ blockId: string; weekId: string } | null>(null)
   const editingWorkout = ref<any | null>(null)
-  const editingWorkoutTarget = ref<{ weekId: string; workoutId: string } | null>(null)
+  const editingWorkoutTarget = ref<{
+    weekId: string
+    workoutId?: string
+    dayIndex?: number
+  } | null>(null)
+  const workoutEditorMode = ref<'create' | 'edit'>('edit')
+  const workoutEditorSnapshot = ref<any | null>(null)
+  let skipWorkoutEditorCancel = false
 
   // Initialization
   if (import.meta.client) {
@@ -470,6 +477,24 @@ export function usePlanArchitect(planId: string) {
     return workout
   }
 
+  function beginWorkoutDraft(weekId: string, dayIndex: number, kind: PlanItemKind = 'workout') {
+    const week = findWeek(weekId)
+    if (!week) return
+
+    workoutEditorMode.value = 'create'
+    workoutEditorSnapshot.value = null
+    editingWorkoutTarget.value = { weekId, dayIndex }
+    editingWorkout.value = {
+      title: kind === 'note' ? 'New note' : 'New workout',
+      description: '',
+      type: kind === 'note' ? 'Note' : 'Workout',
+      durationMinutes: kind === 'note' ? 0 : 30,
+      tss: kind === 'note' ? 0 : 20,
+      category: kind === 'note' ? 'Note' : 'Workout'
+    }
+    isWorkoutEditorOpen.value = true
+  }
+
   function addNote(weekId: string, dayIndex: number) {
     const week = findWeek(weekId)
     if (!week) return null
@@ -515,6 +540,8 @@ export function usePlanArchitect(planId: string) {
   }
 
   function openWorkoutEditor(weekId: string, _dayIndex: number, workout: any) {
+    workoutEditorMode.value = 'edit'
+    workoutEditorSnapshot.value = structuredClone(workout)
     editingWorkoutTarget.value = { weekId, workoutId: workout.id }
     editingWorkout.value = {
       ...workout,
@@ -524,8 +551,67 @@ export function usePlanArchitect(planId: string) {
     isWorkoutEditorOpen.value = true
   }
 
+  function resetWorkoutEditorState() {
+    editingWorkout.value = null
+    editingWorkoutTarget.value = null
+    workoutEditorSnapshot.value = null
+    workoutEditorMode.value = 'edit'
+  }
+
+  function cancelWorkoutEditor() {
+    if (
+      workoutEditorMode.value === 'edit' &&
+      workoutEditorSnapshot.value &&
+      editingWorkoutTarget.value?.workoutId
+    ) {
+      const week = findWeek(editingWorkoutTarget.value.weekId)
+      const workout = week?.workouts.find(
+        (entry: any) => entry.id === editingWorkoutTarget.value?.workoutId
+      )
+      if (workout) {
+        Object.assign(workout, workoutEditorSnapshot.value)
+      }
+    }
+
+    resetWorkoutEditorState()
+  }
+
+  function closeWorkoutEditor() {
+    skipWorkoutEditorCancel = true
+    isWorkoutEditorOpen.value = false
+    resetWorkoutEditorState()
+    skipWorkoutEditorCancel = false
+  }
+
+  watch(isWorkoutEditorOpen, (open, wasOpen) => {
+    if (wasOpen && !open && !skipWorkoutEditorCancel) {
+      cancelWorkoutEditor()
+    }
+  })
+
   function applyWorkoutEditor() {
     if (!editingWorkout.value || !editingWorkoutTarget.value) return
+
+    if (workoutEditorMode.value === 'create') {
+      const week = findWeek(editingWorkoutTarget.value.weekId)
+      if (!week || editingWorkoutTarget.value.dayIndex === undefined) return
+
+      const isNote =
+        editingWorkout.value.category === 'Note' || editingWorkout.value.type === 'Note'
+      const kind: PlanItemKind = isNote ? 'note' : 'workout'
+      createPlanItem(week, editingWorkoutTarget.value.dayIndex, kind, {
+        title: editingWorkout.value.title,
+        description: editingWorkout.value.description || '',
+        type: editingWorkout.value.type,
+        category: editingWorkout.value.category,
+        durationSec: isNote ? 0 : (Number(editingWorkout.value.durationMinutes) || 0) * 60,
+        tss: isNote ? 0 : Number(editingWorkout.value.tss) || 0
+      })
+      closeWorkoutEditor()
+      toast.add({ title: isNote ? 'Note added' : 'Workout added', color: 'success' })
+      return
+    }
+
     const week = findWeek(editingWorkoutTarget.value.weekId)
     const workout = week?.workouts.find(
       (entry: any) => entry.id === editingWorkoutTarget.value?.workoutId
@@ -543,9 +629,7 @@ export function usePlanArchitect(planId: string) {
     workout.durationSec = isNote ? 0 : (Number(editingWorkout.value.durationMinutes) || 0) * 60
     workout.tss = isNote ? 0 : Number(editingWorkout.value.tss) || 0
     workout.structuredWorkout = isNote ? null : (workout.structuredWorkout ?? null)
-    isWorkoutEditorOpen.value = false
-    editingWorkout.value = null
-    editingWorkoutTarget.value = null
+    closeWorkoutEditor()
     toast.add({ title: isNote ? 'Note updated' : 'Workout updated', color: 'success' })
   }
 
@@ -636,11 +720,14 @@ export function usePlanArchitect(planId: string) {
     duplicateWeek,
     addWorkout,
     addNote,
+    beginWorkoutDraft,
     addWorkoutFromTemplate,
     moveWorkout,
     removeWorkout,
     openWorkoutEditor,
     applyWorkoutEditor,
+    cancelWorkoutEditor,
+    workoutEditorMode,
     savePlan,
     findWeek,
     findBlock,

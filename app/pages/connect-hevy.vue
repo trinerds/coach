@@ -62,17 +62,16 @@
             </div>
 
             <div class="space-y-4">
-              <div>
-                <label class="block text-sm font-medium mb-2">
-                  API Key <span class="text-red-500">*</span>
-                </label>
+              <UFormField label="API Key" required>
                 <UInput
+                  id="hevy-api-key"
                   v-model="apiKey"
                   type="password"
                   placeholder="Enter your Hevy API key"
                   size="lg"
+                  autocomplete="current-password"
                 />
-              </div>
+              </UFormField>
             </div>
           </div>
 

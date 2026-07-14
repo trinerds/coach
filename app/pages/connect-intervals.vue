@@ -64,30 +64,30 @@
             </div>
 
             <div class="space-y-4">
-              <div>
-                <label class="block text-sm font-medium mb-2">
-                  Athlete ID <span class="text-red-500">*</span>
-                </label>
-                <UInput v-model="athleteId" placeholder="e.g., i12345" size="lg" />
-                <p class="text-xs text-muted mt-1">
-                  Shown at the top of intervals.icu/settings page
-                </p>
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium mb-2">
-                  API Key <span class="text-red-500">*</span>
-                </label>
+              <UFormField label="Athlete ID" required>
                 <UInput
+                  id="intervals-athlete-id"
+                  v-model="athleteId"
+                  placeholder="e.g., i12345"
+                  size="lg"
+                  autocomplete="username"
+                />
+                <template #help>Shown at the top of intervals.icu/settings page</template>
+              </UFormField>
+
+              <UFormField label="API Key" required>
+                <UInput
+                  id="intervals-api-key"
                   v-model="apiKey"
                   type="password"
                   placeholder="Enter your API key"
                   size="lg"
+                  autocomplete="current-password"
                 />
-                <p class="text-xs text-muted mt-1">
+                <template #help>
                   Find this in the "API Key" section at intervals.icu/settings
-                </p>
-              </div>
+                </template>
+              </UFormField>
             </div>
           </div>
 

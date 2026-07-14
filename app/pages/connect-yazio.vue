@@ -64,30 +64,26 @@
             </div>
 
             <form class="space-y-4" @submit.prevent="handleConnect">
-              <div>
-                <label class="block text-sm font-medium mb-2">
-                  Yazio Username <span class="text-red-500">*</span>
-                </label>
+              <UFormField label="Yazio Username" required>
                 <UInput
+                  id="yazio-username"
                   v-model="username"
                   placeholder="Enter your email or username"
                   size="lg"
                   autocomplete="username"
                 />
-              </div>
+              </UFormField>
 
-              <div>
-                <label class="block text-sm font-medium mb-2">
-                  Yazio Password <span class="text-red-500">*</span>
-                </label>
+              <UFormField label="Yazio Password" required>
                 <UInput
+                  id="yazio-password"
                   v-model="password"
                   type="password"
                   placeholder="Enter your password"
                   size="lg"
                   autocomplete="current-password"
                 />
-              </div>
+              </UFormField>
             </form>
 
             <div class="text-xs text-gray-500 text-center">

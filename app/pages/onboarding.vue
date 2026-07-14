@@ -20,80 +20,70 @@
 
     <form class="space-y-6" @submit.prevent="submitConsent">
       <div class="space-y-4">
-        <!-- Terms Checkbox Card -->
         <div
-          class="relative flex items-start p-4 rounded-xl border-2 transition-all duration-200 cursor-pointer group"
+          class="rounded-xl border-2 p-4 transition-all duration-200"
           :class="
             acceptedTerms
               ? 'border-primary-500 bg-primary-50/50 dark:bg-primary-900/10'
-              : 'border-gray-200 dark:border-gray-700 hover:border-primary-200 dark:hover:border-primary-800'
-          "
-          @click="
-            () => {
-              acceptedTerms = !acceptedTerms
-            }
+              : 'border-gray-200 dark:border-gray-700'
           "
         >
-          <div class="flex h-6 items-center" @click.stop>
-            <UCheckbox v-model="acceptedTerms" name="terms" />
-          </div>
-          <div class="ml-3 text-sm leading-6">
-            <label
-              class="font-medium text-gray-900 dark:text-white cursor-pointer group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors"
-            >
-              Accept Legal Terms
-            </label>
-            <p class="text-gray-500 dark:text-gray-400 mt-1">
-              I agree to the
-              <a
-                href="/terms"
-                target="_blank"
-                class="text-primary-600 hover:text-primary-500 font-semibold underline decoration-dotted decoration-primary-500/50 underline-offset-4"
-                @click.stop
-                >Terms of Service</a
-              >
-              and
-              <a
-                href="/privacy"
-                target="_blank"
-                class="text-primary-600 hover:text-primary-500 font-semibold underline decoration-dotted decoration-primary-500/50 underline-offset-4"
-                @click.stop
-                >Privacy Policy</a
-              >.
-            </p>
-          </div>
+          <UFormField label="Accept Legal Terms" required>
+            <UCheckbox v-model="acceptedTerms" name="terms" aria-required="true">
+              <template #label>
+                <span class="font-medium text-gray-900 dark:text-white">Accept Legal Terms</span>
+              </template>
+            </UCheckbox>
+            <template #help>
+              <span class="text-gray-500 dark:text-gray-400">
+                I agree to the
+                <a
+                  href="/terms"
+                  target="_blank"
+                  class="text-primary-600 hover:text-primary-500 font-semibold underline decoration-dotted decoration-primary-500/50 underline-offset-4"
+                  >Terms of Service</a
+                >
+                and
+                <a
+                  href="/privacy"
+                  target="_blank"
+                  class="text-primary-600 hover:text-primary-500 font-semibold underline decoration-dotted decoration-primary-500/50 underline-offset-4"
+                  >Privacy Policy</a
+                >.
+              </span>
+            </template>
+          </UFormField>
         </div>
 
-        <!-- Health Consent Checkbox Card -->
         <div
-          class="relative flex items-start p-4 rounded-xl border-2 transition-all duration-200 cursor-pointer group"
+          class="rounded-xl border-2 p-4 transition-all duration-200"
           :class="
             acceptedHealth
               ? 'border-primary-500 bg-primary-50/50 dark:bg-primary-900/10'
-              : 'border-gray-200 dark:border-gray-700 hover:border-primary-200 dark:hover:border-primary-800'
-          "
-          @click="
-            () => {
-              acceptedHealth = !acceptedHealth
-            }
+              : 'border-gray-200 dark:border-gray-700'
           "
         >
-          <div class="flex h-6 items-center" @click.stop>
-            <UCheckbox v-model="acceptedHealth" name="health" />
-          </div>
-          <div class="ml-3 text-sm leading-6">
-            <label
-              class="font-medium text-gray-900 dark:text-white cursor-pointer group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors"
-            >
-              Enable Health Insights
-            </label>
-            <p class="text-gray-500 dark:text-gray-400 mt-1">
-              I explicitly consent to the processing of my health and biometric data (HR, power,
-              location) to generate personalized AI coaching.
-            </p>
-          </div>
+          <UFormField label="Health data consent (required)" required>
+            <UCheckbox v-model="acceptedHealth" name="health" aria-required="true">
+              <template #label>
+                <span class="font-medium text-gray-900 dark:text-white">
+                  Consent to health data processing (required)
+                </span>
+              </template>
+            </UCheckbox>
+            <template #help>
+              <span class="text-gray-500 dark:text-gray-400">
+                I explicitly consent to the processing of my health and biometric data (HR, power,
+                location) so Coach Watts can generate personalized AI coaching.
+              </span>
+            </template>
+          </UFormField>
         </div>
       </div>
+
+      <p v-if="!isValid" class="text-sm text-muted" role="status">
+        Both required consent checkboxes must be selected before you can continue.
+      </p>
 
       <UButton
         type="submit"
@@ -105,7 +95,7 @@
         :loading="loading"
         class="shadow-sm transition-all py-4 font-bold rounded-xl"
       >
-        {{ isValid ? "Let's Go! 🚀" : 'Accept & Continue' }}
+        {{ isValid ? "Let's Go! 🚀" : 'Accept required consent to continue' }}
       </UButton>
     </form>
   </div>
