@@ -433,7 +433,7 @@ Live responsive audit at 390×844 and 360×800 across `/dashboard`, `/activities
 
 | ID                                                           | Title                                                     | Priority | Type               | Status |
 | ------------------------------------------------------------ | --------------------------------------------------------- | -------- | ------------------ | ------ |
-| [276](./276-mobile-navbar-actions-overlap-navigation.md)     | Mobile navbar actions overlap and hide primary navigation | High     | UI / UX            | Open   |
+| [276](./276-mobile-navbar-actions-overlap-navigation.md)     | Mobile navbar actions overlap and hide primary navigation | High     | UI / UX            | Fixed  |
 | [277](./277-mobile-icon-actions-small-and-unnamed.md)        | Mobile icon actions are small and lack accessible names   | Medium   | Accessibility / UI | Fixed  |
 | [278](./278-profile-tabs-hide-destinations-on-mobile.md)     | Profile tabs hide most settings destinations on mobile    | Medium   | UI / UX            | Fixed  |
 | [279](./279-performance-highlight-filters-clipped-mobile.md) | Performance highlight filters are clipped on mobile       | Medium   | UI / UX            | Fixed  |
@@ -509,12 +509,12 @@ Live 390×844 audit of first-time consent, manual integration setup, plan genera
 
 | ID                                                                | Title                                                   | Priority | Type                  | Status |
 | ----------------------------------------------------------------- | ------------------------------------------------------- | -------- | --------------------- | ------ |
-| [295](./295-onboarding-consent-controls-unnamed-ambiguous.md)     | Onboarding consent controls are unnamed and ambiguous   | Medium   | Accessibility / UX    | Open   |
-| [296](./296-integration-credential-fields-unassociated-labels.md) | Integration credential fields have unassociated labels  | Medium   | Accessibility / UX    | Open   |
-| [297](./297-exercise-editor-dialog-unscrollable-mobile.md)        | Exercise editor dialog is unscrollable on mobile        | High     | UI / UX               | Open   |
-| [298](./298-plan-wizard-progress-opens-on-wrong-steps-mobile.md)  | Plan wizard progress opens on the wrong steps on mobile | Medium   | UI / UX               | Open   |
-| [299](./299-plan-goal-cards-not-keyboard-operable.md)             | Plan goal cards are not keyboard operable               | Medium   | Accessibility         | Open   |
-| [300](./300-plan-architect-new-workout-close-keeps-draft.md)      | Closing a new plan workout keeps an unintended draft    | Medium   | UX / Transactional UI | Open   |
+| [295](./295-onboarding-consent-controls-unnamed-ambiguous.md)     | Onboarding consent controls are unnamed and ambiguous   | Medium   | Accessibility / UX    | Fixed  |
+| [296](./296-integration-credential-fields-unassociated-labels.md) | Integration credential fields have unassociated labels  | Medium   | Accessibility / UX    | Fixed  |
+| [297](./297-exercise-editor-dialog-unscrollable-mobile.md)        | Exercise editor dialog is unscrollable on mobile        | High     | UI / UX               | Fixed  |
+| [298](./298-plan-wizard-progress-opens-on-wrong-steps-mobile.md)  | Plan wizard progress opens on the wrong steps on mobile | Medium   | UI / UX               | Fixed  |
+| [299](./299-plan-goal-cards-not-keyboard-operable.md)             | Plan goal cards are not keyboard operable               | Medium   | Accessibility         | Fixed  |
+| [300](./300-plan-architect-new-workout-close-keeps-draft.md)      | Closing a new plan workout keeps an unintended draft    | Medium   | UX / Transactional UI | Fixed  |
 
 ### Suggested fix order (mobile creation flows)
 
@@ -522,6 +522,22 @@ Live 390×844 audit of first-time consent, manual integration setup, plan genera
 2. **300** — restore true cancel semantics for new Plan Architect workouts
 3. **298 + 299** — orient and make the plan wizard operable for every input method
 4. **295 + 296** — associate first-time and integration controls with clear labels
+
+## Issues 301–303 (mobile patch validation — 2026-07-14)
+
+Post-implementation browser validation at 390×844 on localhost found regressions in the original #276/#289 fixes.
+
+| ID                                                          | Title                                                          | Priority | Type                 | Status |
+| ----------------------------------------------------------- | -------------------------------------------------------------- | -------- | -------------------- | ------ |
+| [301](./301-mobile-navbar-hides-page-title.md)              | Mobile navbar hides page title leaving empty header space      | Medium   | UI / UX              | Fixed  |
+| [302](./302-mobile-sidebar-slideover-ignores-title-prop.md) | Mobile sidebar slideover ignores UDashboardSidebar title props | Medium   | Accessibility / i18n | Fixed  |
+| [303](./303-mobile-sidebar-footer-aria-label-regression.md) | Mobile sidebar footer aria-label shows raw key or crashes SSR  | Medium   | Accessibility / Bug  | Fixed  |
+
+### Validation notes
+
+- **Confirmed fixed:** #278 profile tabs, #286 apps copy, #292 exercise filter sheet, #285 reports mobile cards, #290–291 sidebar grouping/footer, overflow menus (#276 core behavior).
+- **Required follow-up fixes:** #301 (`app.config.ts` title slot), #302 (`:menu` title override), #303 (computed aria-label fallback).
+- **Remaining watch item:** `LayoutPageNavbarActions` uses the `lg` breakpoint while navbar titles previously hid below `sm` — consider aligning breakpoints if tablet layouts look inconsistent between 640–1024px.
 
 ## Recommended fix order (app review)
 

@@ -82,6 +82,11 @@
 
     return [items]
   })
+  const accountMenuAriaLabel = computed(() => {
+    if (typeof t.value !== 'function') return 'Account menu'
+    const translated = t.value('sidebar_account_menu')
+    return !translated || translated === 'sidebar_account_menu' ? 'Account menu' : translated
+  })
 </script>
 
 <template>
@@ -91,7 +96,7 @@
         <button
           type="button"
           class="flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-lg px-2 py-1.5 text-left hover:bg-muted/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-          :aria-label="ready ? t('sidebar_account_menu') : 'Account menu'"
+          :aria-label="accountMenuAriaLabel"
         >
           <UAvatar v-if="user" :alt="user.email || ''" size="sm" />
           <div class="min-w-0 flex-1">

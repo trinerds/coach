@@ -31,9 +31,13 @@ export default defineAppConfig({
     },
     dashboardNavbar: {
       slots: {
-        title: 'hidden sm:flex items-center gap-1.5 font-semibold text-highlighted truncate',
+        title:
+          'flex min-w-0 items-center gap-1.5 truncate text-sm font-semibold text-highlighted sm:text-base',
         icon: 'hidden sm:block shrink-0 size-5 self-center me-1.5'
       }
+    },
+    dashboardSidebarToggle: {
+      base: 'size-11 min-h-11 min-w-11'
     }
   },
   // Custom design tokens for consistent usage

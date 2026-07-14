@@ -2,8 +2,8 @@
 
 **Priority:** Medium  
 **Type:** Bug / i18n  
-**Status:** Fixed  
-**Area:** `navigation, hydration`
+**Status:** Fixed (see also #302 — initial `:title` prop did not affect mobile slideover until `:menu` override was added)  
+**Validated:** 2026-07-14 on localhost:3099 — dialog now announces “Navigation”; search dialog announces “Search”.
 
 ## Summary
 

@@ -1157,6 +1157,10 @@
       :ui="{ footer: 'lg:border-t lg:border-default', body: 'flex min-h-0 flex-col' }"
       :title="navLabel('navigation_sidebar_title', 'Navigation')"
       :description="navLabel('navigation_sidebar_description', 'Browse Coach Watts destinations')"
+      :menu="{
+        title: navLabel('navigation_sidebar_title', 'Navigation'),
+        description: navLabel('navigation_sidebar_description', 'Browse Coach Watts destinations')
+      }"
     >
       <template #header="{ collapsed }">
         <NuxtLink
@@ -1189,11 +1193,11 @@
           />
         </div>
 
-        <MobileSidebarNav ref="mobileSidebarNavRef" :sections="mobileNavSections" />
+        <LayoutMobileSidebarNav ref="mobileSidebarNavRef" :sections="mobileNavSections" />
       </template>
 
       <template #footer="{ collapsed }">
-        <MobileSidebarFooter
+        <LayoutMobileSidebarFooter
           :user="user"
           :impersonated-email="impersonatedEmail"
           :stopping-impersonation="stoppingImpersonation"

@@ -90,7 +90,7 @@
                 color="primary"
                 variant="solid"
                 size="sm"
-                class="font-bold"
+                class="size-11 min-h-11 min-w-11"
               >
                 <span class="sr-only">{{ t('header_new_chat') }}</span>
               </UButton>
