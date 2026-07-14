@@ -133,6 +133,7 @@ model User {
   goals                              Goal[]
   integrations                       Integration[]
   llmUsage                           LlmUsage[]
+  quotaDenials                       QuotaDenial[]
   nutrition                          Nutrition[]
   oauthApps                          OAuthApp[]
   oauthCodes                         OAuthAuthCode[]
@@ -1814,6 +1815,21 @@ model SyncQueue {
   @@index([userId, status])
   @@index([status, createdAt])
   @@index([entityType, entityId, structureRevision])
+}
+
+model QuotaDenial {
+  id        String           @id @default(uuid())
+  userId    String
+  operation String
+  tier      SubscriptionTier
+  limit     Int
+  used      Int
+  createdAt DateTime         @default(now())
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([operation, tier, createdAt])
+  @@index([createdAt])
 }
 
 model LlmUsage {

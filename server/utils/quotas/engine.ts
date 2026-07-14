@@ -1,10 +1,50 @@
 import { Prisma } from '@prisma/client'
+import type { SubscriptionTier } from '@prisma/client'
 import { prisma } from '../db'
 import type { QuotaOperation } from './registry'
 import { QUOTA_REGISTRY, mapOperationToQuota } from './registry'
-import type { SubscriptionTier, User } from '@prisma/client'
 import type { QuotaStatus } from '~~/app/types/quotas'
 import { getUserTimezone, getStartOfDayUTC, getEndOfDayUTC } from '../date'
+
+function resolveEffectiveTier(user: {
+  subscriptionTier: SubscriptionTier
+  trialEndsAt: Date | null
+}): SubscriptionTier {
+  const isTrialActive = user.trialEndsAt && new Date(user.trialEndsAt) > new Date()
+  return user.subscriptionTier === 'FREE' && isTrialActive ? 'SUPPORTER' : user.subscriptionTier
+}
+
+/**
+ * Persist a quota denial for analytics. Fire-and-forget — never throws.
+ */
+export async function recordQuotaDenial(
+  userId: string,
+  operation: string,
+  status: Pick<QuotaStatus, 'used' | 'limit'>
+): Promise<void> {
+  try {
+    const canonicalOp = mapOperationToQuota(operation)
+    if (!canonicalOp) return
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { subscriptionTier: true, trialEndsAt: true }
+    })
+    if (!user) return
+
+    await prisma.quotaDenial.create({
+      data: {
+        userId,
+        operation: canonicalOp,
+        tier: resolveEffectiveTier(user),
+        limit: status.limit,
+        used: status.used
+      }
+    })
+  } catch (error) {
+    console.error(`Failed to record quota denial for ${operation}:`, error)
+  }
+}
 
 /**
  * Get current usage and limit status for a user and operation
@@ -24,10 +64,7 @@ export async function getQuotaStatus(
 
     if (!user) return null
 
-    // Trial Logic: If user is FREE but has an active trial, they get SUPPORTER quotas
-    const isTrialActive = user.trialEndsAt && new Date(user.trialEndsAt) > new Date()
-    const effectiveTier: SubscriptionTier =
-      user.subscriptionTier === 'FREE' && isTrialActive ? 'SUPPORTER' : user.subscriptionTier
+    const effectiveTier = resolveEffectiveTier(user)
 
     const quotaDef = QUOTA_REGISTRY[effectiveTier][canonicalOp]
 
@@ -122,6 +159,8 @@ export async function checkQuota(userId: string, operation: string): Promise<Quo
   }
 
   if (!status.allowed && status.enforcement === 'STRICT') {
+    void recordQuotaDenial(userId, operation, status)
+
     const error = new Error(
       `Quota exceeded for ${operation}. Upgrade your plan for higher limits.`
     ) as Error & {
@@ -172,9 +211,7 @@ export async function getQuotaSummary(userId: string): Promise<QuotaStatus[]> {
 
     if (!user) return []
 
-    const isTrialActive = user.trialEndsAt && new Date(user.trialEndsAt) > new Date()
-    const effectiveTier: SubscriptionTier =
-      user.subscriptionTier === 'FREE' && isTrialActive ? 'SUPPORTER' : user.subscriptionTier
+    const effectiveTier = resolveEffectiveTier(user)
 
     const ops = Object.keys(QUOTA_REGISTRY[effectiveTier]) as QuotaOperation[]
 
