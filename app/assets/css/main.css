@@ -274,13 +274,9 @@ a[href],
 
 /* Athletic / Performance Typography Utility */
 .font-athletic {
-  font-family:
-    'Inter var',
-    'Inter',
-    system-ui,
-    -apple-system,
-    sans-serif;
-  font-stretch: condensed;
+  font-family: var(--font-sans);
+  font-weight: 900;
+  font-style: italic;
   letter-spacing: -0.05em;
   text-transform: uppercase;
 }
@@ -347,4 +343,13 @@ a[href],
   box-shadow:
     0 30px 60px -12px rgba(0, 0, 0, 0.9),
     0 0 24px -5px rgba(34, 197, 94, 0.25);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-ping,
+  .animate-pulse,
+  .animate-bounce,
+  .animate-pulse-border {
+    animation: none !important;
+  }
 }

@@ -136,7 +136,7 @@
                 <div class="text-primary-400 font-mono text-sm mb-1 uppercase tracking-widest">
                   {{ t('engine') }}
                 </div>
-                <div class="text-[10px] text-gray-500 font-black uppercase tracking-widest">
+                <div class="text-xs text-gray-500 font-black uppercase tracking-widest">
                   {{ t('engine_sub') }}
                 </div>
               </div>
@@ -186,7 +186,7 @@
                     {{ t('twin_title') }}
                   </div>
                   <div
-                    class="text-[10px] text-gray-400 mt-4 space-y-2 font-black uppercase tracking-widest"
+                    class="text-xs text-gray-400 mt-4 space-y-2 font-black uppercase tracking-widest"
                   >
                     <p class="flex items-center justify-center gap-2">
                       <span class="w-1 h-1 rounded-full bg-primary-500" /> {{ t('twin_fitness') }}

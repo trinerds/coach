@@ -2,9 +2,7 @@
   <section id="features" class="py-24 sm:py-32 relative overflow-hidden">
     <UContainer>
       <div class="mx-auto max-w-2xl text-center mb-20 lg:mx-0 lg:text-left lg:max-w-none">
-        <h2
-          class="text-[10px] font-black uppercase tracking-[0.4em] text-primary-500 mb-4 font-mono"
-        >
+        <h2 class="text-xs font-black uppercase tracking-[0.2em] text-primary-500 mb-4 font-mono">
           {{ t('label') }}
         </h2>
         <p
@@ -54,7 +52,7 @@
               <!-- Mock UI: Daily Plan -->
               <div class="p-6 space-y-4">
                 <div
-                  class="flex items-center justify-between text-[10px] font-black uppercase tracking-[0.25em] text-slate-500 border-b border-white/5 pb-3"
+                  class="flex items-center justify-between text-xs font-black uppercase tracking-[0.25em] text-slate-500 border-b border-white/5 pb-3"
                 >
                   <span>{{ t('today_plan') }}</span>
                   <span class="text-primary-500 animate-pulse">{{ t('adapted') }}</span>
@@ -65,7 +63,7 @@
                   <div class="text-white font-black uppercase tracking-tight text-sm">
                     {{ t('session1_title') }}
                   </div>
-                  <div class="text-[11px] text-slate-500 font-black uppercase tracking-widest mt-1">
+                  <div class="text-xs text-slate-500 font-black uppercase tracking-widest mt-1">
                     {{ t('session1_detail') }}
                   </div>
                 </div>
@@ -75,7 +73,7 @@
                   >
                     {{ t('session2_title') }}
                   </div>
-                  <div class="text-[11px] text-gray-600 font-medium">
+                  <div class="text-xs text-gray-600 font-medium">
                     {{ t('session2_cancelled') }}
                   </div>
                 </div>

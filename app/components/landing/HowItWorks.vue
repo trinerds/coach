@@ -7,9 +7,7 @@
   >
     <div class="mx-auto max-w-7xl px-6 lg:px-8 relative z-10">
       <div class="mx-auto max-w-2xl text-center mb-20">
-        <h2
-          class="text-[10px] font-black uppercase tracking-[0.4em] text-primary-500 mb-4 font-mono"
-        >
+        <h2 class="text-xs font-black uppercase tracking-[0.2em] text-primary-500 mb-4 font-mono">
           {{ t('label') }}
         </h2>
         <p
@@ -156,7 +154,7 @@
                   ></span>
                   <span class="relative inline-flex rounded-full h-2 w-2 bg-primary-500"></span>
                 </span>
-                <span class="text-[10px] font-black uppercase tracking-widest text-primary-500">{{
+                <span class="text-xs font-black uppercase tracking-widest text-primary-500">{{
                   t('step2_status')
                 }}</span>
               </div>
@@ -216,7 +214,7 @@
                 <div
                   v-for="tag in [t('step3_status1'), t('step3_status2')]"
                   :key="tag"
-                  class="px-3 py-1 rounded-lg bg-white/5 border border-white/10 text-[9px] font-black uppercase tracking-widest text-slate-500"
+                  class="px-3 py-1 rounded-lg bg-white/5 border border-white/10 text-xs font-black uppercase tracking-widest text-slate-500"
                 >
                   {{ tag }}
                 </div>
@@ -281,12 +279,12 @@
               >
                 <div class="flex items-center gap-3 mb-3">
                   <div class="w-2 h-2 rounded-full bg-primary-500 animate-pulse" />
-                  <span class="text-[9px] font-black uppercase tracking-widest text-slate-500"
+                  <span class="text-xs font-black uppercase tracking-widest text-slate-500"
                     >Coach Watts</span
                   >
                 </div>
                 <p class="text-sm font-medium italic text-gray-200 leading-snug">
-                  "{{ t('step4_quote') }}"
+                  “{{ t('step4_quote') }}”
                 </p>
               </div>
             </div>

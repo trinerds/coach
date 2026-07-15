@@ -1,8 +1,31 @@
 # New-user onboarding and conversion plan
 
-Status: proposed  
-Reviewed: 2026-07-11  
+Status: **in progress**  
+Reviewed: 2026-07-14 (code review + session scope)  
+Originally drafted: 2026-07-11  
 Scope: signup, mandatory consent, first data connection, first sync, and first coaching value
+
+## Implementation session scope (2026-07-14)
+
+This session implements UX, conversion, analytics, and guided-setup improvements from the [2026-07-14 onboarding code review](#code-review-findings-2026-07-14). The following are **explicitly out of scope** for now — do not change in this session:
+
+| Area       | Item                                                                    | Reason deferred                                                                       |
+| ---------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Compliance | Defer Strava/Intervals ingestion until `healthConsentAcceptedAt` is set | Risk of breaking onboarding or existing users; revisit in a dedicated compliance pass |
+| Compliance | Consent audit-log fields (IP, user-agent, policy version proof)         | Compliance-only; current timestamps are sufficient for this iteration                 |
+| Security   | Disable `allowDangerousEmailAccountLinking` for Strava/Intervals        | Security hardening needs its own design/test pass                                     |
+
+Everything else in the review and this plan remains **in scope** for this session, in the order below.
+
+### Session delivery order
+
+1. **Docs** — this file and [analytics-tracking.md](../04-guides/analytics-tracking.md) ✅
+2. **Signup quick wins** — `app/pages/join.vue` ✅
+3. **Consent & routing UX** ✅
+4. **Analytics repair (Phase 1)** ✅
+5. **Guided setup (Phase 2 MVP)** ✅
+
+Track progress by checking items off in [Session checklist](#session-checklist-2026-07-14) as they ship.
 
 ## Executive summary
 
@@ -141,6 +164,41 @@ For durable first milestones, write a first-occurrence timestamp to the applicat
 
 Mark `account_created`, `first_data_imported`, `first_value_viewed`, and `purchase` as GA4 key events. Register only bounded custom dimensions; do not register high-cardinality IDs.
 
+## Code review findings (2026-07-14)
+
+Independent code review confirmed the 2026-07-11 audit and added several items. Status reflects the 2026-07-14 session scope above.
+
+### In scope — implement this session
+
+| ID  | Finding                                                                                                                                                                | Location                                      | Priority             |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- | -------------------- |
+| R1  | Fabricated social proof: random pravatar faces, hardcoded "2,412 Athletes Active Today" pulse counter, unattributed testimonial, decorative "Secure 256-bit AES" badge | `app/pages/join.vue`                          | High — trust         |
+| R2  | Artificial 1.5s delay before every OAuth signup handler                                                                                                                | `app/pages/join.vue`                          | Medium — conversion  |
+| R3  | OAuth errors only `console.error`; `useToast()` instantiated but unused; Google button `loading` never set                                                             | `app/pages/join.vue`                          | Medium               |
+| R4  | `sign_up` analytics fires on click, not account creation                                                                                                               | `app/composables/useAnalytics.ts`, `join.vue` | Medium — measurement |
+| R5  | Consent redirect drops deep-link destination; onboarding always sends user to `/dashboard`                                                                             | `onboarding.global.ts`, `onboarding.vue`      | Medium               |
+| R6  | Middleware dead code (`/api/auth` exemption never runs); `typeof data.value === 'undefined'` guard misfires when session resolves to `null`                            | `app/middleware/onboarding.global.ts`         | Medium               |
+| R7  | Consent page hardcoded English; `TOS_VERSION`/`PRIVACY_VERSION` stubbed in page; existing `onboarding` translation namespace unused                                    | `app/pages/onboarding.vue`                    | Low–Medium           |
+| R8  | Join page defines i18n keys (`joinTitle`, etc.) but template hardcodes English                                                                                         | `app/pages/join.vue`                          | Low                  |
+| R9  | Setup hub ends at "any integration exists" — checklist steps 3–4 never activate; no branching by signup method; no FIT/manual fallback                                 | `dashboard.vue`, `OnboardingView.vue`         | High — conversion    |
+| R10 | Inconsistent Intervals paths: hub uses `signIn('intervals')`, settings uses API-key flow; hub CTA emits no `integration_connect_start`                                 | `OnboardingView.vue`, `connect-intervals.vue` | Low                  |
+| R11 | Provider cards: nested click targets, WHOOP unavailability only on hover (invisible on mobile), hostname-based disable logic                                           | `OnboardingView.vue`                          | Low–Medium           |
+| R12 | No milestone-based recovery emails beyond welcome-at-creation                                                                                                          | email triggers                                | P1 — Phase 3         |
+
+Items R1–R8 and R10–R11 are quick or localized fixes. R4 and R9 map to Phase 1 and Phase 2 of this plan respectively. R12 remains Phase 3.
+
+### Deferred — not this session
+
+| ID  | Finding                                                                           | Location                          | Notes                                                                 |
+| --- | --------------------------------------------------------------------------------- | --------------------------------- | --------------------------------------------------------------------- |
+| D1  | Health data ingested on Strava/Intervals signup before health-data consent screen | `server/api/auth/[...].ts`        | Compliance ordering; deferred per product decision                    |
+| D2  | `allowDangerousEmailAccountLinking: true` on all OAuth providers                  | `server/api/auth/[...].ts`        | Account-takeover vector via unverified Intervals email; security pass |
+| D3  | Consent API writes no audit-log entry with IP/UA/version                          | `server/api/user/consent.post.ts` | GDPR proof enhancement; compliance pass                               |
+
+### Already fixed (verified 2026-07-14)
+
+Consent gate server enforcement and related issues are resolved: [097](../issues/097-onboarding-consent-api-bypass.md), [124](../issues/124-onboarding-consent-save-silent-fail.md), [152](../issues/152-onboarding-blocks-join-callback.md), [295](../issues/295-onboarding-consent-controls-unnamed-ambiguous.md).
+
 ## Experience problems and recommended changes
 
 ## UI/UX review
@@ -168,6 +226,7 @@ Friction and risks:
 - Google, Strava, and Intervals are presented as equivalent account-creation methods, but their post-signup effort is different. Strava/Intervals can connect data immediately; Google users must choose a provider later.
 - Every auth handler intentionally delays OAuth by 1.5 seconds. This makes the primary CTA feel slower and can be mistaken for a failure, especially on mobile or slow networks. Start OAuth immediately and use a loading state only for real latency.
 - The animated background, magnetic Google button, mesh movement, uppercase/italic typography, and simulated typing compete with the conversion action. Respect `prefers-reduced-motion` and simplify motion on the signup card.
+- **Fabricated social proof (R1):** pravatar placeholder faces, a hardcoded live athlete counter, an unattributed testimonial, and a decorative encryption badge. Remove or replace with real data before any public marketing push.
 - Provider value and data coverage are not explained beside the auth choices. Users cannot tell whether choosing Google prevents Strava connection later or why Intervals might be preferable.
 - OAuth errors are inconsistent: Google logs the error but shows no toast, while login paths show more explicit failure feedback. Every method needs a stable inline or toast recovery message.
 - The current page tracks the click as signup before navigation, reinforcing a UX/measurement mismatch: “I tried” is treated as “I joined.”
@@ -384,6 +443,47 @@ Collect only inputs that improve the first result and cannot be inferred: primar
 
 ## Prioritized delivery plan
 
+### Session checklist (2026-07-14)
+
+Use this as the working tracker for the current implementation session.
+
+**Signup (`join.vue`)**
+
+- [x] Remove fabricated social proof (R1)
+- [x] Remove 1.5s OAuth delay (R2)
+- [x] Add OAuth error toasts for all providers (R3)
+- [x] Wire template to existing i18n keys (R8)
+
+**Consent & routing**
+
+- [x] Preserve `redirect` query param through consent gate (R5)
+- [x] Fix middleware session guard and remove dead `/api/auth` check (R6)
+- [x] Localize consent page; move policy versions to shared config (R7)
+
+**Analytics (Phase 1)**
+
+- [x] Rename click intent to `signup_started`; add `signup_failed`
+- [x] Emit `account_created` server-side on first OAuth link (idempotent audit log + GA4 MP/client claim)
+- [x] Rename `onboarding_view`/`onboarding_complete` → `consent_viewed`/`consent_completed`
+- [x] Add setup-hub and integration CTA events (R4, R10)
+- [x] Update [analytics-tracking.md](../04-guides/analytics-tracking.md) event tables
+
+**Guided setup (Phase 2 MVP)**
+
+- [x] Server-derived onboarding status (replace broad `isOnboarded` boolean)
+- [x] Live checklist tied to sync/analysis state (R9)
+- [x] Branch by signup method (Strava/Intervals vs Google)
+- [x] Import progress, empty, and failure states
+- [x] FIT/manual fallback and "connect later"
+- [x] Fix provider card semantics; surface unavailable providers on mobile (R11)
+- [x] Align Intervals hub CTA with chosen connect path and analytics (R10)
+
+**Deferred (do not implement this session)**
+
+- [ ] D1 — Gate ingestion on `healthConsentAcceptedAt`
+- [ ] D2 — Harden OAuth account linking
+- [ ] D3 — Consent audit-log proof fields
+
 ### Phase 0 — Baseline and definitions (2–3 days)
 
 - Agree on the activation contract: `first_value_viewed` within 24 hours.
@@ -469,20 +569,29 @@ Also review the top failure reason at each transition and inspect a small sample
 
 ## Implementation map
 
-Likely code areas for the first iteration:
+### This session
 
-- `app/pages/join.vue`: change signup intent tracking and preserve acquisition context.
-- `server/api/auth/[...].ts`: authoritative account-created milestone and signup-provider context.
-- `app/pages/onboarding.vue`: consent-specific events and clearer continuation.
-- `app/middleware/onboarding.global.ts`: retain compliance gating; do not use it as the product-activation definition.
-- `app/components/dashboard/OnboardingView.vue`: live state, step actions, progress, recovery, and tracking.
-- `app/pages/dashboard.vue`: replace the broad `isOnboarded` boolean with explicit setup/activation status.
-- `app/composables/useAnalytics.ts`: canonical event API and bounded parameters.
-- Integration OAuth callbacks and Trigger.dev ingestion jobs: durable connection/sync/data milestones.
-- Welcome/lifecycle email triggers: exact resume deep links and milestone-based suppression.
+| File                                          | Changes                                                                             |
+| --------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `app/pages/join.vue`                          | Remove fake social proof; remove OAuth delay; error toasts; i18n; `signup_started`  |
+| `app/middleware/onboarding.global.ts`         | Fix session guard; preserve `redirect`; remove dead `/api/auth` check               |
+| `app/pages/onboarding.vue`                    | i18n; shared policy versions; honor `redirect` after consent; `consent_*` events    |
+| `app/composables/useAnalytics.ts`             | Canonical funnel helpers; deprecate misleading `sign_up` on click                   |
+| `server/api/auth/[...].ts`                    | **`account_created` event only** — no ingestion or linking changes (D1/D2 deferred) |
+| `app/components/dashboard/OnboardingView.vue` | Live progress, provider UX fixes, analytics on CTAs, mobile unavailable states      |
+| `app/pages/dashboard.vue`                     | Replace `isOnboarded` with explicit setup/activation status from server             |
+| `shared/` or `app/config/`                    | Central `TOS_VERSION` / `PRIVACY_VERSION` constants                                 |
+| `docs/04-guides/analytics-tracking.md`        | Align event tables with Phase 1 funnel                                              |
+
+### Later phases (unchanged scope)
+
+- Integration OAuth callbacks and Trigger.dev ingestion jobs: durable connection/sync/data milestones (ingestion ordering unchanged until D1 is approved).
+- Welcome/lifecycle email triggers: exact resume deep links and milestone-based suppression (Phase 3).
+- `app/pages/connect-intervals.vue`: reconcile with hub Intervals path once connect strategy is chosen (R10).
 
 ## Risks and safeguards
 
+- **Known compliance gap (deferred):** Strava/Intervals signup still triggers background ingestion before the health-data consent screen (D1). This session intentionally does not change that behavior. Track separately; do not regress signup or sync for existing users when D1 is eventually implemented.
 - **Health-data privacy:** analytics events must describe states and categories, never health values or user-entered text.
 - **Duplicate events:** callbacks and jobs retry; milestone writes and emissions must be idempotent.
 - **GA blockers:** use application data as the business source of truth and GA4 for behavioral analysis.

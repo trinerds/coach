@@ -3,14 +3,15 @@ import * as Sentry from '@sentry/node'
 import { failStructureGenerationTaskFromPayload } from '../server/utils/structure-generation-run-lifecycle'
 import { shouldReportIntegrationErrorToSentry } from '../server/utils/integration-errors'
 
-// Initialize Sentry
-Sentry.init({
-  defaultIntegrations: false,
-  // The Data Source Name (DSN) is a unique identifier for your Sentry project.
-  dsn: process.env.SENTRY_DSN,
-  // Update this to match the environment you want to track errors for
-  environment: process.env.NODE_ENV === 'production' ? 'production' : 'development'
-})
+const sentryEnabled = process.env.NODE_ENV === 'production' || process.env.SENTRY_ENABLED === 'true'
+
+if (sentryEnabled && process.env.SENTRY_DSN) {
+  Sentry.init({
+    defaultIntegrations: false,
+    dsn: process.env.SENTRY_DSN,
+    environment: process.env.NODE_ENV === 'production' ? 'production' : 'development'
+  })
+}
 
 // Register a global onFailure hook to capture errors
 tasks.onFailure(async ({ payload, error, ctx }) => {
@@ -26,6 +27,10 @@ tasks.onFailure(async ({ payload, error, ctx }) => {
     'name' in error &&
     error.name === 'IntegrationAuthError'
   ) {
+    return
+  }
+
+  if (!sentryEnabled || !process.env.SENTRY_DSN) {
     return
   }
 

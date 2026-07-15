@@ -119,7 +119,7 @@
               <p class="text-sm font-semibold text-white">{{ t('demo_title') }}</p>
               <p class="text-xs text-gray-400">{{ t('demo_subtitle') }}</p>
             </div>
-            <UBadge color="neutral" variant="subtle" size="sm">
+            <UBadge color="neutral" variant="subtle" size="sm" class="!text-xs">
               {{ t('scenario_label', { name: t('scenario.' + activeScenario.id + '.name') }) }}
             </UBadge>
           </div>
@@ -188,7 +188,7 @@
               </defs>
             </svg>
 
-            <div class="mt-2 grid grid-cols-3 gap-2 text-[11px] text-gray-400 sm:grid-cols-6">
+            <div class="mt-2 grid grid-cols-3 gap-2 text-xs text-gray-400 sm:grid-cols-6">
               <span v-for="label in timelineLabels" :key="label" class="text-center">{{
                 label
               }}</span>
@@ -350,9 +350,9 @@
   const eventMarkers = computed(() => {
     const points = chartPoints.value
     return [
-      { labelKey: 'nutrition.marker.pre_workout', x: points[2]?.x ?? 40 },
-      { labelKey: 'nutrition.marker.workout_start', x: points[3]?.x ?? 58 },
-      { labelKey: 'nutrition.marker.workout_end', x: points[5]?.x ?? 96 }
+      { labelKey: 'marker.pre_workout', x: points[2]?.x ?? 40 },
+      { labelKey: 'marker.workout_start', x: points[3]?.x ?? 58 },
+      { labelKey: 'marker.workout_end', x: points[5]?.x ?? 96 }
     ]
   })
 </script>

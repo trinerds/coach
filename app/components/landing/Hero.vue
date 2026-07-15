@@ -7,11 +7,11 @@
         <div class="mt-0">
           <NuxtLink to="#architecture" class="inline-flex items-center gap-4">
             <span
-              class="rounded-full bg-primary-500/10 px-3 py-1 text-[11px] font-black uppercase tracking-[0.2em] text-primary-500 ring-1 ring-inset ring-primary-500/30"
+              class="rounded-full bg-primary-500/10 px-3 py-1 text-xs font-black uppercase tracking-[0.2em] text-primary-500 ring-1 ring-inset ring-primary-500/30"
               >{{ t('badge') }}</span
             >
             <span
-              class="inline-flex items-center space-x-2 text-[11px] font-black uppercase tracking-widest text-gray-500"
+              class="inline-flex items-center space-x-2 text-xs font-black uppercase tracking-widest text-gray-500"
             >
               <span>{{ t('badge_link') }}</span>
               <UIcon name="i-heroicons-chevron-right" class="h-4 w-4 text-gray-600" />
@@ -21,12 +21,8 @@
         <h1
           class="mt-7 text-balance text-6xl font-black uppercase tracking-tight text-white sm:text-7xl xl:text-[5.5rem] leading-[0.85] font-athletic italic"
         >
-          {{ t('headline_1') }} <br />
-          <span class="mt-3 block text-primary-500 tracking-[0.02em]">{{ t('headline_2') }}</span>
+          {{ t('headline_1') }}
         </h1>
-        <p class="mt-6 text-[11px] font-black uppercase tracking-[0.4em] text-primary-500/80">
-          {{ t('tagline') }}
-        </p>
         <p class="mt-8 max-w-2xl text-xl leading-relaxed text-gray-400 font-medium">
           {{ t('description') }}
         </p>
@@ -155,11 +151,11 @@
                           <UIcon name="i-heroicons-sparkles-solid" class="w-6 h-6" />
                         </div>
                         <span
-                          class="text-[10px] font-black text-gray-500 uppercase tracking-[0.25em]"
+                          class="text-xs font-black text-gray-500 uppercase tracking-[0.25em]"
                           >{{ t('card_insight') }}</span
                         >
                         <span
-                          class="ml-auto inline-flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-primary-500"
+                          class="ml-auto inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-primary-500"
                         >
                           <span class="live-dot h-1.5 w-1.5 rounded-full bg-primary-500" />
                           {{ t('card_live') }}
@@ -188,7 +184,7 @@
                         />
                       </div>
                       <div
-                        class="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] mb-2"
+                        class="text-xs font-black text-slate-500 uppercase tracking-[0.15em] mb-2"
                       >
                         {{ t('card_fitness') }}
                       </div>
@@ -239,7 +235,7 @@
                         />
                       </div>
                       <div
-                        class="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] mb-2"
+                        class="text-xs font-black text-slate-500 uppercase tracking-[0.15em] mb-2"
                       >
                         {{ t('card_recovery') }}
                       </div>
@@ -251,7 +247,7 @@
                           >%</span
                         >
                         <span
-                          class="text-[10px] text-rose-500 font-black uppercase tracking-[0.2em] ml-auto border border-rose-500/20 bg-rose-500/5 px-2 py-0.5 rounded-full"
+                          class="text-xs text-rose-500 font-black uppercase tracking-[0.2em] ml-auto border border-rose-500/20 bg-rose-500/5 px-2 py-0.5 rounded-full"
                           >{{ activeScenario.recoveryLabel }}</span
                         >
                       </div>

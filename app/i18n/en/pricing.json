@@ -21,6 +21,7 @@
     "get_pro": "Get Pro",
     "get_supporter": "Get Supporter",
     "sign_up": "Sign Up",
+    "start_free": "Start Free",
     "stay_free": "Stay Free",
     "switch_pro": "Switch to Pro",
     "switch_supporter": "Switch to Supporter",
@@ -28,8 +29,8 @@
     "upgrade_pro": "Upgrade to Pro"
   },
   "cancel_anytime": "Cancel anytime. Instant downgrade to Free.",
-  "description": "From casual tracking to professional AI coaching. Start free and upgrade as you grow.",
-  "guarantee": "All plans include a 14-day money-back guarantee. No credit card required for the free plan.",
+  "description": "Start free with a 14-day full-access trial. Upgrade when you need more.",
+  "guarantee": "Paid plans include a 14-day money-back guarantee. No credit card required to start free.",
   "headline": "Plans for Every Athlete",
   "label": "PRICING",
   "modal": {

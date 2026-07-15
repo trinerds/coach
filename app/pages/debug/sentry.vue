@@ -5,6 +5,11 @@
     middleware: ['auth', 'admin']
   })
 
+  const config = useRuntimeConfig()
+  const sentryActive = computed(() =>
+    Boolean(config.public.sentryEnabled && config.public.sentryDsn)
+  )
+
   const triggerSentryLogger = () => {
     // Note: Sentry.logger is an internal utility for Sentry's own debugging.
     // It only prints to the console if 'debug: true' is set in Sentry.init.
@@ -65,6 +70,13 @@
       </template>
 
       <div class="flex flex-col gap-4">
+        <UAlert
+          v-if="!sentryActive"
+          color="warning"
+          variant="soft"
+          title="Sentry is disabled in this dev session"
+          description="Restart with SENTRY_ENABLED=true pnpm dev (and SENTRY_DSN in .env) to send test events."
+        />
         <p class="text-sm text-gray-500 mb-4">
           Use these buttons to verify your Sentry configuration.
         </p>

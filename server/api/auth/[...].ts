@@ -7,6 +7,11 @@ import { tasks } from '@trigger.dev/sdk/v3'
 import { getRequestIP, getRequestHeader } from 'h3'
 import { logAction } from '../../utils/audit'
 import { DEFAULT_TRIAL_DAYS } from '../../../shared/trial-config'
+import {
+  triggerInitialProviderIngest,
+  userHasHealthConsent
+} from '../../utils/deferred-provider-ingest'
+import { recordAccountCreated } from '../../utils/product-analytics'
 
 const adapter = PrismaAdapter(prisma)
 const originalLinkAccount = adapter.linkAccount
@@ -62,31 +67,12 @@ const syncIntervalsIntegration = async (user: any, account: any) => {
     })
     console.log('Successfully synced Intervals.icu integration')
 
-    // Trigger initial sync (last 365 days)
-    const endDate = new Date().toISOString()
-    const startDate = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString()
-
-    await tasks.trigger(
-      'ingest-intervals',
-      {
-        userId: user.id,
-        startDate,
-        endDate
-      },
-      {
-        concurrencyKey: user.id,
-        tags: [`user:${user.id}`]
-      }
-    )
-    console.log('Triggered initial Intervals.icu sync')
-
-    // Trigger profile auto-detection
-    await tasks.trigger(
-      'autodetect-intervals-profile',
-      { userId: user.id },
-      { concurrencyKey: user.id, tags: [`user:${user.id}`] }
-    )
-    console.log('Triggered Intervals.icu profile auto-detection')
+    if (await userHasHealthConsent(user.id)) {
+      await triggerInitialProviderIngest(user.id, 'intervals')
+      console.log('Triggered initial Intervals.icu sync')
+    } else {
+      console.log('[Auth] Deferred Intervals.icu ingest until health consent')
+    }
   } catch (error) {
     console.error('Failed to sync Intervals.icu integration:', error)
   }
@@ -125,23 +111,12 @@ const syncStravaIntegration = async (user: any, account: any) => {
     })
     console.log('Successfully synced Strava integration')
 
-    // Trigger initial sync (last 30 days for Strava initially to be safe, or 365 if we want consistency)
-    const endDate = new Date().toISOString()
-    const startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
-
-    await tasks.trigger(
-      'ingest-strava',
-      {
-        userId: user.id,
-        startDate,
-        endDate
-      },
-      {
-        concurrencyKey: user.id,
-        tags: [`user:${user.id}`]
-      }
-    )
-    console.log('Triggered initial Strava sync')
+    if (await userHasHealthConsent(user.id)) {
+      await triggerInitialProviderIngest(user.id, 'strava')
+      console.log('Triggered initial Strava sync')
+    } else {
+      console.log('[Auth] Deferred Strava ingest until health consent')
+    }
   } catch (error) {
     console.error('Failed to sync Strava integration:', error)
   }
@@ -294,6 +269,19 @@ export default NuxtAuthHandler({
     },
     async linkAccount({ user, account }: any) {
       console.log(`[Auth] Linking account: ${account.provider} to user ${user.id} (${user.email})`)
+
+      const accountCount = await prisma.account.count({
+        where: { userId: user.id }
+      })
+
+      if (accountCount === 1) {
+        try {
+          await recordAccountCreated(user.id, account.provider)
+        } catch (error) {
+          console.error('[Auth] Failed to record account_created analytics:', error)
+        }
+      }
+
       if (account.provider === 'intervals') {
         await syncIntervalsIntegration(user, account)
       }

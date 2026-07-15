@@ -1,10 +1,21 @@
+function normalizeCallbackParam(
+  callbackUrl: string | string[] | undefined | null
+): string | undefined | null {
+  if (Array.isArray(callbackUrl)) {
+    return callbackUrl[0]
+  }
+
+  return callbackUrl
+}
+
 export function sanitizeCallbackUrl(
-  callbackUrl: string | undefined | null,
+  callbackUrl: string | string[] | undefined | null,
   fallback = '/dashboard'
 ): string {
-  if (!callbackUrl) return fallback
+  const raw = normalizeCallbackParam(callbackUrl)
+  if (!raw) return fallback
 
-  const trimmed = callbackUrl.trim()
+  const trimmed = raw.trim()
   if (!trimmed.startsWith('/') || trimmed.startsWith('//')) {
     return fallback
   }

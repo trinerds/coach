@@ -1,51 +1,32 @@
 import * as Sentry from '@sentry/nuxt'
 
-Sentry.init({
-  // If set up, you can use your runtime config here
-  // dsn: useRuntimeConfig().public.sentry.dsn,
-  dsn: 'https://27c2bc691e512298040726bf5de7608a@o4508727277256704.ingest.de.sentry.io/4510667866243152',
+const config = useRuntimeConfig()
 
-  release: useRuntimeConfig().public.sentryRelease as string,
-
-  // We recommend adjusting this value in production, or using tracesSampler
-  // for finer control
-  tracesSampleRate: 1.0,
-
-  // This sets the sample rate to be 10%. You may want this to be 100% while
-  // in development and sample at a lower rate in production
-  replaysSessionSampleRate: 0.1,
-
-  // If the entire session is not sampled, use the below sample rate to sample
-  // sessions when an error occurs.
-  replaysOnErrorSampleRate: 1.0,
-
-  // If you don't want to use Session Replay, just remove the line below:
-  integrations: [
-    Sentry.replayIntegration(),
-    Sentry.consoleLoggingIntegration({ levels: ['log', 'warn', 'error'] })
-  ],
-
-  // Enable logs to be sent to Sentry
-  enableLogs: true,
-
-  // Enable sending of user PII (Personally Identifiable Information)
-  // https://docs.sentry.io/platforms/javascript/guides/nuxt/configuration/options/#sendDefaultPii
-  sendDefaultPii: true,
-
-  // Setting this option to true will print useful information to the console while you're setting up Sentry.
-  debug: false,
-
-  environment: process.env.NODE_ENV || 'development',
-
-  ignoreErrors: [
-    'Object Not Found Matching Id:2, MethodName:update',
-    'Object Not Found Matching Id:3, MethodName:update',
-    // Auth session blips during deploys / server restarts
-    '/api/auth/session',
-    '/_nuxt/builds/meta/dev.json',
-    // Post-deploy chunk invalidation (handled by chunk-error.client.ts)
-    'Failed to fetch dynamically imported module',
-    'Importing a module script failed',
-    'error loading dynamically imported module'
-  ]
-})
+if (!config.public.sentryEnabled || !config.public.sentryDsn) {
+  // Sentry is disabled in local dev unless SENTRY_ENABLED=true.
+} else {
+  Sentry.init({
+    dsn: config.public.sentryDsn as string,
+    release: config.public.sentryRelease as string,
+    tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+    replaysSessionSampleRate: 0.1,
+    replaysOnErrorSampleRate: 1.0,
+    integrations: [
+      Sentry.replayIntegration(),
+      Sentry.consoleLoggingIntegration({ levels: ['log', 'warn', 'error'] })
+    ],
+    enableLogs: true,
+    sendDefaultPii: true,
+    debug: false,
+    environment: process.env.NODE_ENV || 'development',
+    ignoreErrors: [
+      'Object Not Found Matching Id:2, MethodName:update',
+      'Object Not Found Matching Id:3, MethodName:update',
+      '/api/auth/session',
+      '/_nuxt/builds/meta/dev.json',
+      'Failed to fetch dynamically imported module',
+      'Importing a module script failed',
+      'error loading dynamically imported module'
+    ]
+  })
+}

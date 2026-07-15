@@ -4,7 +4,7 @@
     :ui="{
       root: 'rounded-none sm:rounded-lg shadow-none sm:shadow',
       header: 'px-4 sm:px-6',
-      body: 'p-0 sm:p-4 sm:pt-0'
+      body: 'p-0 sm:p-6'
     }"
     class="flex flex-col overflow-hidden"
   >

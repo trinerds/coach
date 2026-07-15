@@ -52,8 +52,12 @@
             <span class="text-xs text-gray-500">{{ t('event_sub') }}</span>
           </p>
           <div class="mt-4 flex gap-2">
-            <UBadge color="neutral" variant="subtle" size="xs">{{ t('event_badge') }}</UBadge>
-            <UBadge color="primary" variant="subtle" size="xs">{{ t('event_priority') }}</UBadge>
+            <UBadge color="neutral" variant="subtle" size="sm" class="!text-xs">{{
+              t('event_badge')
+            }}</UBadge>
+            <UBadge color="primary" variant="subtle" size="sm" class="!text-xs">{{
+              t('event_priority')
+            }}</UBadge>
           </div>
         </div>
 
@@ -88,7 +92,9 @@
             <span class="text-xs text-gray-500">{{ t('perf_sub') }}</span>
           </p>
           <div class="mt-4 flex gap-2">
-            <UBadge color="neutral" variant="subtle" size="xs">{{ t('perf_badge') }}</UBadge>
+            <UBadge color="neutral" variant="subtle" size="sm" class="!text-xs">{{
+              t('perf_badge')
+            }}</UBadge>
             <div class="w-16 h-4 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden mt-0.5">
               <div class="h-full bg-amber-500 w-3/4" />
             </div>
@@ -126,7 +132,9 @@
             <span class="text-xs text-gray-500">{{ t('weight_sub') }}</span>
           </p>
           <div class="mt-4 flex gap-2">
-            <UBadge color="neutral" variant="subtle" size="xs">{{ t('weight_badge') }}</UBadge>
+            <UBadge color="neutral" variant="subtle" size="sm" class="!text-xs">{{
+              t('weight_badge')
+            }}</UBadge>
           </div>
         </div>
 
@@ -173,7 +181,7 @@
       </div>
 
       <div class="mt-12 flex justify-center">
-        <UButton to="/login" size="lg" icon="i-heroicons-arrow-right" trailing>{{
+        <UButton to="/join" size="lg" icon="i-heroicons-arrow-right" trailing>{{
           t('cta')
         }}</UButton>
       </div>

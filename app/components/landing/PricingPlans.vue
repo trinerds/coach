@@ -5,7 +5,7 @@
         class="inline-flex items-center gap-1 bg-white/5 p-1.5 rounded-2xl border border-white/5 backdrop-blur-md"
       >
         <button
-          class="px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
+          class="px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all"
           :class="
             billingInterval === 'monthly'
               ? 'bg-primary-500 text-black shadow-lg shadow-primary-500/20'
@@ -20,7 +20,7 @@
           {{ t('billing.monthly') }}
         </button>
         <button
-          class="px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2"
+          class="px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2"
           :class="
             billingInterval === 'annual'
               ? 'bg-primary-500 text-black shadow-lg shadow-primary-500/20'
@@ -35,7 +35,7 @@
           {{ t('billing.annual') }}
           <span
             v-if="billingInterval !== 'annual'"
-            class="text-[9px] bg-primary-500/20 text-primary-400 px-2 py-0.5 rounded-full border border-primary-500/20"
+            class="text-xs bg-primary-500/20 text-primary-400 px-2 py-0.5 rounded-full border border-primary-500/20"
           >
             {{ t('billing.save_pct', { pct: 33 }) }}
           </span>
@@ -46,7 +46,7 @@
         class="inline-flex items-center gap-1 bg-white/5 p-1.5 rounded-2xl border border-white/5 backdrop-blur-md"
       >
         <button
-          class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
+          class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all"
           :class="
             currency === 'usd'
               ? 'bg-white/10 text-white shadow-sm'
@@ -61,7 +61,7 @@
           USD
         </button>
         <button
-          class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
+          class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all"
           :class="
             currency === 'eur'
               ? 'bg-white/10 text-white shadow-sm'
@@ -99,14 +99,14 @@
 
         <div
           v-if="getPlanBadge(plan)"
-          class="absolute top-6 right-8 text-primary-500 text-[9px] font-black px-3 py-1 rounded-full border border-primary-500/20 bg-primary-500/5 uppercase tracking-widest"
+          class="absolute top-6 right-8 text-primary-500 text-xs font-black px-3 py-1 rounded-full border border-primary-500/20 bg-primary-500/5 uppercase tracking-widest"
         >
           {{ getPlanBadge(plan) }}
         </div>
 
         <div class="mb-10">
           <h3
-            class="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 mb-6 group-hover:text-primary-500 transition-colors"
+            class="text-xs font-black uppercase tracking-[0.15em] text-gray-500 mb-6 group-hover:text-primary-500 transition-colors"
           >
             {{ t(`plan.${plan.key}.name`) }}
           </h3>
@@ -123,7 +123,7 @@
               }}
             </span>
             <span
-              class="text-[10px] font-black text-gray-600 uppercase tracking-widest leading-none mb-1"
+              class="text-xs font-black text-gray-600 uppercase tracking-widest leading-none mb-1"
             >
               {{
                 plan.key === 'free'
@@ -137,23 +137,23 @@
 
           <div class="min-h-[2.5rem]">
             <template v-if="billingInterval === 'annual' && plan.annualPrice">
-              <div class="text-[10px] font-black text-primary-500 uppercase tracking-widest mb-1">
+              <div class="text-xs font-black text-primary-500 uppercase tracking-widest mb-1">
                 {{ formatPrice(getEffectiveMonthly(plan), currency) }} /
                 {{ t('billing.per_month') }}
               </div>
               <div class="flex items-center gap-3">
-                <span class="text-[10px] font-bold text-gray-600 line-through tracking-wider">
+                <span class="text-xs font-bold text-gray-600 line-through tracking-wider">
                   {{ formatPrice(plan.monthlyPrice, currency) }}/mo
                 </span>
                 <span
-                  class="text-[9px] font-black text-emerald-500 uppercase tracking-widest px-2 py-0.5 rounded-full bg-emerald-500/5 border border-emerald-500/20"
+                  class="text-xs font-black text-emerald-500 uppercase tracking-widest px-2 py-0.5 rounded-full bg-emerald-500/5 border border-emerald-500/20"
                 >
                   {{ t('billing.save_pct', { pct: calculateAnnualSavings(plan) }) }}
                 </span>
               </div>
             </template>
             <template v-else-if="plan.key !== 'free'">
-              <div class="text-[10px] font-black text-gray-600 uppercase tracking-widest">
+              <div class="text-xs font-black text-gray-600 uppercase tracking-widest">
                 {{ t('billing.billed_monthly') }}
               </div>
             </template>
@@ -172,8 +172,7 @@
           >
             <UIcon
               name="i-heroicons-check-circle-solid"
-              class="w-5 h-5 flex-shrink-0 mt-0.5"
-              :class="isPrimaryPlan(plan) ? 'text-primary-500' : 'text-gray-600'"
+              class="w-5 h-5 flex-shrink-0 mt-0.5 text-primary-500"
             />
             <span class="leading-tight">{{ t(`plan.${plan.key}.feature_${fIndex + 1}`) }}</span>
           </li>
@@ -191,7 +190,7 @@
           >
             {{ getButtonLabel(plan) }}
           </UButton>
-          <p class="text-[9px] font-black text-center text-slate-500 uppercase tracking-widest">
+          <p class="text-xs font-black text-center text-slate-500 uppercase tracking-widest">
             {{ t('cancel_anytime') }}
           </p>
         </div>
@@ -220,7 +219,7 @@
                 color="neutral"
                 variant="outline"
                 size="xl"
-                class="flex-1 h-14 rounded-xl text-[11px] font-black uppercase tracking-widest"
+                class="flex-1 h-14 rounded-xl text-xs font-black uppercase tracking-widest"
                 @click="
                   () => {
                     showDowngradeModal = false
@@ -233,7 +232,7 @@
                 color="primary"
                 variant="solid"
                 size="xl"
-                class="flex-1 h-14 rounded-xl text-[11px] font-black uppercase tracking-widest"
+                class="flex-1 h-14 rounded-xl text-xs font-black uppercase tracking-widest"
                 :loading="loading"
                 @click="
                   () => {
@@ -327,6 +326,9 @@
     if (isPrimaryPlan(plan)) {
       return 'border-primary-500/50 lg:scale-[1.03] z-10'
     }
+    if (plan.key === 'free') {
+      return 'border-white/10 hover:scale-[1.01]'
+    }
     return 'border-white/5 opacity-80 hover:opacity-100 hover:scale-[1.01]'
   }
 
@@ -344,15 +346,26 @@
 
   function getButtonLabel(plan: PricingPlan): string {
     if (isCurrentPlan(plan)) return translate('btn.current_plan')
-    if (status.value !== 'authenticated') return translate('btn.sign_up')
+    if (status.value !== 'authenticated') {
+      if (plan.key === 'free') return translate('btn.start_free')
+      if (plan.key === 'supporter') return translate('btn.get_supporter')
+      return translate('btn.get_pro')
+    }
 
-    const currentTier = userStore.user?.subscriptionTier || 'FREE'
+    const currentTier = (userStore.user?.subscriptionTier || 'FREE').toUpperCase()
     const tiers = ['FREE', 'SUPPORTER', 'PRO']
     const currentLevel = tiers.indexOf(currentTier)
     const planLevel = tiers.indexOf(plan.key.toUpperCase())
 
-    if (planLevel > currentLevel) return translate('btn.upgrade_pro')
-    return translate('btn.switch_pro')
+    if (planLevel > currentLevel) {
+      return plan.key === 'pro' ? translate('btn.upgrade_pro') : translate('btn.choose_supporter')
+    }
+    if (planLevel < currentLevel) {
+      return plan.key === 'free'
+        ? translate('btn.downgrade_free')
+        : translate('btn.switch_supporter')
+    }
+    return translate('btn.current_plan')
   }
 
   async function executePlanChange(plan: PricingPlan) {
@@ -361,7 +374,7 @@
 
     const priceId = getStripePriceId(plan, billingInterval.value, currency.value)
     if (priceId) {
-      const currentTier = userStore.user?.subscriptionTier || 'FREE'
+      const currentTier = (userStore.user?.subscriptionTier || 'FREE').toUpperCase()
       const tiers = ['FREE', 'SUPPORTER', 'PRO']
       const currentLevel = tiers.indexOf(currentTier)
       const planLevel = tiers.indexOf(plan.key.toUpperCase())
@@ -382,7 +395,7 @@
 
   async function handlePlanSelect(plan: PricingPlan) {
     if (userStore.user?.stripeCustomerId && userStore.user?.subscriptionTier !== 'FREE') {
-      const currentTier = userStore.user?.subscriptionTier || 'FREE'
+      const currentTier = (userStore.user?.subscriptionTier || 'FREE').toUpperCase()
       const tiers = ['FREE', 'SUPPORTER', 'PRO']
       const currentLevel = tiers.indexOf(currentTier)
       const planLevel = tiers.indexOf(plan.key.toUpperCase())
@@ -407,12 +420,12 @@
     }
 
     if (plan.key === 'free') {
-      navigateTo(status.value === 'authenticated' ? '/dashboard' : '/login')
+      navigateTo(status.value === 'authenticated' ? '/dashboard' : '/join')
       return
     }
 
     if (status.value !== 'authenticated') {
-      navigateTo(`/login?plan=${plan.key}&interval=${billingInterval.value}`)
+      navigateTo(`/join?plan=${plan.key}&interval=${billingInterval.value}`)
       return
     }
 

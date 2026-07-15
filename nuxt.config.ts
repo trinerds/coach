@@ -101,6 +101,7 @@ const buildCodename = getBuildCodename(buildCodenameSeed)
 const buildVersion = `v${pkg.version}+${buildDate}.${commitHash}.${buildCodename}`
 
 const sentryRelease = `${pkg.name}@${pkg.version}+${commitHash}`
+const sentryEnabled = process.env.NODE_ENV === 'production' || process.env.SENTRY_ENABLED === 'true'
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -307,6 +308,8 @@ export default defineNuxtConfig({
       buildCodename,
       buildVersion,
       sentryRelease,
+      sentryEnabled,
+      sentryDsn: process.env.SENTRY_DSN || '',
       authBypassEnabled: !!process.env.AUTH_BYPASS_USER,
       authBypassUser: process.env.AUTH_BYPASS_USER || '',
       authBypassName: process.env.AUTH_BYPASS_NAME || '',
@@ -397,6 +400,7 @@ export default defineNuxtConfig({
   },
 
   sentry: {
+    enabled: sentryEnabled,
     org: 'newpush-y4',
     project: 'coach-watts',
     sourceMapsUploadOptions: {

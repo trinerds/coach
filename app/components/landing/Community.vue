@@ -2,9 +2,7 @@
   <div class="bg-gray-950 py-24 sm:py-32 relative overflow-hidden">
     <div class="mx-auto max-w-7xl px-6 lg:px-8 relative z-10">
       <div class="mx-auto max-w-2xl text-center mb-20 lg:mx-0 lg:text-left lg:max-w-none">
-        <h2
-          class="text-[10px] font-black uppercase tracking-[0.4em] text-primary-500 mb-4 font-mono"
-        >
+        <h2 class="text-xs font-black uppercase tracking-[0.2em] text-primary-500 mb-4 font-mono">
           {{ t('label') }}
         </h2>
         <p
@@ -51,7 +49,7 @@
               >
                 {{ t('t1_author') }}
               </div>
-              <div class="text-[10px] font-black uppercase tracking-widest text-slate-500 mt-0.5">
+              <div class="text-xs font-black uppercase tracking-widest text-slate-500 mt-0.5">
                 {{ t('t1_role') }}
               </div>
             </div>
@@ -62,7 +60,7 @@
               class="absolute -top-4 -left-2 w-10 h-10 text-white/5 -z-10"
             />
             <p class="text-lg text-gray-400 font-medium leading-relaxed italic">
-              "{{ t('t1_quote') }}"
+              “{{ t('t1_quote') }}”
             </p>
           </div>
         </div>
@@ -101,7 +99,7 @@
               >
                 {{ t('t2_author') }}
               </div>
-              <div class="text-[10px] font-black uppercase tracking-widest text-slate-500 mt-0.5">
+              <div class="text-xs font-black uppercase tracking-widest text-slate-500 mt-0.5">
                 {{ t('t2_role') }}
               </div>
             </div>
@@ -112,7 +110,7 @@
               class="absolute -top-4 -left-2 w-10 h-10 text-white/5 -z-10"
             />
             <p class="text-lg text-gray-400 font-medium leading-relaxed italic">
-              "{{ t('t2_quote') }}"
+              “{{ t('t2_quote') }}”
             </p>
           </div>
         </div>
@@ -151,7 +149,7 @@
               >
                 {{ t('t3_author') }}
               </div>
-              <div class="text-[10px] font-black uppercase tracking-widest text-slate-500 mt-0.5">
+              <div class="text-xs font-black uppercase tracking-widest text-slate-500 mt-0.5">
                 {{ t('t3_role') }}
               </div>
             </div>
@@ -162,7 +160,7 @@
               class="absolute -top-4 -left-2 w-10 h-10 text-white/5 -z-10"
             />
             <p class="text-lg text-gray-400 font-medium leading-relaxed italic">
-              "{{ t('t3_quote') }}"
+              “{{ t('t3_quote') }}”
             </p>
           </div>
         </div>

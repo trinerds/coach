@@ -20,8 +20,8 @@
             {{ t('trial_ended_usage_header') }}
           </p>
           <ul class="space-y-1 text-sm text-gray-700 dark:text-gray-300">
-            <li v-for="item in summary.usage" :key="item.operation">
-              {{ translateOperation(item.operation) }} — {{ item.count }}
+            <li v-for="item in displayUsage" :key="item.label">
+              {{ item.label }} — {{ item.count }}
             </li>
           </ul>
         </div>
@@ -72,11 +72,33 @@
       case 'chat attempt':
         return t.value('trial_ended_usage_chat_attempt')
       case 'summarize-chat-memory':
+      case 'summarize chat memory':
         return t.value('trial_ended_usage_summarize_chat_memory')
       default:
         return operation
     }
   }
+
+  const displayUsage = computed(() => {
+    const usage = summary.value?.usage ?? []
+    let chatTotal = 0
+    const other: Array<{ label: string; count: number }> = []
+
+    for (const item of usage) {
+      const op = item.operation.toLowerCase()
+      if (op.includes('chat') || op.includes('summarize')) {
+        chatTotal += item.count
+      } else {
+        other.push({ label: translateOperation(item.operation), count: item.count })
+      }
+    }
+
+    const result: Array<{ label: string; count: number }> = []
+    if (chatTotal > 0) {
+      result.push({ label: t.value('trial_ended_usage_chat'), count: chatTotal })
+    }
+    return [...result, ...other]
+  })
 
   function dismissalKey() {
     const userId = userStore.user?.id

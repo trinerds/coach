@@ -1,3 +1,9 @@
+import {
+  ANALYTICS_EVENTS,
+  type AcquisitionContext,
+  sanitizeAnalyticsParams
+} from '../../shared/analytics-events'
+
 type AnalyticsParams = Record<string, string | number | boolean | undefined | null | object>
 
 type TrackOptions = {
@@ -129,15 +135,35 @@ export function useAnalytics() {
     },
 
     // 4. Integrations & Sync
-    trackIntegrationConnectStart: (provider: string) => {
-      trackEvent('integration_connect_start', {
-        provider
+    trackIntegrationConnectStart: (
+      provider: string,
+      options: { surface?: string; signupMethod?: string } = {}
+    ) => {
+      trackEvent(ANALYTICS_EVENTS.INTEGRATION_CONNECT_STARTED, {
+        provider,
+        surface: options.surface ?? 'settings',
+        ...(options.signupMethod ? { signup_method: options.signupMethod } : {})
       })
     },
 
-    trackIntegrationConnectSuccess: (provider: string) => {
-      trackEvent('integration_connect_success', {
-        provider
+    trackIntegrationConnectFailed: (
+      provider: string,
+      failureStage: string,
+      errorCode?: string,
+      options: { surface?: string } = {}
+    ) => {
+      trackEvent(ANALYTICS_EVENTS.INTEGRATION_CONNECT_FAILED, {
+        provider,
+        failure_stage: failureStage,
+        ...(errorCode ? { error_code: errorCode } : {}),
+        ...(options.surface ? { surface: options.surface } : {})
+      })
+    },
+
+    trackIntegrationConnectSuccess: (provider: string, options: { isFirst?: boolean } = {}) => {
+      trackEvent(ANALYTICS_EVENTS.INTEGRATION_CONNECTED, {
+        provider,
+        ...(options.isFirst === undefined ? {} : { is_first: options.isFirst })
       })
     },
 
@@ -167,19 +193,61 @@ export function useAnalytics() {
     },
 
     // 6. Acquisition & Activation
+    trackSignupStarted: (method: string, context: AcquisitionContext = {}) => {
+      trackEvent(
+        ANALYTICS_EVENTS.SIGNUP_STARTED,
+        sanitizeAnalyticsParams({
+          method,
+          ...context
+        }),
+        { beacon: true }
+      )
+    },
+
+    trackSignupFailed: (
+      method: string,
+      failureStage: string,
+      errorCode?: string,
+      context: AcquisitionContext = {}
+    ) => {
+      trackEvent(
+        ANALYTICS_EVENTS.SIGNUP_FAILED,
+        sanitizeAnalyticsParams({
+          method,
+          failure_stage: failureStage,
+          ...(errorCode ? { error_code: errorCode } : {}),
+          ...context
+        })
+      )
+    },
+
+    /** @deprecated Use trackSignupStarted */
     trackSignUp: (method: string) => {
       trackEvent(
-        'sign_up',
+        ANALYTICS_EVENTS.SIGNUP_STARTED,
         {
           method
         },
         { beacon: true }
+      )
+    },
+
+    trackAccountCreated: (
+      method: string,
+      context: AcquisitionContext & { source?: string } = {}
+    ) => {
+      trackEvent(
+        ANALYTICS_EVENTS.ACCOUNT_CREATED,
+        sanitizeAnalyticsParams({
+          method,
+          ...context
+        })
       )
     },
 
     trackLogin: (method: string) => {
       trackEvent(
-        'login',
+        ANALYTICS_EVENTS.LOGIN,
         {
           method
         },
@@ -187,12 +255,53 @@ export function useAnalytics() {
       )
     },
 
-    trackOnboardingView: () => {
-      trackEvent('onboarding_view')
+    trackConsentViewed: (termsVersion: string, privacyVersion: string) => {
+      trackEvent(ANALYTICS_EVENTS.CONSENT_VIEWED, {
+        terms_version: termsVersion,
+        privacy_version: privacyVersion
+      })
     },
 
+    trackConsentCompleted: (
+      termsVersion: string,
+      privacyVersion: string,
+      secondsSinceView?: number
+    ) => {
+      trackEvent(
+        ANALYTICS_EVENTS.CONSENT_COMPLETED,
+        sanitizeAnalyticsParams({
+          terms_version: termsVersion,
+          privacy_version: privacyVersion,
+          ...(secondsSinceView === undefined ? {} : { seconds_since_view: secondsSinceView })
+        })
+      )
+    },
+
+    trackSetupHubViewed: (
+      options: {
+        currentStep?: string
+        resume?: boolean
+        signupMethod?: string
+      } = {}
+    ) => {
+      trackEvent(
+        ANALYTICS_EVENTS.SETUP_HUB_VIEWED,
+        sanitizeAnalyticsParams({
+          current_step: options.currentStep ?? 'connect_data',
+          resume: options.resume ?? false,
+          ...(options.signupMethod ? { signup_method: options.signupMethod } : {})
+        })
+      )
+    },
+
+    /** @deprecated Use trackConsentViewed */
+    trackOnboardingView: () => {
+      trackEvent(ANALYTICS_EVENTS.CONSENT_VIEWED)
+    },
+
+    /** @deprecated Use trackConsentCompleted */
     trackOnboardingComplete: () => {
-      trackEvent('onboarding_complete')
+      trackEvent(ANALYTICS_EVENTS.CONSENT_COMPLETED)
     },
 
     // 7. Navigation & UI

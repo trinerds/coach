@@ -1,5 +1,5 @@
 {
-  "coach_output": "\"Based on your profile, you respond best to rest when HRV drops below 40ms. Let's take today off.\"",
+  "coach_output": "Based on your profile, you respond best to rest when HRV drops below 40ms. Let's take today off.",
   "context_desc": "Most platforms analyze a workout in isolation. Coach Watts analyzes it in the context of your entire history, your nutrition, and your recovery.",
   "context_title": "Context is King.",
   "data_nutrition": "Nutrition",
@@ -15,7 +15,7 @@
   "feat3_desc": "These event insights feed into a persistent \"Athlete Profile.\" This living profile evolves daily, tracking fatigue resistance, recovery patterns, and mental resilience.",
   "feat3_title": "Your Digital Twin",
   "feat4_desc": "When the Daily Coach runs, it reads the Athlete Profile, not just the raw data. This allows it to say \"Your recovery is low, and historically you get sick when training in this state\" rather than just \"HRV is low.\"",
-  "feat4_title": "4. Holistic Coaching",
+  "feat4_title": "Holistic Coaching",
   "headline": "The Brain Behind the Performance",
   "label": "STATE OF THE ART",
   "nutrition_analysis": "NUTRITION ANALYSIS",

@@ -37,7 +37,7 @@
               <span class="hidden md:inline">{{ t('header_upload') }}</span>
             </UButton>
             <UButton
-              v-if="isOnboarded"
+              v-if="canUseDashboardActions"
               :loading="integrationStore.syncingData"
               :disabled="integrationStore.syncingData"
               color="neutral"
@@ -68,7 +68,7 @@
 
             <template #mobile>
               <LayoutNavbarIconButton
-                v-if="isOnboarded"
+                v-if="canUseDashboardActions"
                 icon="i-heroicons-arrow-path"
                 :label="t('header_sync_data')"
                 :loading="integrationStore.syncingData"
@@ -96,17 +96,38 @@
       <div class="quick-capture-inset">
         <ClientOnly>
           <!-- Loading State -->
-          <div v-if="isLoading" class="flex justify-center items-center py-24 min-h-[60vh]">
+          <div
+            v-if="isLoading || onboardingStatusLoading"
+            class="flex justify-center items-center py-24 min-h-[60vh]"
+          >
             <UIcon name="i-heroicons-arrow-path" class="w-10 h-10 animate-spin text-primary-500" />
           </div>
 
           <!-- Onboarding View (New User) -->
-          <div v-else-if="!isOnboarded" class="p-4 sm:p-6 max-w-6xl mx-auto">
-            <DashboardOnboardingView />
+          <div
+            v-else-if="showFullSetupHub && onboardingStatus"
+            class="p-4 sm:p-6 max-w-6xl mx-auto"
+          >
+            <DashboardOnboardingView
+              :status="onboardingStatus"
+              @sync="handleSync"
+              @connect-later="handleConnectLater"
+            />
           </div>
 
-          <!-- Dashboard Grid (Connected User) -->
+          <!-- Dashboard Grid -->
           <template v-else>
+            <div
+              v-if="showCompactSetupCard && onboardingStatus"
+              class="p-4 sm:p-6 pb-0 max-w-6xl mx-auto"
+            >
+              <DashboardSetupProgressCard
+                :status="onboardingStatus"
+                @sync="handleSync"
+                @complete="handleCompleteSetup"
+                @dismiss="handleCompleteSetup"
+              />
+            </div>
             <!-- Garmin Attribution -->
             <div v-if="isGarminConnected" class="flex justify-end px-4 sm:px-6 pt-1 pb-0">
               <div class="flex items-center gap-1.5">
@@ -221,7 +242,7 @@
 
                 <div class="space-y-4 sm:space-y-8 flex flex-col">
                   <!-- Monthly Progress Comparison -->
-                  <DashboardMonthlyComparisonCard v-if="isOnboarded" />
+                  <DashboardMonthlyComparisonCard v-if="canUseDashboardActions" />
 
                   <!-- Performance Overview Card -->
                   <DashboardPerformanceScoresCard
@@ -486,6 +507,16 @@
   const toast = useToast()
 
   const integrationStore = useIntegrationStore()
+  const {
+    status: onboardingStatus,
+    isLoading: onboardingStatusLoading,
+    activationComplete,
+    showFullSetupHub,
+    showCompactSetupCard,
+    refresh: refreshOnboardingStatus,
+    deferConnection,
+    completeActivation
+  } = useOnboardingStatus()
   const userStore = useUserStore()
 
   const isGarminConnected = computed(() => {
@@ -518,23 +549,7 @@
       userStore.profile?.nutritionTrackingEnabled !== false &&
       userStore.user?.nutritionTrackingEnabled !== false
   )
-  const isOnboarded = computed(() => {
-    // 1. Check if Intervals is connected (current behavior)
-    if (integrationStore.intervalsConnected) return true
-
-    // 2. Check if ANY integration is connected (Authorized Application)
-    if ((integrationStore.integrationStatus?.integrations?.length || 0) > 0) return true
-
-    // 3. Check if user has ANY data (Workouts, Nutrition, or Wellness)
-    if (
-      userStore.dataSyncStatus?.workouts ||
-      userStore.dataSyncStatus?.nutrition ||
-      userStore.dataSyncStatus?.wellness
-    )
-      return true
-
-    return false
-  })
+  const isOnboarded = computed(() => activationComplete.value)
 
   // Background Task Monitoring
   const { refresh: refreshRuns } = useUserRuns()
@@ -545,10 +560,10 @@
     refreshRuns()
   }
 
-  // Listen for sync completion
-  onTaskCompleted('ingest-all', async (run) => {
+  async function handleIngestTaskComplete() {
     integrationStore.syncingData = false
     await integrationStore.fetchStatus()
+    await refreshOnboardingStatus()
     await Promise.all([
       userStore.fetchProfile(),
       recommendationStore.fetchTodayRecommendation(),
@@ -557,6 +572,10 @@
       checkinStore.fetchToday(),
       nutritionEnabled.value ? fetchTodayNutrition() : Promise.resolve()
     ])
+  }
+
+  async function handleIngestAllComplete() {
+    await handleIngestTaskComplete()
 
     showDashboardProgressToast(
       toast,
@@ -569,11 +588,12 @@
       },
       'dashboard.sync.complete'
     )
-  })
+  }
 
-  onTaskFailed('ingest-all', async (run) => {
+  async function handleIngestTaskFailed(run: { error?: { message?: string } }) {
     integrationStore.syncingData = false
     await integrationStore.fetchStatus()
+    await refreshOnboardingStatus()
     toast.add({
       title: t.value('sync_toast_failed_title') || 'Sync Failed',
       description:
@@ -581,7 +601,16 @@
       color: 'error',
       icon: 'i-heroicons-exclamation-circle'
     })
-  })
+  }
+
+  // Listen for sync completion
+  onTaskCompleted('ingest-all', handleIngestAllComplete)
+  onTaskCompleted('ingest-intervals', handleIngestTaskComplete)
+  onTaskCompleted('ingest-strava', handleIngestTaskComplete)
+
+  onTaskFailed('ingest-all', handleIngestTaskFailed)
+  onTaskFailed('ingest-intervals', handleIngestTaskFailed)
+  onTaskFailed('ingest-strava', handleIngestTaskFailed)
 
   const showWelcome = useLocalStorage('dashboard-welcome-banner', true)
 
@@ -589,11 +618,34 @@
   const todayWorkouts = ref<any[]>([])
   const loadingUpcoming = ref(false)
   const isLoading = ref(true)
+  const canUseDashboardActions = computed(
+    () =>
+      activationComplete.value ||
+      onboardingStatus.value?.hasIntegration ||
+      onboardingStatus.value?.hasUsableData ||
+      false
+  )
   const todayNutrition = ref<any>(null)
   const nutritionSettings = ref<any>(null)
   const loadingNutrition = ref(false)
+  const hasLoadedDashboardWidgets = ref(false)
 
-  const missingFields = computed(() => userStore.profile?.missingFields || [])
+  async function loadDashboardWidgets() {
+    if (!canUseDashboardActions.value || hasLoadedDashboardWidgets.value) {
+      return
+    }
+
+    hasLoadedDashboardWidgets.value = true
+    await Promise.all([
+      userStore.fetchProfile(),
+      refreshOnboardingStatus(),
+      recommendationStore.fetchTodayRecommendation(),
+      activityStore.fetchRecentActivity(),
+      fetchUpcomingWorkouts(),
+      checkinStore.fetchToday(),
+      nutritionEnabled.value ? fetchTodayNutrition() : Promise.resolve()
+    ])
+  }
 
   async function fetchTodayNutrition() {
     if (!nutritionEnabled.value) {
@@ -665,38 +717,49 @@
     return navigateTo(`/workouts/planned/${workoutId}`)
   }
 
+  async function handleConnectLater() {
+    await deferConnection()
+  }
+
+  async function handleCompleteSetup() {
+    await completeActivation('dashboard_insight')
+    await Promise.all([
+      recommendationStore.fetchTodayRecommendation(),
+      activityStore.fetchRecentActivity(),
+      fetchUpcomingWorkouts(),
+      checkinStore.fetchToday(),
+      nutritionEnabled.value ? fetchTodayNutrition() : Promise.resolve()
+    ])
+  }
+
   // Initial data fetch
   onMounted(async () => {
     try {
-      await Promise.all([integrationStore.fetchStatus(), userStore.fetchProfile()])
-
-      if (isOnboarded.value) {
-        await Promise.all([
-          recommendationStore.fetchTodayRecommendation(),
-          activityStore.fetchRecentActivity(),
-          fetchUpcomingWorkouts(),
-          checkinStore.fetchToday(),
-          nutritionEnabled.value ? fetchTodayNutrition() : Promise.resolve()
-        ])
-      }
+      await Promise.all([
+        integrationStore.fetchStatus(),
+        userStore.fetchProfile(),
+        refreshOnboardingStatus()
+      ])
+      await loadDashboardWidgets()
     } finally {
       isLoading.value = false
     }
   })
 
-  // Watch for onboarding status changes
-  watch(isOnboarded, async (onboarded) => {
-    if (onboarded) {
-      await Promise.all([
-        userStore.fetchProfile(),
-        recommendationStore.fetchTodayRecommendation(),
-        activityStore.fetchRecentActivity(),
-        fetchUpcomingWorkouts(),
-        checkinStore.fetchToday(),
-        nutritionEnabled.value ? fetchTodayNutrition() : Promise.resolve()
-      ])
+  watch(canUseDashboardActions, async (enabled) => {
+    if (enabled) {
+      await loadDashboardWidgets()
     }
   })
+
+  watch(
+    () => onboardingStatus.value?.hasFirstInsight,
+    async (ready) => {
+      if (ready && onboardingStatus.value?.hasUsableData && !activationComplete.value) {
+        await refreshOnboardingStatus()
+      }
+    }
+  )
 
   // Recommendation state
   const showRecommendationModal = ref(false)

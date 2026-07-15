@@ -2,18 +2,18 @@
   <div class="relative bg-[#09090B] min-h-screen overflow-x-hidden selection:bg-primary-500/30">
     <!-- Global Grain Overlay (2%) -->
     <div class="fixed inset-0 pointer-events-none z-[100] opacity-[0.02] grain-overlay" />
-    <LandingHero class="mb-32" />
-    <LandingNutritionExplainer class="py-32" />
-    <LandingHowItWorks class="py-32" />
-    <LandingIntegrations class="py-32" />
-    <LandingDeepDiveArchitecture class="py-32" />
-    <LandingFeatureBento class="py-32" />
-    <LandingFeatureGoals class="py-32" />
-    <LandingCommunity class="py-32" />
-    <LandingPricing class="py-32" />
+    <LandingHero class="mb-20" />
+    <LandingNutritionExplainer class="py-20" />
+    <LandingHowItWorks class="py-20" />
+    <LandingIntegrations class="py-20" />
+    <LandingDeepDiveArchitecture class="py-20" />
+    <LandingFeatureBento class="py-20" />
+    <LandingFeatureGoals class="py-20" />
+    <LandingCommunity class="py-20" />
+    <LandingPricing class="py-20" />
 
     <!-- CTA Final -->
-    <div class="relative isolate overflow-hidden bg-gray-900 px-6 py-24 sm:py-32 lg:px-8">
+    <div class="relative isolate overflow-hidden bg-gray-900 px-6 py-16 sm:py-20 lg:px-8">
       <div class="mx-auto max-w-2xl text-center">
         <h2 class="text-3xl font-bold tracking-tight text-white sm:text-4xl">
           {{ t('cta.headline') }}

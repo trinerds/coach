@@ -174,10 +174,7 @@
           >
             <UIcon
               name="i-heroicons-check-circle-solid"
-              :class="[
-                'w-[1.125rem] h-[1.125rem] flex-shrink-0 mt-0.5',
-                isPrimaryPlan(plan) ? 'text-primary-500' : 'text-gray-600'
-              ]"
+              class="w-[1.125rem] h-[1.125rem] flex-shrink-0 mt-0.5 text-primary-500"
             />
             <span class="leading-tight">{{ t(`plan.${plan.key}.feature_${fIndex + 1}`) }}</span>
           </li>
@@ -345,15 +342,26 @@
 
   function getButtonLabel(plan: PricingPlan): string {
     if (isCurrentPlan(plan)) return translate('btn.current_plan')
-    if (status.value !== 'authenticated') return translate('btn.sign_up')
+    if (status.value !== 'authenticated') {
+      if (plan.key === 'free') return translate('btn.start_free')
+      if (plan.key === 'supporter') return translate('btn.get_supporter')
+      return translate('btn.get_pro')
+    }
 
-    const currentTier = userStore.user?.subscriptionTier || 'FREE'
+    const currentTier = (userStore.user?.subscriptionTier || 'FREE').toUpperCase()
     const tiers = ['FREE', 'SUPPORTER', 'PRO']
     const currentLevel = tiers.indexOf(currentTier)
     const planLevel = tiers.indexOf(plan.key.toUpperCase())
 
-    if (planLevel > currentLevel) return translate('btn.upgrade_pro')
-    return translate('btn.switch_pro')
+    if (planLevel > currentLevel) {
+      return plan.key === 'pro' ? translate('btn.upgrade_pro') : translate('btn.choose_supporter')
+    }
+    if (planLevel < currentLevel) {
+      return plan.key === 'free'
+        ? translate('btn.downgrade_free')
+        : translate('btn.switch_supporter')
+    }
+    return translate('btn.current_plan')
   }
 
   function getVisibleFeatures(plan: PricingPlan): string[] {
@@ -366,7 +374,7 @@
 
     const priceId = getStripePriceId(plan, billingInterval.value, currency.value)
     if (priceId) {
-      const currentTier = userStore.user?.subscriptionTier || 'FREE'
+      const currentTier = (userStore.user?.subscriptionTier || 'FREE').toUpperCase()
       const tiers = ['FREE', 'SUPPORTER', 'PRO']
       const currentLevel = tiers.indexOf(currentTier)
       const planLevel = tiers.indexOf(plan.key.toUpperCase())
@@ -387,7 +395,7 @@
 
   async function handlePlanSelect(plan: PricingPlan) {
     if (userStore.user?.stripeCustomerId && userStore.user?.subscriptionTier !== 'FREE') {
-      const currentTier = userStore.user?.subscriptionTier || 'FREE'
+      const currentTier = (userStore.user?.subscriptionTier || 'FREE').toUpperCase()
       const tiers = ['FREE', 'SUPPORTER', 'PRO']
       const currentLevel = tiers.indexOf(currentTier)
       const planLevel = tiers.indexOf(plan.key.toUpperCase())
@@ -412,12 +420,12 @@
     }
 
     if (plan.key === 'free') {
-      navigateTo(status.value === 'authenticated' ? '/dashboard' : '/login')
+      navigateTo(status.value === 'authenticated' ? '/dashboard' : '/join')
       return
     }
 
     if (status.value !== 'authenticated') {
-      navigateTo(`/login?plan=${plan.key}&interval=${billingInterval.value}`)
+      navigateTo(`/join?plan=${plan.key}&interval=${billingInterval.value}`)
       return
     }
 

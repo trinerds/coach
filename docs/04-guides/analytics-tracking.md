@@ -2,6 +2,8 @@
 
 This document outlines the Google Analytics 4 (GA4) and Google Tag Manager (GTM) implementation for Coach Watts.
 
+> **Onboarding funnel (Phase 1 shipped):** Signup and activation events use the canonical names below. Legacy `sign_up`, `onboarding_view`, `onboarding_complete`, `integration_connect_start`, and `integration_connect_success` are replaced by `signup_started`, `consent_viewed`, `consent_completed`, `integration_connect_started`, and `integration_connected`. `account_created` is recorded server-side on first OAuth link, with optional GA4 Measurement Protocol delivery when `NUXT_GA_MEASUREMENT_API_SECRET` is set, and a one-time client claim fallback.
+
 ## Core Integration
 
 - **Module**: `nuxt-gtag`
@@ -59,8 +61,8 @@ Tracking onboarding health and manual sync behavior.
 
 | Event                         | Trigger Point                     | Parameters |
 | :---------------------------- | :-------------------------------- | :--------- |
-| `integration_connect_start`   | Click connect (Strava/Garmin/etc) | `provider` |
-| `integration_connect_success` | Successful callback landed        | `provider` |
+| `integration_connect_start`   | Click connect (Strava/Garmin/etc) | `provider` | **Renamed** to `integration_connect_started` |
+| `integration_connect_success` | Successful callback landed        | `provider` | **Renamed** to `integration_connected`       |
 | `sync_all_manual`             | Click "Sync All" on dashboard     | N/A        |
 
 ### 5. Engagement & Training
@@ -82,8 +84,8 @@ Use this section as the KPI contract for dashboards and weekly reviews.
 
 | KPI                           | Definition                                                                     | Primary Events                                                                                                       | Target Cadence   |
 | :---------------------------- | :----------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------- | :--------------- |
-| Acquisition Rate              | New account creations by source/channel.                                       | `sign_up`, `first_login` with `utm_source`, `utm_medium`, `utm_campaign`, `referrer`                                 | Daily / Weekly   |
-| Activation Rate (D1 / D7)     | % of new users who reach first value moment (at least one key success action). | `first_integration_connected`, `first_checkin_complete`, `first_ai_recommendation_accept`, `first_workout_completed` | Daily / Weekly   |
+| Acquisition Rate              | New account creations by source/channel.                                       | `account_created`, `signup_started`, UTM/referrer params                                                             | Daily / Weekly   |
+| Activation Rate (D1 / D7)     | % of new users who reach first value moment (at least one key success action). | `first_value_viewed` (planned), `integration_connected`, legacy milestone events below                               | Daily / Weekly   |
 | Trial-to-Paid Conversion      | % of eligible users who convert to paid.                                       | `pricing_view`, `view_promotion`, `begin_checkout`, `purchase`, `checkout_error`, `purchase_failed`                  | Daily / Weekly   |
 | Retained Coaching Users (WAU) | Weekly active users completing at least one core coaching behavior.            | `daily_checkin_complete`, `recommendation_request`, `recommendation_accept`, `chat_session_start`, `sync_all_manual` | Weekly           |
 | Churn Rate                    | % of paid users who cancel and do not reactivate within 30 days.               | `subscription_cancel_start`, `subscription_cancel_confirmed`, `reactivation`, `churn_reason_submit`                  | Weekly / Monthly |
@@ -96,11 +98,26 @@ These events are required to fully calculate the metrics defined in the KPI Fram
 
 ### 6. Acquisition & Attribution
 
-| Event          | Trigger Point                            | Parameters                                                                      |
-| :------------- | :--------------------------------------- | :------------------------------------------------------------------------------ |
-| `sign_up`      | Account successfully created             | `method` (email, oauth), `utm_source`, `utm_medium`, `utm_campaign`, `referrer` |
-| `first_login`  | First successful session                 | `days_from_signup`                                                              |
-| `pricing_view` | User lands on pricing or upgrade surface | `entry_point`, `source_page`                                                    |
+| Event             | Trigger Point                                                   | Parameters                                           |
+| :---------------- | :-------------------------------------------------------------- | :--------------------------------------------------- |
+| `signup_started`  | OAuth button click on `/join`, before redirect                  | `method`, `entry_point`, `referral_type`, UTM fields |
+| `signup_failed`   | OAuth start failure on `/join`                                  | `method`, `failure_stage`, `error_code`, UTM fields  |
+| `account_created` | First OAuth account linked (server audit + GA4 MP/client claim) | `method`, `entry_point`, optional `source`           |
+| `first_login`     | First successful session                                        | `days_from_signup`                                   |
+| `pricing_view`    | User lands on pricing or upgrade surface                        | `entry_point`, `source_page`                         |
+
+### 6b. Onboarding & consent
+
+| Event                         | Trigger Point                    | Parameters                                               |
+| :---------------------------- | :------------------------------- | :------------------------------------------------------- |
+| `consent_viewed`              | Consent page mount               | `terms_version`, `privacy_version`                       |
+| `consent_completed`           | Successful consent API response  | `terms_version`, `privacy_version`, `seconds_since_view` |
+| `setup_hub_viewed`            | Dashboard onboarding hub shown   | `current_step`, `resume`, `signup_method`                |
+| `integration_connect_started` | Provider CTA click               | `provider`, `surface`, optional `signup_method`          |
+| `integration_connect_failed`  | OAuth/API failure (when wired)   | `provider`, `failure_stage`, `error_code`, `surface`     |
+| `integration_connected`       | Successful persisted integration | `provider`, optional `is_first`                          |
+
+See the full canonical funnel in [new-user-onboarding-conversion-plan.md](../06-plans/new-user-onboarding-conversion-plan.md#recommended-canonical-funnel).
 
 ### 7. Activation Milestones (Time-to-Value)
 
@@ -142,7 +159,7 @@ These events are required to fully calculate the metrics defined in the KPI Fram
 
 Standardize these funnels in GA explorations and BI exports:
 
-1. `Acquisition -> Activation`: `sign_up` -> (`first_integration_connected` OR `first_checkin_complete` OR `first_ai_recommendation_accept`).
+1. `Acquisition -> Activation`: `signup_started` → `account_created` → `consent_completed` → `integration_connected` → `first_data_imported` → `first_value_viewed`.
 2. `Monetization`: `pricing_view` -> `view_promotion` -> `begin_checkout` -> `purchase`.
 3. `Retention`: Weekly users with at least one of `daily_checkin_complete`, `recommendation_accept`, `chat_session_start`.
 

@@ -1,42 +1,37 @@
-export default defineNuxtRouteMiddleware(async (to, from) => {
+import { buildConsentGateRedirect } from '../../shared/consent-redirect'
+import { sanitizeCallbackUrl } from '../../shared/safe-callback-url'
+
+export default defineNuxtRouteMiddleware(async (to) => {
   const { status, data, getSession } = useAuth()
 
-  if (typeof data.value === 'undefined') {
+  if (status.value === 'loading') {
     await getSession().catch(() => null)
   }
 
   if (status.value === 'loading') return
 
-  // Only check for authenticated users
   if (status.value !== 'authenticated') return
 
-  const user = data.value?.user as any // Type assertion until types are fully propagated
+  const user = data.value?.user as { termsAcceptedAt?: string | null } | undefined
   const termsAccepted = !!user?.termsAcceptedAt
 
-  // 1. User HAS NOT accepted terms
   if (!termsAccepted) {
-    // Allow access to the onboarding page itself
     if (to.path === '/onboarding') return
 
-    // Allow access to public legal pages
     if (to.path === '/terms' || to.path === '/privacy') return
 
-    // Allow join invite flow (OAuth callback after signup)
     if (to.path === '/join' || to.path.startsWith('/join/')) return
 
-    // Allow sign out flow (if it uses a specific route, though usually it's a function call)
-    // We'll allow anything under /auth just in case
-    if (to.path.startsWith('/api/auth')) return
-
-    // Redirect to onboarding
-    return navigateTo('/onboarding')
+    const redirect = buildConsentGateRedirect(to.fullPath)
+    return navigateTo(
+      redirect ? { path: '/onboarding', query: { redirect } } : { path: '/onboarding' }
+    )
   }
 
-  // 2. User HAS accepted terms
-  if (termsAccepted) {
-    // If trying to visit onboarding again, send them to dashboard UNLESS in testing mode
-    if (to.path === '/onboarding' && to.query.testing !== '1') {
-      return navigateTo('/dashboard')
-    }
+  if (to.path === '/onboarding' && to.query.testing !== '1') {
+    const redirect = sanitizeCallbackUrl(to.query.redirect)
+    return navigateTo(redirect)
   }
+
+  if (to.path === '/onboarding/restart') return
 })

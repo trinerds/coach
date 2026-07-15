@@ -354,7 +354,7 @@
                     />
                   </div>
                   <span
-                    class="mt-2 text-[9px] font-black text-slate-600 group-hover:text-white transition-colors uppercase tracking-[0.2em] whitespace-nowrap"
+                    class="mt-2 text-xs font-black text-slate-600 group-hover:text-white transition-colors uppercase tracking-[0.15em] whitespace-nowrap"
                     >{{ integ.name }}</span
                   >
                 </motion.div>
@@ -384,7 +384,7 @@
                       }"
                     />
                   </div>
-                  <span class="text-[8px] font-black text-slate-500 uppercase tracking-wider">{{
+                  <span class="text-xs font-black text-slate-500 uppercase tracking-wide">{{
                     integ.name
                   }}</span>
                 </div>
@@ -409,7 +409,7 @@
                 <button
                   v-for="cat in categories"
                   :key="cat.id"
-                  class="flex-shrink-0 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-300"
+                  class="flex-shrink-0 px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest transition-all duration-300"
                   :class="[
                     activeCategory === cat.id
                       ? 'bg-primary-500 text-black shadow-[0_0_20px_rgba(34,197,94,0.4)]'
@@ -508,7 +508,7 @@
                   class="absolute top-4 right-4 sm:static text-right flex flex-col items-end gap-2"
                 >
                   <span
-                    class="text-[7px] sm:text-[9px] font-black uppercase tracking-[0.2em] px-2 sm:px-4 py-1 sm:py-2 rounded-full border border-primary-500/20 bg-primary-500/10 text-primary-400 whitespace-nowrap"
+                    class="text-xs font-black uppercase tracking-[0.15em] px-2 sm:px-4 py-1 sm:py-2 rounded-full border border-primary-500/20 bg-primary-500/10 text-primary-400 whitespace-nowrap"
                   >
                     {{ integ.status }}
                   </span>
@@ -528,7 +528,7 @@
 
               <div class="hidden sm:flex items-center gap-2 mt-auto">
                 <span
-                  class="text-[10px] font-black text-primary-500 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all duration-500 translate-x-2 group-hover:translate-x-0"
+                  class="text-xs font-black text-primary-500 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all duration-500 translate-x-2 group-hover:translate-x-0"
                   >{{ t('learn_more') }}</span
                 >
                 <UIcon
@@ -572,9 +572,7 @@
                 <div class="w-full space-y-6 sm:space-y-10 relative">
                   <div class="flex items-center justify-between">
                     <div>
-                      <div
-                        class="text-[8px] sm:text-[10px] font-black text-gray-600 uppercase tracking-widest mb-1"
-                      >
+                      <div class="text-xs font-black text-gray-600 uppercase tracking-widest mb-1">
                         {{ t('f1_ui_readiness') }}
                       </div>
                       <div class="text-4xl sm:text-6xl font-black text-white italic font-athletic">
@@ -596,7 +594,7 @@
                   <!-- Recovery Bar -->
                   <div class="space-y-3 sm:space-y-4">
                     <div
-                      class="flex justify-between text-[9px] sm:text-[11px] font-black text-gray-600 uppercase tracking-widest"
+                      class="flex justify-between text-xs font-black text-gray-600 uppercase tracking-widest"
                     >
                       <span>{{ t('f1_ui_recovery') }}</span>
                       <span class="text-primary-400">{{ t('f1_ui_sleep') }}</span>
@@ -623,7 +621,7 @@
                       />
                     </div>
                     <div
-                      class="text-[9px] sm:text-[11px] text-primary-500 font-black uppercase tracking-[0.3em] mb-2 sm:mb-3"
+                      class="text-xs text-primary-500 font-black uppercase tracking-[0.15em] mb-2 sm:mb-3"
                     >
                       {{ t('f1_ui_insight_label') }}
                     </div>
@@ -644,7 +642,7 @@
           </div>
           <div class="flex-1 order-2 lg:order-2 px-4 sm:px-0">
             <div
-              class="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-primary-500/10 border border-primary-500/20 text-primary-500 text-[10px] font-black uppercase tracking-[0.2em] mb-8"
+              class="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-primary-500/10 border border-primary-500/20 text-primary-500 text-xs font-black uppercase tracking-[0.15em] mb-8"
             >
               {{ t('f1_badge') }}
             </div>
@@ -678,7 +676,7 @@
         <motion.div v-bind="scrollVariants" class="flex flex-col lg:flex-row items-center gap-20">
           <div class="flex-1 order-2 lg:order-1 px-4 sm:px-0">
             <div
-              class="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-500 text-[10px] font-black uppercase tracking-[0.2em] mb-8"
+              class="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-500 text-xs font-black uppercase tracking-[0.15em] mb-8"
             >
               {{ t('f2_badge') }}
             </div>
@@ -706,7 +704,7 @@
               class="bg-gray-800/80 backdrop-blur-xl rounded-3xl sm:rounded-[48px] border border-white/10 p-8 sm:p-14 shadow-[0_40px_80px_-20px_rgba(0,0,0,0.6)] relative w-full"
             >
               <div class="text-center mb-12">
-                <div class="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] mb-4">
+                <div class="text-xs font-black text-white/40 uppercase tracking-[0.15em] mb-4">
                   {{ t('f2_ui_label') }}
                 </div>
                 <div class="text-3xl font-black text-white tracking-tight italic">

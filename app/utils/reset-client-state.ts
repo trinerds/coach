@@ -1,7 +1,10 @@
 import { clearChatOutgoingQueue } from './chat-outgoing-queue'
 
 const LOGOUT_LOCAL_STORAGE_PREFIXES = ['library-source:', 'workout-comparison:']
-const LOGOUT_LOCAL_STORAGE_KEYS = new Set(['activities-list-columns-visibility'])
+const LOGOUT_LOCAL_STORAGE_KEYS = new Set([
+  'activities-list-columns-visibility',
+  'cw-onboarding-connect-later'
+])
 
 function clearLogoutScopedLocalStorage() {
   if (!import.meta.client) return

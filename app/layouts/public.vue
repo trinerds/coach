@@ -19,12 +19,9 @@
             class="hover:text-primary transition-colors flex items-center gap-1"
           >
             {{ t('nav.pricing') }}
-            <UBadge
-              size="xs"
-              color="primary"
-              variant="soft"
-              class="font-bold leading-none inline-flex items-center justify-center !bg-emerald-400 !text-emerald-950 px-1.5 py-0.5"
-              >{{ t('nav.pricing_badge') }}</UBadge
+            <span
+              class="text-xs font-bold leading-none inline-flex items-center justify-center rounded-sm bg-emerald-400 text-emerald-950 px-1.5 py-0.5"
+              >{{ t('nav.pricing_badge') }}</span
             >
           </NuxtLink>
           <NuxtLink to="/training-plans" class="hover:text-primary transition-colors">
@@ -39,7 +36,7 @@
         </nav>
 
         <div class="flex items-center gap-2">
-          <div class="h-8 min-w-[8.5rem] shrink-0">
+          <div class="hidden sm:block h-8 min-w-[8.5rem] shrink-0">
             <ClientOnly>
               <LanguageSwitcher />
               <template #fallback>
@@ -50,6 +47,15 @@
               </template>
             </ClientOnly>
           </div>
+          <UButton
+            v-if="route.path !== '/join'"
+            to="/join"
+            color="primary"
+            size="sm"
+            class="sm:hidden"
+          >
+            {{ t('nav.get_started') }}
+          </UButton>
           <div class="hidden sm:flex items-center gap-2">
             <UButton v-if="route.path !== '/login'" to="/login" variant="ghost" color="neutral">{{
               t('nav.sign_in')
@@ -73,12 +79,9 @@
                   class="text-sm font-medium hover:text-primary transition-colors flex items-center justify-between"
                 >
                   {{ t('nav.pricing') }}
-                  <UBadge
-                    size="xs"
-                    color="primary"
-                    variant="soft"
-                    class="font-bold leading-none inline-flex items-center justify-center !bg-emerald-400 !text-emerald-950 px-1.5 py-0.5"
-                    >{{ t('nav.pricing_badge') }}</UBadge
+                  <span
+                    class="text-xs font-bold leading-none inline-flex items-center justify-center rounded-sm bg-emerald-400 text-emerald-950 px-1.5 py-0.5"
+                    >{{ t('nav.pricing_badge') }}</span
                   >
                 </NuxtLink>
                 <NuxtLink

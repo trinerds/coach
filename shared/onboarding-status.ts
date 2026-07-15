@@ -1,0 +1,123 @@
+export type OnboardingStepId =
+  'account_ready' | 'connect_data' | 'import_data' | 'analysis' | 'first_value'
+
+export type OnboardingStepStatus = 'complete' | 'active' | 'pending' | 'failed'
+
+export type ImportState = 'idle' | 'importing' | 'ready' | 'empty' | 'failed'
+
+export type SignupMethod = 'google' | 'strava' | 'intervals' | 'unknown'
+
+export interface OnboardingStep {
+  id: OnboardingStepId
+  status: OnboardingStepStatus
+}
+
+export interface OnboardingStatus {
+  signupMethod: SignupMethod
+  currentStep: OnboardingStepId
+  steps: OnboardingStep[]
+  importState: ImportState
+  connectedProviders: string[]
+  hasIntegration: boolean
+  hasAnyData: boolean
+  hasUsableData: boolean
+  hasFirstInsight: boolean
+  activationComplete: boolean
+  showFullSetupHub: boolean
+  showCompactSetupCard: boolean
+  primaryProvider: string | null
+  workoutCount: number
+  wellnessCount: number
+  nutritionCount: number
+  importErrorMessage: string | null
+}
+
+export const ONBOARDING_STEP_ORDER: OnboardingStepId[] = [
+  'account_ready',
+  'connect_data',
+  'import_data',
+  'analysis',
+  'first_value'
+]
+
+const TRAINING_SIGNUP_PROVIDERS = new Set(['google', 'strava', 'intervals'])
+
+export function deriveSignupMethod(accountProviders: string[]): SignupMethod {
+  const signupAccount = accountProviders.find((provider) => TRAINING_SIGNUP_PROVIDERS.has(provider))
+  if (signupAccount === 'google' || signupAccount === 'strava' || signupAccount === 'intervals') {
+    return signupAccount
+  }
+  return 'unknown'
+}
+
+export function buildOnboardingSteps(input: {
+  hasIntegration: boolean
+  hasUsableData: boolean
+  hasFirstInsight: boolean
+  activationComplete: boolean
+  importState: ImportState
+}): OnboardingStep[] {
+  const connectComplete = input.hasIntegration || input.hasUsableData
+  const importComplete =
+    input.importState === 'ready' || input.hasUsableData || input.importState === 'empty'
+  const analysisComplete = input.hasUsableData && input.hasFirstInsight
+  const firstValueComplete = input.activationComplete
+
+  const statuses: Record<OnboardingStepId, OnboardingStepStatus> = {
+    account_ready: 'complete',
+    connect_data: connectComplete ? 'complete' : 'active',
+    import_data: !connectComplete
+      ? 'pending'
+      : input.importState === 'failed'
+        ? 'failed'
+        : importComplete
+          ? 'complete'
+          : 'active',
+    analysis: !importComplete
+      ? 'pending'
+      : analysisComplete
+        ? 'complete'
+        : input.hasUsableData
+          ? 'active'
+          : 'pending',
+    first_value: firstValueComplete ? 'complete' : analysisComplete ? 'active' : 'pending'
+  }
+
+  if (input.activationComplete) {
+    for (const stepId of ONBOARDING_STEP_ORDER) {
+      statuses[stepId] = 'complete'
+    }
+  }
+
+  return ONBOARDING_STEP_ORDER.map((id) => ({ id, status: statuses[id] }))
+}
+
+export function deriveCurrentStep(steps: OnboardingStep[]): OnboardingStepId {
+  return (
+    steps.find((step) => step.status === 'active' || step.status === 'failed')?.id ?? 'first_value'
+  )
+}
+
+export function resolveOnboardingPresentation(input: {
+  activationComplete: boolean
+  hasIntegration: boolean
+  hasAnyData: boolean
+  connectLater: boolean
+}): Pick<OnboardingStatus, 'showFullSetupHub' | 'showCompactSetupCard' | 'activationComplete'> {
+  if (input.activationComplete) {
+    return {
+      activationComplete: true,
+      showFullSetupHub: false,
+      showCompactSetupCard: false
+    }
+  }
+
+  const showFullSetupHub = !input.hasIntegration && !input.hasAnyData && !input.connectLater
+  const showCompactSetupCard = !showFullSetupHub
+
+  return {
+    activationComplete: false,
+    showFullSetupHub,
+    showCompactSetupCard
+  }
+}

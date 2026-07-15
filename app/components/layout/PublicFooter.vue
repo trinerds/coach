@@ -32,12 +32,9 @@
                 class="hover:text-primary flex items-center gap-1 justify-center md:justify-start"
               >
                 Pricing
-                <UBadge
-                  size="xs"
-                  color="primary"
-                  variant="soft"
-                  class="font-bold leading-none inline-flex items-center justify-center !bg-emerald-400 !text-emerald-950 px-1.5 py-0.5"
-                  >FREE</UBadge
+                <span
+                  class="text-xs font-bold leading-none inline-flex items-center justify-center rounded-sm bg-emerald-400 text-emerald-950 px-1.5 py-0.5"
+                  >{{ t('nav.pricing_badge') }}</span
                 >
               </NuxtLink>
             </li>

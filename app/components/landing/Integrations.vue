@@ -74,7 +74,7 @@
       />
 
       <div class="text-center mb-16 relative z-10">
-        <h2 class="text-[10px] font-black uppercase tracking-[0.4em] text-primary-500 mb-4">
+        <h2 class="text-xs font-black uppercase tracking-[0.2em] text-primary-500 mb-4">
           {{ t('label') }}
         </h2>
         <h3
@@ -186,7 +186,7 @@
             <!-- Status Pill Area (Always present to avoid layout shift) -->
             <div class="h-6 mt-3 flex justify-center">
               <div
-                class="px-2 py-0.5 rounded-full bg-primary-500/10 border border-primary-500/30 text-[9px] font-black uppercase tracking-widest text-primary-400 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-1 group-hover:translate-y-0 whitespace-nowrap"
+                class="px-2 py-0.5 rounded-full bg-primary-500/10 border border-primary-500/30 text-xs font-black uppercase tracking-widest text-primary-400 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-1 group-hover:translate-y-0 whitespace-nowrap"
               >
                 {{ integ.status }}
               </div>
@@ -225,7 +225,7 @@
               <p class="text-sm font-bold text-white mb-2 uppercase tracking-wide">
                 {{ integ.name }}
               </p>
-              <span class="text-[9px] font-black uppercase tracking-[0.15em] text-primary-500/90">{{
+              <span class="text-xs font-black uppercase tracking-[0.15em] text-primary-500/90">{{
                 integ.status
               }}</span>
             </div>

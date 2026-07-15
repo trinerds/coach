@@ -49,6 +49,18 @@ When the developer accepts your fix plan (e.g., using `/support resolve <ticket_
    You can also send a message to the user:
    `cw:cli support tickets comment <id> "Your issue is resolved!" --type MESSAGE --prod`
 
+## 3. Sentry Issues
+
+When a bug is also tracked in Sentry (see [SENTRY-ISSUES.md](../../SENTRY-ISSUES.md)), **resolve it in Sentry in the same session** once it is handled:
+
+1. **After a code fix** — Resolve in Sentry once deployed and quiet for 24–48h. Add a short activity comment (commit, root cause, or doc link).
+2. **Confirmed noise** (deploy blips, scanner traffic, extension errors) — Resolve or Ignore in Sentry; document in `SENTRY-ISSUES.md` under **Known Noise**.
+3. **Dev-only / transient HMR** — Resolve once source is valid and events have stopped.
+
+**MANDATE:** Do not leave handled Sentry issues unresolved in the dashboard. Update `SENTRY-ISSUES.md` when you resolve or triage a batch.
+
+Use the Sentry MCP `update_issue` tool (or the Sentry UI) with `status: resolved` or `status: ignored` as appropriate.
+
 ## Available Tools
 
 The primary tool for interacting with tickets is the `cw:cli support tickets` group. Always append `--prod` unless you are specifically testing against the local database.
