@@ -502,7 +502,11 @@
               </section>
 
               <!-- Power Settings -->
-              <section class="space-y-4">
+              <section
+                id="sport-power"
+                class="space-y-4"
+                :class="sectionHighlightClass('sport-power')"
+              >
                 <h4
                   class="text-sm font-medium text-gray-500 uppercase tracking-wider border-b pb-2 dark:border-gray-800 flex items-center gap-2"
                 >
@@ -730,7 +734,7 @@
               </section>
 
               <!-- Heart Rate Settings -->
-              <section class="space-y-4">
+              <section id="sport-hr" class="space-y-4" :class="sectionHighlightClass('sport-hr')">
                 <h4
                   class="text-sm font-medium text-gray-500 uppercase tracking-wider border-b pb-2 dark:border-gray-800 flex items-center gap-2"
                 >
@@ -857,7 +861,12 @@
                 </div>
 
                 <!-- HR Zones Editor -->
-                <div v-if="editingIndex === index" class="mt-4">
+                <div
+                  v-if="editingIndex === index"
+                  id="sport-zones"
+                  class="mt-4"
+                  :class="sectionHighlightClass('sport-zones')"
+                >
                   <ProfileZoneEditor
                     v-model="editForm.hrZones"
                     :title="t('zones_title_hr')"
@@ -881,7 +890,9 @@
                 </div>
                 <div
                   v-else-if="item.content.hrZones?.length"
+                  id="sport-zones"
                   class="p-4 bg-gray-50/50 dark:bg-gray-800/20 rounded-xl"
+                  :class="sectionHighlightClass('sport-zones')"
                 >
                   <div class="text-xs font-bold uppercase text-gray-400 mb-3">
                     {{ t('zones_title_hr') }}
@@ -1662,6 +1673,8 @@
   const props = defineProps<{
     settings: any[]
     profile?: any
+    highlightSections?: string[]
+    focusSection?: string | null
   }>()
 
   const emit = defineEmits(['update:settings', 'autodetect'])
@@ -1750,6 +1763,48 @@
       slot: 'sport-item'
     }))
   })
+
+  function sectionHighlightClass(sectionId: string) {
+    return props.highlightSections?.includes(sectionId)
+      ? 'ring-2 ring-amber-400 dark:ring-amber-500 ring-offset-2 ring-offset-white dark:ring-offset-gray-950 rounded-xl transition-shadow'
+      : ''
+  }
+
+  function getDefaultProfileIndex() {
+    const index = accordionItems.value.findIndex((item) => item.content.isDefault)
+    return index >= 0 ? index : 0
+  }
+
+  function scrollToSection(sectionId: string) {
+    nextTick(() => {
+      document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    })
+  }
+
+  function focusSportSection(sectionId: string) {
+    if (!props.settings?.length) return
+
+    const index = getDefaultProfileIndex()
+    const item = accordionItems.value[index]
+    if (!item) return
+
+    openItems.value = [item.value]
+
+    if (editingIndex.value !== index) {
+      startEdit(index, item.content)
+    }
+
+    scrollToSection(sectionId)
+  }
+
+  watch(
+    () => [props.settings?.length, props.focusSection] as const,
+    ([length, section]) => {
+      if (!section || !section.startsWith('sport-') || !length) return
+      focusSportSection(section)
+    },
+    { immediate: true }
+  )
 
   // Methodology Constants from user request
   const POWER_PCT = [0.55, 0.75, 0.9, 1.05, 1.2, 1.5, 9.99]

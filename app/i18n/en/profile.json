@@ -458,5 +458,17 @@
   "zones_header_min": "Min ({unit})",
   "zones_header_name": "Zone Name",
   "zones_title_hr": "Heart Rate Zones",
-  "zones_title_power": "Power Zones"
+  "zones_title_power": "Power Zones",
+  "missing_fields_guide_title": "Complete your profile",
+  "missing_fields_guide_description": "These fields are needed for accurate coaching, training load, and zone calculations. Use the buttons below to jump directly to each one.",
+  "missing_fields_guide_show_me": "Show me",
+  "missing_fields_guide_dismiss": "Dismiss",
+  "missing_field_ftp_title": "Functional Threshold Power (FTP)",
+  "missing_field_ftp_desc": "Go to Sport Settings, open your default profile, and enter your FTP in watts. This calibrates power-based workouts and training load.",
+  "missing_field_weight_title": "Weight",
+  "missing_field_weight_desc": "Enter your current body weight in Basic Settings under Body Metrics. It is used for power-to-weight metrics and nutrition guidance.",
+  "missing_field_hrr_title": "Heart Rate Settings",
+  "missing_field_hrr_desc": "Go to Sport Settings, open your default profile, and enter Max HR and Resting HR. If unsure, use 220 minus your age for Max HR and your morning resting pulse for Resting HR.",
+  "missing_field_zones_title": "Training Zones",
+  "missing_field_zones_desc": "In Sport Settings, enter LTHR or Max HR on your default profile, then use Recalculate to generate heart rate zones."
 }

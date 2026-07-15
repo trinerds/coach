@@ -65,7 +65,11 @@
     </UCard>
 
     <!-- Body Metrics Card -->
-    <UCard :ui="profileSettingsCardUi">
+    <UCard
+      id="body-metrics"
+      :ui="profileSettingsCardUi"
+      :class="sectionHighlightClass('body-metrics')"
+    >
       <template #header>
         <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div>
@@ -557,6 +561,8 @@
     modelValue: any
     email: string
     loading?: boolean
+    highlightSections?: string[]
+    focusSection?: string | null
   }>()
 
   const emit = defineEmits(['update:modelValue', 'autodetect', 'navigate'])
@@ -852,6 +858,26 @@
 
     return payload
   }
+
+  function sectionHighlightClass(sectionId: string) {
+    return props.highlightSections?.includes(sectionId)
+      ? 'ring-2 ring-amber-400 dark:ring-amber-500 ring-offset-2 ring-offset-white dark:ring-offset-gray-950 transition-shadow'
+      : ''
+  }
+
+  function scrollToSection(sectionId: string) {
+    nextTick(() => {
+      document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    })
+  }
+
+  watch(
+    () => props.focusSection,
+    (section) => {
+      if (section === 'body-metrics') scrollToSection('body-metrics')
+    },
+    { immediate: true }
+  )
 
   function saveProfile() {
     emit('update:modelValue', pickBasicProfilePayload(localProfile.value))

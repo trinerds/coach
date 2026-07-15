@@ -24,7 +24,7 @@
       </div>
       <div class="flex items-center gap-3 shrink-0 self-end sm:self-center">
         <UButton
-          to="/profile/settings"
+          to="/profile/settings?complete=1"
           color="warning"
           variant="solid"
           size="sm"

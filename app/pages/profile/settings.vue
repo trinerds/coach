@@ -20,11 +20,21 @@
     <template #body>
       <div class="flex-1 overflow-y-auto p-0 sm:p-6">
         <div class="max-w-4xl mx-auto space-y-8 px-4 sm:px-0">
+          <ProfileMissingProfileFieldsGuide
+            v-if="showMissingFieldsGuide"
+            :missing-fields="missingFields"
+            :dismissible="!arrivedFromCompleteProfile"
+            @focus="focusMissingSection"
+            @dismiss="dismissMissingFieldsGuide"
+          />
+
           <ProfileBasicSettings
             v-if="activeTab === 'basic'"
             :model-value="profile"
             :email="user?.email || ''"
             :loading="savingProfile"
+            :highlight-sections="highlightedSections"
+            :focus-section="focusSection"
             @update:model-value="handleProfileUpdate"
             @autodetect="handleAutodetect"
             @navigate="(tab) => setActiveTab(tab)"
@@ -81,6 +91,8 @@
               <ProfileSportSettings
                 :settings="sportSettings"
                 :profile="profile"
+                :highlight-sections="highlightedSections"
+                :focus-section="focusSection"
                 @update:settings="updateSportSettings"
                 @autodetect="handleAutodetect"
               />
@@ -178,17 +190,23 @@
   import { useStorage } from '@vueuse/core'
   import ProfileBasicSettings from '~/components/profile/BasicSettings.vue'
   import ProfileSportSettings from '~/components/profile/SportSettings.vue'
+  import ProfileMissingProfileFieldsGuide from '~/components/profile/MissingProfileFieldsGuide.vue'
   import ProfileNutritionSettings from '~/components/profile/NutritionSettings.vue'
   import ProfileCommunicationSettings from '~/components/profile/CommunicationSettings.vue'
   import ProfileMeasurementsSettings from '~/components/profile/MeasurementsSettings.vue'
   import ProfilePublicPresenceSettings from '~/components/profile/PublicPresenceSettings.vue'
   import { profileSettingsCardUi } from '~/utils/mobile-surface-ui'
+  import {
+    resolveMissingFieldGuides,
+    type MissingProfileSectionId
+  } from '~/utils/missing-profile-fields'
 
   const { t } = useTranslate('profile')
   const { data } = useAuth()
   const user = computed(() => data.value?.user)
   const toast = useToast()
   const userStore = useUserStore()
+  const { missingFields } = storeToRefs(userStore)
 
   definePageMeta({
     middleware: 'auth'
@@ -241,6 +259,68 @@
   const route = useRoute()
   const router = useRouter()
   const activeTab = ref((route.query.tab as string) || 'basic')
+  const focusSection = ref<MissingProfileSectionId | null>(null)
+  const highlightedSections = ref<MissingProfileSectionId[]>([])
+  const missingFieldsGuideDismissed = ref(false)
+  const pendingFocus = ref<{ sectionId: MissingProfileSectionId; tab: 'basic' | 'sports' } | null>(
+    null
+  )
+  const arrivedFromCompleteProfile = computed(() => route.query.complete === '1')
+
+  const showMissingFieldsGuide = computed(
+    () => missingFields.value.length > 0 && !missingFieldsGuideDismissed.value
+  )
+
+  function dismissMissingFieldsGuide() {
+    missingFieldsGuideDismissed.value = true
+  }
+
+  function focusMissingSection(sectionId: MissingProfileSectionId, tab: 'basic' | 'sports') {
+    setActiveTab(tab)
+
+    if (tab === 'sports' && sportSettings.value.length === 0) {
+      pendingFocus.value = { sectionId, tab }
+      return
+    }
+
+    pendingFocus.value = null
+    focusSection.value = sectionId
+    highlightedSections.value = [sectionId]
+
+    router.replace({
+      query: {
+        ...route.query,
+        complete: arrivedFromCompleteProfile.value ? '1' : undefined,
+        tab: tab === 'basic' ? undefined : tab,
+        focus: sectionId
+      }
+    })
+  }
+
+  function initializeMissingFieldFocus() {
+    const requestedFocus = route.query.focus as MissingProfileSectionId | undefined
+    if (requestedFocus) {
+      const guide = resolveMissingFieldGuides(missingFields.value).find(
+        (item) => item.guide.sectionId === requestedFocus
+      )
+      if (guide) {
+        focusMissingSection(requestedFocus, guide.guide.tab)
+        return
+      }
+    }
+
+    if (!arrivedFromCompleteProfile.value || missingFields.value.length === 0) return
+
+    const firstGuide = resolveMissingFieldGuides(missingFields.value)[0]
+    if (!firstGuide) return
+
+    focusMissingSection(firstGuide.guide.sectionId, firstGuide.guide.tab)
+  }
+
+  onMounted(async () => {
+    await userStore.fetchProfile(true)
+    initializeMissingFieldFocus()
+  })
 
   watch(
     () => route.query.tab,
@@ -250,6 +330,37 @@
       }
     }
   )
+
+  watch(
+    () => route.query.focus,
+    (newFocus) => {
+      if (!newFocus || typeof newFocus !== 'string') return
+      const guide = resolveMissingFieldGuides(missingFields.value).find(
+        (item) => item.guide.sectionId === newFocus
+      )
+      if (guide) {
+        focusMissingSection(newFocus as MissingProfileSectionId, guide.guide.tab)
+      }
+    }
+  )
+
+  watch(
+    () => sportSettings.value.length,
+    (length) => {
+      if (length > 0 && pendingFocus.value) {
+        const { sectionId, tab } = pendingFocus.value
+        focusMissingSection(sectionId, tab)
+      }
+    }
+  )
+
+  watch(missingFields, (fields) => {
+    if (fields.length === 0) {
+      missingFieldsGuideDismissed.value = false
+      focusSection.value = null
+      highlightedSections.value = []
+    }
+  })
 
   watch(activeTab, () => {
     if (!import.meta.client) return
@@ -693,6 +804,8 @@
         method: 'PATCH',
         body: { sportSettings: updatedSettings }
       })
+      await userStore.fetchProfile(true)
+
       toast.add({
         title: 'Settings Saved',
         description: 'Sport settings updated successfully.',
