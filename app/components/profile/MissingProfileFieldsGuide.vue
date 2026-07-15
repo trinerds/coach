@@ -51,7 +51,10 @@
 
 <script setup lang="ts">
   import { useTranslate } from '@tolgee/vue'
-  import { resolveMissingFieldGuides } from '~/utils/missing-profile-fields'
+  import {
+    resolveMissingFieldGuides,
+    type MissingProfileSectionId
+  } from '~/utils/missing-profile-fields'
 
   const { t } = useTranslate('profile')
 
@@ -61,7 +64,7 @@
   }>()
 
   const emit = defineEmits<{
-    focus: [sectionId: string, tab: 'basic' | 'sports']
+    focus: [sectionId: MissingProfileSectionId, tab: 'basic' | 'sports']
     dismiss: []
   }>()
 
