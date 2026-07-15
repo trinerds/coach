@@ -72,7 +72,7 @@
 
 <script setup lang="ts">
   import { useTranslate } from '@tolgee/vue'
-  import type { OnboardingStatus } from '../../../shared/onboarding-status'
+  import type { OnboardingStatus } from '#shared/onboarding-status'
 
   const props = defineProps<{
     status: OnboardingStatus | null

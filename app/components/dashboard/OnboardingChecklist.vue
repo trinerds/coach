@@ -35,7 +35,7 @@
 
 <script setup lang="ts">
   import { useTranslate } from '@tolgee/vue'
-  import type { OnboardingStep, OnboardingStepId } from '../../../shared/onboarding-status'
+  import type { OnboardingStep, OnboardingStepId } from '#shared/onboarding-status'
 
   defineProps<{
     steps: OnboardingStep[]

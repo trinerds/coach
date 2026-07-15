@@ -1,5 +1,5 @@
-import { buildConsentGateRedirect } from '../../shared/consent-redirect'
-import { sanitizeCallbackUrl } from '../../shared/safe-callback-url'
+import { buildConsentGateRedirect } from '#shared/consent-redirect'
+import { sanitizeCallbackUrl } from '#shared/safe-callback-url'
 
 export default defineNuxtRouteMiddleware(async (to) => {
   const { status, data, getSession } = useAuth()

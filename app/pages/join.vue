@@ -318,7 +318,7 @@
 <script setup lang="ts">
   import { useTranslate } from '@tolgee/vue'
   import { motion } from 'motion-v'
-  import { buildAcquisitionContext } from '../../shared/analytics-events'
+  import { buildAcquisitionContext } from '#shared/analytics-events'
 
   const { t } = useTranslate('auth')
   const { signIn } = useAuth()

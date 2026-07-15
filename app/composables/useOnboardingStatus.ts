@@ -1,5 +1,5 @@
 import { useLocalStorage } from '@vueuse/core'
-import type { OnboardingStatus } from '../../shared/onboarding-status'
+import type { OnboardingStatus } from '#shared/onboarding-status'
 
 const CONNECT_LATER_KEY = 'cw-onboarding-connect-later'
 

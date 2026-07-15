@@ -2,7 +2,7 @@ import {
   ANALYTICS_EVENTS,
   type AcquisitionContext,
   sanitizeAnalyticsParams
-} from '../../shared/analytics-events'
+} from '#shared/analytics-events'
 
 type AnalyticsParams = Record<string, string | number | boolean | undefined | null | object>
 

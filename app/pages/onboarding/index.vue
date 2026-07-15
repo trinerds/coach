@@ -111,8 +111,8 @@
 
 <script setup lang="ts">
   import { useTranslate } from '@tolgee/vue'
-  import { PRIVACY_POLICY_VERSION, TERMS_OF_SERVICE_VERSION } from '../../../shared/policy-versions'
-  import { sanitizeCallbackUrl } from '../../../shared/safe-callback-url'
+  import { PRIVACY_POLICY_VERSION, TERMS_OF_SERVICE_VERSION } from '#shared/policy-versions'
+  import { sanitizeCallbackUrl } from '#shared/safe-callback-url'
 
   definePageMeta({
     layout: 'simple',
