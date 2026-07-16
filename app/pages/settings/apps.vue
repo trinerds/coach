@@ -728,10 +728,20 @@
         refreshIntegrations()
       }, 2000)
     } catch (error: any) {
+      const statusCode = error.statusCode || error.status || error.data?.statusCode
+      const conflict =
+        statusCode === 409 ||
+        error.data?.data?.code === 'SYNC_IN_PROGRESS' ||
+        error.data?.code === 'SYNC_IN_PROGRESS'
+
       toast.add({
-        title: 'Sync Failed',
-        description: error.data?.message || `Failed to sync ${provider}`,
-        color: 'error'
+        title: conflict ? 'Sync already in progress' : 'Sync Failed',
+        description:
+          error.data?.message ||
+          (conflict
+            ? `${getProviderName(provider)} is already syncing. Please wait for it to finish.`
+            : `Failed to sync ${provider}`),
+        color: conflict ? 'warning' : 'error'
       })
     } finally {
       syncingProviders.value.delete(provider)

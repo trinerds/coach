@@ -19,6 +19,7 @@ vi.stubGlobal('readBody', async (event: any) => event.body)
 vi.stubGlobal('createError', (err: any) => {
   const error = new Error(err.message)
   ;(error as any).statusCode = err.statusCode
+  ;(error as any).data = err.data
   return error
 })
 vi.stubGlobal('prisma', prismaMock)
@@ -42,10 +43,15 @@ vi.mock('../../../../../server/utils/task-run-events', () => ({
   publishTaskRunStartedEvent: vi.fn()
 }))
 
-vi.mock('../../../../../server/utils/integration-sync-guard', () => ({
-  resolveProviderSyncBlock: resolveProviderSyncBlockMock,
-  resolveSyncAllBlock: resolveSyncAllBlockMock
-}))
+vi.mock('../../../../../server/utils/integration-sync-guard', async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import('../../../../../server/utils/integration-sync-guard')>()
+  return {
+    ...actual,
+    resolveProviderSyncBlock: resolveProviderSyncBlockMock,
+    resolveSyncAllBlock: resolveSyncAllBlockMock
+  }
+})
 
 const getHandler = async () => {
   const mod = await import('../../../../../server/api/integrations/sync.post')
@@ -69,7 +75,11 @@ describe('POST /api/integrations/sync', () => {
       provider: 'strava',
       syncStatus: 'SYNCING'
     })
-    resolveProviderSyncBlockMock.mockResolvedValue({ blocked: true, provider: 'strava' })
+    resolveProviderSyncBlockMock.mockResolvedValue({
+      blocked: true,
+      provider: 'strava',
+      reason: 'provider'
+    })
 
     await expect(
       handler({
@@ -77,7 +87,12 @@ describe('POST /api/integrations/sync', () => {
       } as any)
     ).rejects.toMatchObject({
       statusCode: 409,
-      message: 'strava sync is already in progress. Please wait for it to finish.'
+      message: expect.stringContaining('strava sync is already in progress'),
+      data: {
+        code: 'SYNC_IN_PROGRESS',
+        provider: 'strava',
+        reason: 'provider'
+      }
     })
 
     expect(tasks.trigger).not.toHaveBeenCalled()
@@ -86,7 +101,11 @@ describe('POST /api/integrations/sync', () => {
   it('returns 409 for sync-all when any integration is actively syncing', async () => {
     const handler = await getHandler()
 
-    resolveSyncAllBlockMock.mockResolvedValue({ blocked: true, provider: 'oura' })
+    resolveSyncAllBlockMock.mockResolvedValue({
+      blocked: true,
+      provider: 'oura',
+      reason: 'provider'
+    })
 
     await expect(
       handler({
@@ -94,7 +113,38 @@ describe('POST /api/integrations/sync', () => {
       } as any)
     ).rejects.toMatchObject({
       statusCode: 409,
-      message: 'Sync already in progress for oura. Please wait for it to finish.'
+      message: expect.stringContaining('oura sync is already in progress'),
+      data: {
+        code: 'SYNC_IN_PROGRESS',
+        provider: 'oura',
+        reason: 'provider'
+      }
+    })
+
+    expect(tasks.trigger).not.toHaveBeenCalled()
+  })
+
+  it('returns 409 for sync-all when ingest-all is already running', async () => {
+    const handler = await getHandler()
+
+    resolveSyncAllBlockMock.mockResolvedValue({
+      blocked: true,
+      provider: 'oura',
+      reason: 'ingest-all'
+    })
+
+    await expect(
+      handler({
+        body: { provider: 'all' }
+      } as any)
+    ).rejects.toMatchObject({
+      statusCode: 409,
+      message: expect.stringContaining('all connected apps'),
+      data: {
+        code: 'SYNC_IN_PROGRESS',
+        provider: 'oura',
+        reason: 'ingest-all'
+      }
     })
 
     expect(tasks.trigger).not.toHaveBeenCalled()

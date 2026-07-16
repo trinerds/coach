@@ -2,7 +2,11 @@ import { getServerSession } from '../../utils/session'
 import { tasks } from '@trigger.dev/sdk/v3'
 import { getUserTimezone, getUserLocalDate } from '../../utils/date'
 import { publishTaskRunStartedEvent } from '../../utils/task-run-events'
-import { resolveProviderSyncBlock, resolveSyncAllBlock } from '../../utils/integration-sync-guard'
+import {
+  formatSyncInProgressMessage,
+  resolveProviderSyncBlock,
+  resolveSyncAllBlock
+} from '../../utils/integration-sync-guard'
 
 defineRouteMeta({
   openAPI: {
@@ -213,7 +217,12 @@ export default defineEventHandler(async (event) => {
     if (providerSyncBlock.blocked) {
       throw createError({
         statusCode: 409,
-        message: `${provider} sync is already in progress. Please wait for it to finish.`
+        message: formatSyncInProgressMessage(providerSyncBlock),
+        data: {
+          code: 'SYNC_IN_PROGRESS',
+          provider: providerSyncBlock.provider,
+          reason: providerSyncBlock.reason
+        }
       })
     }
   } else {
@@ -221,7 +230,12 @@ export default defineEventHandler(async (event) => {
     if (syncAllBlock.blocked) {
       throw createError({
         statusCode: 409,
-        message: `Sync already in progress for ${syncAllBlock.provider}. Please wait for it to finish.`
+        message: formatSyncInProgressMessage(syncAllBlock),
+        data: {
+          code: 'SYNC_IN_PROGRESS',
+          provider: syncAllBlock.provider,
+          reason: syncAllBlock.reason
+        }
       })
     }
   }
