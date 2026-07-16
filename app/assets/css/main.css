@@ -1,8 +1,13 @@
 @import 'tailwindcss' theme(static);
 @import '@nuxt/ui';
 
+/* Hallmark · macrostructure: Workbench · genre: atmospheric · tone: athletic
+ * theme: custom green-ink · display: Oswald roman · body: Public Sans
+ * nav: N9 edge-aligned · footer: Ft2 statement · enrichment: none
+ */
 @theme static {
   --font-sans: 'Public Sans', sans-serif;
+  --font-display: 'Oswald', 'Public Sans', sans-serif;
 
   --radius-xs: 0.0625rem;
 
@@ -272,12 +277,12 @@ a[href],
   background: rgba(0, 220, 130, 0.12);
 }
 
-/* Athletic / Performance Typography Utility */
+/* Athletic / Performance Typography Utility — roman display, never italic */
 .font-athletic {
-  font-family: var(--font-sans);
-  font-weight: 900;
-  font-style: italic;
-  letter-spacing: -0.05em;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-style: normal;
+  letter-spacing: -0.02em;
   text-transform: uppercase;
 }
 
@@ -298,51 +303,21 @@ a[href],
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 }
 
-/* Global Premium Floating Card Base */
+/* Landing surface card — single containment, no glow halo */
 .floating-card-base {
-  background: #111111 !important;
+  background: oklch(16% 0.02 155) !important;
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow:
-    0 20px 40px -15px rgba(0, 0, 0, 0.8),
-    0 4px 6px -4px rgba(0, 0, 0, 0.5);
-  transition: all 0.5s cubic-bezier(0.21, 0.47, 0.32, 0.98);
-}
-
-.floating-card-base::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  border-radius: inherit;
-  border: 1px solid transparent;
-  background: linear-gradient(
-      to bottom right,
-      rgba(255, 255, 255, 0.15),
-      transparent 40%,
-      rgba(34, 197, 94, 0.12)
-    )
-    border-box;
-  -webkit-mask:
-    linear-gradient(#fff 0 0) padding-box,
-    linear-gradient(#fff 0 0);
-  mask:
-    linear-gradient(#fff 0 0) padding-box,
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite: destination-out;
-  mask-composite: exclude;
-  opacity: 0.8;
+  border: 1px solid oklch(100% 0 0 / 0.1) !important;
+  box-shadow: 0 16px 32px -18px oklch(0% 0 0 / 0.75);
+  transition:
+    transform 220ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 220ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .floating-card-base:hover {
-  transform: translateY(-4px);
-  border-color: rgba(255, 255, 255, 0.15) !important;
-  box-shadow:
-    0 30px 60px -12px rgba(0, 0, 0, 0.9),
-    0 0 24px -5px rgba(34, 197, 94, 0.25);
+  transform: translateY(-2px);
+  border-color: oklch(100% 0 0 / 0.16) !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

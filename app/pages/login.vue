@@ -23,7 +23,7 @@
         >
           <div class="relative z-10 h-full flex flex-col">
             <h2
-              class="text-3xl sm:text-4xl font-black italic font-athletic uppercase leading-[0.9] mb-4 tracking-tight text-white mb-8 mt-4"
+              class="text-3xl sm:text-4xl font-black font-athletic uppercase leading-[0.9] mb-4 tracking-tight text-white mb-8 mt-4"
             >
               YOUR DIGITAL <br />
               <span class="text-primary-500">TWIN AWAITS</span>
@@ -109,7 +109,7 @@
           <div class="max-w-md mx-auto w-full relative z-10">
             <div class="mb-10 text-center lg:text-left">
               <h1
-                class="text-4xl sm:text-6xl font-black italic font-athletic uppercase text-white leading-[0.85] mb-6 tracking-tighter"
+                class="text-4xl sm:text-6xl font-black font-athletic uppercase text-white leading-[0.85] mb-6 tracking-tighter"
               >
                 Welcome <br class="hidden sm:block" />
                 <span class="text-primary-500">Back</span>
@@ -319,7 +319,7 @@
                   </div>
                   <div class="space-y-4">
                     <h3
-                      class="text-2xl font-black italic font-athletic uppercase text-white tracking-widest"
+                      class="text-2xl font-black font-athletic uppercase text-white tracking-widest"
                     >
                       Re-initializing <br />
                       <span class="text-primary-500">Digital Twin</span>

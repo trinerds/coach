@@ -47,7 +47,7 @@
             </div>
 
             <h2
-              class="text-3xl sm:text-4xl font-black italic font-athletic uppercase leading-[0.9] mb-4 tracking-tight text-white mb-8 mt-4"
+              class="text-3xl sm:text-4xl font-black font-athletic uppercase leading-[0.9] mb-4 tracking-tight text-white mb-8 mt-4"
             >
               ELIMINATE THE <br />
               <span class="text-primary-500">GUESSWORK</span>
@@ -161,7 +161,7 @@
             <div class="mb-10 text-center lg:text-left">
               <h2 class="sr-only">{{ joinFormTitle }}</h2>
               <h1
-                class="text-4xl sm:text-6xl font-black italic font-athletic uppercase text-white leading-[0.85] mb-6 tracking-tighter"
+                class="text-4xl sm:text-6xl font-black font-athletic uppercase text-white leading-[0.85] mb-6 tracking-tighter"
               >
                 {{ joinTitle }} <br class="hidden sm:block" />
                 <span class="text-primary-500">{{ joinSubtitle }}</span>

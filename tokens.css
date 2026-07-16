@@ -1,0 +1,26 @@
+/* Hallmark landing tokens — imported conceptually via main.css @theme
+ * Hallmark · macrostructure: Workbench · genre: atmospheric · tone: athletic
+ */
+:root {
+  --color-paper: oklch(12% 0.015 155);
+  --color-paper-2: oklch(16% 0.02 155);
+  --color-ink: oklch(96% 0.01 155);
+  --color-ink-2: oklch(72% 0.02 155);
+  --color-rule: oklch(100% 0 0 / 0.1);
+  --color-accent: oklch(72% 0.19 155);
+  --color-focus: oklch(72% 0.19 155);
+
+  --font-display: 'Oswald', 'Public Sans', sans-serif;
+  --font-body: 'Public Sans', sans-serif;
+
+  --space-sm: 1rem;
+  --space-md: 1.5rem;
+  --space-lg: 2rem;
+  --space-xl: 3rem;
+  --space-2xl: 4.5rem;
+  --space-3xl: 7rem;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-short: 220ms;
+  --radius-card: 1.5rem;
+}

@@ -1,112 +1,63 @@
 <template>
-  <footer class="border-t border-gray-200 dark:border-gray-800 py-12 bg-gray-50 dark:bg-gray-900">
+  <!-- Ft2 statement footer — closes the page, does not catalogue a sitemap -->
+  <footer class="border-t border-white/10 bg-[oklch(14%_0.018_155)] py-12">
     <UContainer>
-      <div class="grid grid-cols-3 md:grid-cols-5 gap-y-12 gap-x-4 mb-8 text-center md:text-left">
-        <div class="col-span-3 md:col-span-2 flex flex-col items-center md:items-start">
-          <NuxtLink
-            to="/"
-            class="flex items-center mb-4 hover:opacity-90 transition-opacity justify-center md:justify-start"
-          >
+      <div class="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between lg:gap-12">
+        <div class="max-w-md">
+          <NuxtLink to="/" class="mb-4 inline-flex transition-opacity hover:opacity-90">
             <img
               src="/media/coach_watts_text_cropped.webp"
               alt="Coach Watts"
-              class="h-16 w-auto object-contain"
+              class="h-12 w-auto object-contain"
             />
           </NuxtLink>
-          <p class="text-sm text-gray-500 dark:text-gray-400 max-w-xs mx-auto md:mx-0">
+          <p class="text-sm leading-relaxed text-gray-400">
             AI-powered endurance coaching that adapts to your life, recovery, and goals.
           </p>
         </div>
-        <div>
-          <h3 class="font-semibold mb-4 text-highlighted">Product</h3>
-          <ul class="space-y-2 text-sm text-gray-500 dark:text-gray-400">
-            <li>
-              <NuxtLink to="/#features" class="hover:text-primary">Features</NuxtLink>
-            </li>
-            <li>
-              <NuxtLink to="/#architecture" class="hover:text-primary">Architecture</NuxtLink>
-            </li>
-            <li>
-              <NuxtLink
-                to="/#pricing"
-                class="hover:text-primary flex items-center gap-1 justify-center md:justify-start"
-              >
-                Pricing
-                <span
-                  class="text-xs font-bold leading-none inline-flex items-center justify-center rounded-sm bg-emerald-400 text-emerald-950 px-1.5 py-0.5"
-                  >{{ t('nav.pricing_badge') }}</span
-                >
-              </NuxtLink>
-            </li>
-            <li>
-              <NuxtLink to="/login" class="hover:text-primary">Login</NuxtLink>
-            </li>
-          </ul>
-        </div>
-        <div>
-          <h3 class="font-semibold mb-4 text-highlighted">Resources</h3>
-          <ul class="space-y-2 text-sm text-gray-500 dark:text-gray-400">
-            <li>
-              <NuxtLink to="/support" class="hover:text-primary">Support</NuxtLink>
-            </li>
-            <li>
-              <NuxtLink to="/documentation" class="hover:text-primary">Docs</NuxtLink>
-            </li>
-            <li>
-              <NuxtLink to="/works-with" class="hover:text-primary">Integrations</NuxtLink>
-            </li>
-            <li>
-              <NuxtLink to="/brand-manual" class="hover:text-primary italic font-medium"
-                >Brand Manual</NuxtLink
-              >
-            </li>
-          </ul>
-        </div>
-        <div>
-          <h3 class="font-semibold mb-4 text-highlighted">Legal</h3>
-          <ul class="space-y-2 text-sm text-gray-500 dark:text-gray-400">
-            <li>
-              <NuxtLink to="/privacy" class="hover:text-primary">Privacy</NuxtLink>
-            </li>
-            <li>
-              <NuxtLink to="/terms" class="hover:text-primary">Terms</NuxtLink>
-            </li>
-            <li>
-              <NuxtLink to="/cookies" class="hover:text-primary">Cookies</NuxtLink>
-            </li>
-          </ul>
-        </div>
+
+        <nav
+          class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-gray-400"
+          aria-label="Footer"
+        >
+          <NuxtLink to="/#pricing" class="whitespace-nowrap transition-colors hover:text-white"
+            >Pricing</NuxtLink
+          >
+          <NuxtLink to="/works-with" class="whitespace-nowrap transition-colors hover:text-white"
+            >Integrations</NuxtLink
+          >
+          <NuxtLink to="/documentation" class="whitespace-nowrap transition-colors hover:text-white"
+            >Docs</NuxtLink
+          >
+          <NuxtLink to="/support" class="whitespace-nowrap transition-colors hover:text-white"
+            >Support</NuxtLink
+          >
+          <NuxtLink to="/privacy" class="whitespace-nowrap transition-colors hover:text-white"
+            >Privacy</NuxtLink
+          >
+          <NuxtLink to="/terms" class="whitespace-nowrap transition-colors hover:text-white"
+            >Terms</NuxtLink
+          >
+          <a
+            href="https://discord.gg/dPYkzg49T9"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="whitespace-nowrap transition-colors hover:text-white"
+            >Discord</a
+          >
+          <a
+            href="https://github.com/newpush/coach"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="whitespace-nowrap transition-colors hover:text-white"
+            >GitHub</a
+          >
+        </nav>
       </div>
-      <div
-        class="flex flex-col md:flex-row justify-between items-center gap-4 pt-8 border-t border-gray-200 dark:border-gray-800"
-      >
-        <div class="text-sm text-gray-500 text-center md:text-left">
-          {{ t('footer.copyright') }}
-        </div>
-        <div class="flex flex-wrap justify-center gap-4">
-          <UButton
-            icon="i-simple-icons-discord"
-            color="neutral"
-            variant="ghost"
-            to="https://discord.gg/dPYkzg49T9"
-            target="_blank"
-          />
-          <UButton
-            icon="i-simple-icons-github"
-            color="neutral"
-            variant="ghost"
-            to="https://github.com/newpush/coach"
-            target="_blank"
-          />
-          <UButton
-            icon="i-lucide-twitter"
-            color="neutral"
-            variant="ghost"
-            to="https://twitter.com"
-            target="_blank"
-          />
-        </div>
-      </div>
+
+      <p class="mt-10 text-sm text-gray-500">
+        {{ t('footer.copyright') }}
+      </p>
     </UContainer>
   </footer>
 </template>

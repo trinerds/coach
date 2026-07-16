@@ -1,38 +1,38 @@
 <template>
   <div class="relative isolate overflow-hidden">
     <div
-      class="mx-auto max-w-[88rem] px-6 pb-20 pt-14 sm:pb-24 sm:pt-16 lg:grid lg:grid-cols-12 lg:items-center lg:gap-x-16 lg:px-8 lg:py-20 relative z-10"
+      class="relative z-10 mx-auto grid max-w-[88rem] grid-cols-1 items-center gap-x-16 px-6 pb-16 pt-12 sm:pb-20 sm:pt-14 lg:grid-cols-12 lg:px-8 lg:py-16"
     >
-      <div class="mx-auto max-w-2xl lg:col-span-7 lg:mx-0 lg:max-w-3xl lg:pt-0">
-        <div class="mt-0">
-          <NuxtLink to="#architecture" class="inline-flex items-center gap-4">
-            <span
-              class="rounded-full bg-primary-500/10 px-3 py-1 text-xs font-black uppercase tracking-[0.2em] text-primary-500 ring-1 ring-inset ring-primary-500/30"
-              >{{ t('badge') }}</span
-            >
-            <span
-              class="inline-flex items-center space-x-2 text-xs font-black uppercase tracking-widest text-gray-500"
-            >
-              <span>{{ t('badge_link') }}</span>
-              <UIcon name="i-heroicons-chevron-right" class="h-4 w-4 text-gray-600" />
-            </span>
-          </NuxtLink>
-        </div>
+      <div class="mx-auto max-w-2xl lg:col-span-7 lg:mx-0 lg:max-w-3xl">
+        <NuxtLink
+          to="#architecture"
+          class="inline-flex items-center gap-3 text-xs font-semibold uppercase tracking-widest text-gray-400 transition-colors hover:text-white"
+        >
+          <span
+            class="rounded-sm bg-primary-500/10 px-2.5 py-1 text-primary-400 ring-1 ring-inset ring-primary-500/25"
+            >{{ t('badge') }}</span
+          >
+          <span class="inline-flex items-center gap-1.5">
+            {{ t('badge_link') }}
+            <UIcon name="i-heroicons-chevron-right" class="h-4 w-4" />
+          </span>
+        </NuxtLink>
+
         <h1
-          class="mt-7 text-balance text-6xl font-black uppercase tracking-tight text-white sm:text-7xl xl:text-[5.5rem] leading-[0.85] font-athletic italic"
+          class="font-athletic mt-6 text-balance text-5xl font-bold uppercase leading-[0.9] tracking-tight text-white sm:text-6xl xl:text-[5rem]"
         >
           {{ t('headline_1') }}
         </h1>
-        <p class="mt-8 max-w-2xl text-xl leading-relaxed text-gray-400 font-medium">
+        <p class="mt-6 max-w-2xl text-lg font-medium leading-relaxed text-gray-400 sm:text-xl">
           {{ t('description') }}
         </p>
-        <div class="mt-12 flex flex-wrap items-center gap-6">
+        <div class="mt-10 flex flex-wrap items-center gap-5">
           <UButton
             to="/join"
             size="xl"
             color="primary"
             variant="solid"
-            class="hero-cta px-10 h-16 rounded-[1.25rem] text-[13px] font-black uppercase tracking-[0.25em] shadow-[0_20px_40px_-5px_rgba(34,197,94,0.3)] hover:scale-105 active:scale-95 transition-all"
+            class="hero-cta h-14 rounded-xl px-8 text-[13px] font-bold uppercase tracking-[0.18em] transition-[background-color,transform] duration-200 hover:brightness-110 active:translate-y-px"
           >
             {{ t('cta_primary') }}
           </UButton>
@@ -42,237 +42,139 @@
             color="neutral"
             variant="link"
             trailing-icon="i-heroicons-arrow-right-20-solid"
-            class="text-[13px] font-black uppercase tracking-[0.15em] text-gray-500 hover:text-white transition-colors"
+            class="text-[13px] font-bold uppercase tracking-[0.12em] text-gray-400 transition-colors hover:text-white"
           >
             {{ t('cta_secondary') }}
           </UButton>
         </div>
       </div>
 
-      <!-- Right Side Visual -->
       <motion.div
         ref="dashboardRef"
-        :initial="{ opacity: 0, x: 48, scale: 0.98 }"
-        :animate="{ opacity: 1, x: 0, scale: 1 }"
-        :transition="{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.1 }"
-        class="mx-auto mt-12 flex w-full max-w-2xl sm:mt-14 lg:col-span-5 lg:mt-0 lg:max-w-none lg:justify-end"
+        :initial="{ opacity: 0, x: 32 }"
+        :animate="{ opacity: 1, x: 0 }"
+        :transition="{ duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: 0.08 }"
+        class="mx-auto mt-12 w-full max-w-2xl sm:mt-14 lg:col-span-5 lg:mt-0 lg:max-w-none lg:justify-end"
       >
-        <div class="w-full max-w-3xl flex-none lg:max-w-[42rem]">
+        <figure class="w-full max-w-3xl lg:max-w-[42rem]">
           <div
-            class="relative rounded-[2.5rem] bg-gray-900/10 p-2 ring-1 ring-inset ring-white/5 lg:p-3"
+            class="relative overflow-hidden rounded-2xl border border-white/10 bg-[oklch(14%_0.02_155)] shadow-[0_24px_48px_-24px_oklch(0%_0_0_/_0.8)]"
           >
-            <!-- Intensive Focal Glimmer -->
-            <div
-              class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 -z-10 w-[120%] h-[120%] bg-[radial-gradient(circle_at_center,rgba(0,220,130,0.12)_0%,transparent_50%)] blur-2xl"
-            />
-
-            <div
-              class="relative overflow-hidden rounded-[2rem] floating-card-base grain-overlay shadow-2xl tilt-card group border-none"
-              style="
-                background: linear-gradient(
-                  to bottom right,
-                  rgba(255, 255, 255, 0.1),
-                  rgba(0, 220, 130, 0.05)
-                );
-                box-shadow:
-                  inset 0 1px 1px 0 rgba(255, 255, 255, 0.1),
-                  0 25px 50px -12px rgba(0, 0, 0, 0.5);
-              "
-            >
-              <!-- 1px Gradient Border Overlay -->
-              <div class="absolute inset-0 rounded-[2rem] p-px pointer-events-none z-50">
-                <div
-                  class="w-full h-full rounded-[2rem] border border-white/10"
-                  style="
-                    border-image: linear-gradient(
-                        to bottom right,
-                        rgba(255, 255, 255, 0.1),
-                        rgba(0, 220, 130, 0.3)
-                      )
-                      1;
-                  "
-                />
-              </div>
-              <div class="aspect-[16/10] w-full bg-[#0a0a0a]/95 relative overflow-hidden">
-                <div
-                  class="h-14 border-b border-white/5 flex items-center justify-between px-6 bg-black/40 backdrop-blur-[12px]"
+            <div class="aspect-[16/10] w-full overflow-hidden">
+              <div class="flex h-12 items-center justify-between border-b border-white/8 px-5">
+                <span class="text-xs font-bold uppercase tracking-[0.2em] text-gray-500"
+                  >Coach Watts</span
                 >
-                  <div class="flex items-center space-x-2.5">
-                    <div class="w-2.5 h-2.5 rounded-full bg-red-500/20 border border-red-500/10" />
-                    <div
-                      class="w-2.5 h-2.5 rounded-full bg-yellow-500/20 border border-yellow-500/10"
-                    />
-                    <div
-                      class="w-2.5 h-2.5 rounded-full bg-green-500/20 border border-green-500/10"
-                    />
-                  </div>
-                  <div class="flex items-center space-x-4">
-                    <div class="h-2 w-24 bg-white/5 rounded-full" />
-                    <div class="h-8 w-8 bg-white/5 rounded-full border border-white/5" />
-                  </div>
+                <span
+                  class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-primary-400"
+                >
+                  <span class="live-dot h-1.5 w-1.5 rounded-full bg-primary-500" />
+                  {{ t('card_live') }}
+                </span>
+              </div>
+
+              <div class="grid h-full grid-cols-12 gap-6 p-6">
+                <div class="col-span-1 flex flex-col items-center space-y-6 pt-4 text-gray-700">
+                  <UIcon name="i-heroicons-home-solid" class="h-5 w-5 text-primary-500" />
+                  <UIcon name="i-heroicons-chart-bar-solid" class="h-5 w-5" />
+                  <UIcon name="i-heroicons-calendar-solid" class="h-5 w-5" />
+                  <UIcon name="i-heroicons-user-solid" class="h-5 w-5" />
                 </div>
 
-                <div class="p-8 grid grid-cols-12 gap-8 h-full">
-                  <div class="col-span-1 flex flex-col items-center space-y-8 pt-6 text-gray-800">
-                    <UIcon
-                      name="i-heroicons-home-solid"
-                      class="w-6 h-6 text-primary-500 filter drop-shadow-[0_0_8px_rgba(34,197,94,0.4)]"
-                    />
-                    <UIcon
-                      name="i-heroicons-chart-bar-solid"
-                      class="w-6 h-6 hover:text-gray-500 transition-colors"
-                    />
-                    <UIcon
-                      name="i-heroicons-calendar-solid"
-                      class="w-6 h-6 hover:text-gray-500 transition-colors"
-                    />
-                    <UIcon
-                      name="i-heroicons-user-solid"
-                      class="w-6 h-6 hover:text-gray-500 transition-colors"
-                    />
+                <div class="col-span-11 grid grid-cols-2 gap-5">
+                  <div class="col-span-2 rounded-xl border border-white/8 bg-black/40 p-5">
+                    <div class="mb-3 flex items-center gap-3">
+                      <div
+                        class="flex h-9 w-9 items-center justify-center rounded-lg border border-primary-500/20 bg-primary-500/10 text-primary-400"
+                      >
+                        <UIcon name="i-heroicons-bolt-solid" class="h-5 w-5" />
+                      </div>
+                      <span class="text-xs font-bold uppercase tracking-[0.2em] text-gray-500">{{
+                        t('card_insight')
+                      }}</span>
+                    </div>
+                    <div class="min-h-[3rem] text-[15px] font-medium leading-relaxed text-gray-100">
+                      <span>{{ typedInsight }}</span>
+                      <span
+                        v-if="isTyping"
+                        class="ml-1 inline-block h-4 w-1 animate-pulse bg-primary-500"
+                      />
+                    </div>
                   </div>
 
-                  <div class="col-span-11 grid grid-cols-2 gap-8">
-                    <!-- AI Insight Card -->
-                    <div
-                      class="col-span-2 rounded-[1.5rem] bg-black/60 p-6 relative overflow-hidden transition-all duration-500 group/card border-none shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]"
-                    >
-                      <!-- 1px Gradient Border -->
-                      <div class="absolute inset-0 rounded-[1.5rem] p-px pointer-events-none z-50">
-                        <div
-                          class="w-full h-full rounded-[1.5rem] border border-white/10"
-                          style="box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1) inset"
-                        />
-                      </div>
-                      <div class="flex items-center gap-3 mb-4">
-                        <div
-                          class="w-10 h-10 rounded-xl bg-primary-500/10 flex items-center justify-center text-primary-500 border border-primary-500/20 shadow-sm"
-                        >
-                          <UIcon name="i-heroicons-sparkles-solid" class="w-6 h-6" />
-                        </div>
-                        <span
-                          class="text-xs font-black text-gray-500 uppercase tracking-[0.25em]"
-                          >{{ t('card_insight') }}</span
-                        >
-                        <span
-                          class="ml-auto inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-primary-500"
-                        >
-                          <span class="live-dot h-1.5 w-1.5 rounded-full bg-primary-500" />
-                          {{ t('card_live') }}
-                        </span>
-                      </div>
-
-                      <div
-                        class="text-[15px] text-gray-100 font-medium leading-relaxed min-h-[3rem]"
-                      >
-                        <span class="typing-text">{{ typedInsight }}</span>
-                        <span
-                          v-if="isTyping"
-                          class="cursor inline-block w-1.5 h-4 bg-primary-500 ml-1 animate-pulse"
-                        />
-                      </div>
+                  <div class="rounded-xl border border-white/8 bg-black/30 p-5">
+                    <div class="mb-2 text-xs font-bold uppercase tracking-[0.15em] text-slate-500">
+                      {{ t('card_fitness') }}
                     </div>
-
-                    <!-- Metrics -->
                     <div
-                      class="relative rounded-[1.5rem] bg-black/30 p-6 transition-all duration-500 group/fitness overflow-hidden border-none shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]"
+                      class="font-athletic flex items-baseline gap-2 text-4xl font-bold leading-none text-white"
                     >
-                      <div class="absolute inset-0 rounded-[1.5rem] p-px pointer-events-none z-50">
-                        <div
-                          class="w-full h-full rounded-[1.5rem]"
-                          style="box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1) inset"
-                        />
-                      </div>
-                      <div
-                        class="text-xs font-black text-slate-500 uppercase tracking-[0.15em] mb-2"
-                      >
-                        {{ t('card_fitness') }}
-                      </div>
-                      <div
-                        class="text-5xl font-black text-white italic font-athletic flex items-baseline gap-2 leading-none"
-                      >
-                        {{ activeScenario.fitness }}
-                        <span
-                          class="text-xs text-primary-500 mb-1 flex items-center font-bold tracking-tight"
-                        >
-                          <UIcon name="i-heroicons-arrow-trending-up" class="w-3.5 h-3.5 mr-0.5" />
-                          {{ activeScenario.fitnessDelta }}
-                        </span>
-                      </div>
-                      <div class="mt-6 h-12 flex items-end space-x-2">
-                        <div
-                          v-for="(bar, barIndex) in activeScenario.fitnessBars"
-                          :key="`fitness-${barIndex}-${chartCycle}`"
-                          class="group/bar relative flex h-full w-1/5 items-end"
-                        >
-                          <motion.div
-                            :initial="{ scaleY: 0.1 }"
-                            :animate="{ scaleY: isDashboardVisible ? 1 : 0.1 }"
-                            :transition="{
-                              type: 'spring',
-                              stiffness: 100,
-                              damping: 15,
-                              delay: 0.05 * barIndex
-                            }"
-                            class="h-full w-full origin-bottom rounded-t-md bg-white/5"
-                            :class="{
-                              'bg-primary-500 shadow-[0_0_20px_rgba(34,197,94,0.4)]':
-                                barIndex === activeScenario.fitnessBars.length - 1
-                            }"
-                            :style="{ height: `${bar}%` }"
-                          />
-                        </div>
-                      </div>
+                      {{ activeScenario.fitness }}
+                      <span class="mb-0.5 flex items-center text-xs font-bold text-primary-400">
+                        <UIcon name="i-heroicons-arrow-trending-up" class="mr-0.5 h-3.5 w-3.5" />
+                        {{ activeScenario.fitnessDelta }}
+                      </span>
                     </div>
-
-                    <div
-                      class="rounded-[1.5rem] bg-black/30 p-6 transition-all duration-500 overflow-hidden border-none shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]"
-                    >
-                      <div class="absolute inset-0 rounded-[1.5rem] p-px pointer-events-none z-50">
-                        <div
-                          class="w-full h-full rounded-[1.5rem]"
-                          style="box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1) inset"
-                        />
-                      </div>
+                    <div class="mt-5 flex h-10 items-end space-x-2">
                       <div
-                        class="text-xs font-black text-slate-500 uppercase tracking-[0.15em] mb-2"
-                      >
-                        {{ t('card_recovery') }}
-                      </div>
-                      <div
-                        class="text-5xl font-black text-white italic font-athletic flex items-baseline gap-2 leading-none"
-                      >
-                        {{ activeScenario.recovery
-                        }}<span class="text-xs text-slate-500 font-bold uppercase tracking-widest"
-                          >%</span
-                        >
-                        <span
-                          class="text-xs text-rose-500 font-black uppercase tracking-[0.2em] ml-auto border border-rose-500/20 bg-rose-500/5 px-2 py-0.5 rounded-full"
-                          >{{ activeScenario.recoveryLabel }}</span
-                        >
-                      </div>
-                      <div
-                        class="mt-8 w-full bg-white/5 h-3 rounded-full overflow-hidden border border-white/5 shadow-inner p-0.5"
+                        v-for="(bar, barIndex) in activeScenario.fitnessBars"
+                        :key="`fitness-${barIndex}-${chartCycle}`"
+                        class="relative flex h-full w-1/5 items-end"
                       >
                         <motion.div
-                          :key="`recovery-${chartCycle}`"
-                          :initial="{ width: '0%' }"
-                          :animate="{
-                            width: isDashboardVisible ? `${activeScenario.recovery}%` : '0%'
+                          :initial="{ scaleY: 0.1 }"
+                          :animate="{ scaleY: isDashboardVisible ? 1 : 0.1 }"
+                          :transition="{
+                            duration: 0.35,
+                            ease: [0.16, 1, 0.3, 1],
+                            delay: 0.04 * barIndex
                           }"
-                          :transition="{ type: 'spring', stiffness: 100, damping: 20 }"
-                          class="recovery-live h-full bg-rose-500 relative rounded-full"
-                        >
-                          <div class="absolute inset-0 bg-white/10 animate-[shimmer_2s_infinite]" />
-                        </motion.div>
+                          class="w-full origin-bottom rounded-t-sm bg-white/10"
+                          :class="{
+                            'bg-primary-500': barIndex === activeScenario.fitnessBars.length - 1
+                          }"
+                          :style="{ height: `${bar}%` }"
+                        />
                       </div>
+                    </div>
+                  </div>
+
+                  <div class="rounded-xl border border-white/8 bg-black/30 p-5">
+                    <div class="mb-2 text-xs font-bold uppercase tracking-[0.15em] text-slate-500">
+                      {{ t('card_recovery') }}
+                    </div>
+                    <div
+                      class="font-athletic flex items-baseline gap-2 text-4xl font-bold leading-none text-white"
+                    >
+                      {{ activeScenario.recovery
+                      }}<span class="text-xs font-bold uppercase tracking-widest text-slate-500"
+                        >%</span
+                      >
+                      <span
+                        class="ml-auto rounded-sm border border-rose-500/25 bg-rose-500/10 px-2 py-0.5 text-xs font-bold uppercase tracking-widest text-rose-400"
+                        >{{ activeScenario.recoveryLabel }}</span
+                      >
+                    </div>
+                    <div class="mt-6 h-2 w-full overflow-hidden rounded-full bg-white/8">
+                      <motion.div
+                        :key="`recovery-${chartCycle}`"
+                        :initial="{ width: '0%' }"
+                        :animate="{
+                          width: isDashboardVisible ? `${activeScenario.recovery}%` : '0%'
+                        }"
+                        :transition="{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }"
+                        class="h-full rounded-full bg-rose-500"
+                      />
                     </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+          <figcaption class="sr-only">
+            Product preview showing live coaching insight, fitness, and recovery
+          </figcaption>
+        </figure>
       </motion.div>
     </div>
   </div>
@@ -391,81 +293,24 @@
 </script>
 
 <style scoped>
-  .tilt-card {
-    transform: perspective(1000px) rotateY(-5deg) rotateX(2deg);
-    transition: transform 0.5s ease;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-  }
-
-  .tilt-card:hover {
-    transform: perspective(1000px) rotateY(-2deg) rotateX(1deg);
-  }
-
-  .hero-cta {
-    position: relative;
-  }
-
-  .hero-cta-pulse {
-    animation: ctaPulse 2.4s ease-out 1;
-  }
-
   .live-dot {
     animation: livePulse 1.8s ease-out infinite;
-    box-shadow: 0 0 0 rgba(0, 220, 130, 0.6);
-  }
-
-  .recovery-live {
-    animation: recoveryBreath 2.4s ease-in-out infinite;
-    box-shadow: 0 0 12px rgba(244, 63, 94, 0.42);
-  }
-
-  @keyframes ctaPulse {
-    0% {
-      box-shadow:
-        0 0 0 0 rgba(0, 220, 130, 0.45),
-        0 18px 38px -14px rgba(0, 220, 130, 0.45);
-    }
-    60% {
-      box-shadow:
-        0 0 0 12px rgba(0, 220, 130, 0),
-        0 24px 42px -14px rgba(0, 220, 130, 0.55);
-    }
-    100% {
-      box-shadow:
-        0 0 0 0 rgba(0, 220, 130, 0),
-        0 18px 38px -14px rgba(0, 220, 130, 0.45);
-    }
   }
 
   @keyframes livePulse {
     0% {
-      box-shadow: 0 0 0 0 rgba(0, 220, 130, 0.55);
+      box-shadow: 0 0 0 0 oklch(72% 0.19 155 / 0.45);
     }
     70% {
-      box-shadow: 0 0 0 10px rgba(0, 220, 130, 0);
+      box-shadow: 0 0 0 8px oklch(72% 0.19 155 / 0);
     }
     100% {
-      box-shadow: 0 0 0 0 rgba(0, 220, 130, 0);
-    }
-  }
-
-  @keyframes recoveryBreath {
-    0%,
-    100% {
-      box-shadow: 0 0 10px rgba(244, 63, 94, 0.25);
-    }
-    50% {
-      box-shadow: 0 0 20px rgba(244, 63, 94, 0.46);
+      box-shadow: 0 0 0 0 oklch(72% 0.19 155 / 0);
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .hero-cta-pulse {
-      animation: none;
-    }
-
-    .live-dot,
-    .recovery-live {
+    .live-dot {
       animation: none;
     }
   }

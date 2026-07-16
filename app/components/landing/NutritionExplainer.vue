@@ -1,123 +1,57 @@
 <template>
-  <section id="nutrition-intelligence" class="relative overflow-hidden bg-gray-950 py-24 sm:py-32">
-    <div
-      class="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(16,185,129,0.08),transparent_40%),radial-gradient(circle_at_80%_10%,rgba(59,130,246,0.06),transparent_35%)] pointer-events-none"
-    />
-
+  <section id="nutrition-intelligence" class="relative overflow-hidden">
     <div class="relative mx-auto max-w-7xl px-6 lg:px-8">
-      <div class="mx-auto max-w-3xl text-center">
-        <h2 class="text-base font-semibold leading-7 text-emerald-400 font-mono">
-          {{ t('label') }}
-        </h2>
-        <p class="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">
+      <div class="max-w-2xl text-left">
+        <p class="font-athletic text-3xl font-bold uppercase tracking-tight text-white sm:text-4xl">
           {{ t('headline') }}
         </p>
-        <p class="mt-6 text-lg leading-8 text-gray-300">
+        <p class="mt-5 text-lg leading-8 text-gray-400">
           {{ t('description') }}
         </p>
       </div>
 
-      <div class="mt-16 grid gap-6 lg:grid-cols-3">
+      <!-- Asymmetric stack: lead card + two stacked, not 3 equal columns -->
+      <div class="mt-12 grid gap-5 lg:grid-cols-12">
         <article
-          class="relative rounded-2xl bg-gray-900/80 p-6 backdrop-blur-[12px] border-none shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]"
+          class="rounded-2xl border border-white/10 bg-[oklch(16%_0.02_155)] p-6 lg:col-span-5 lg:row-span-2 lg:p-8"
         >
-          <div class="absolute inset-0 rounded-2xl p-px pointer-events-none z-50">
-            <div
-              class="w-full h-full rounded-2xl border border-white/10"
-              style="
-                border-image: linear-gradient(
-                    to bottom right,
-                    rgba(255, 255, 255, 0.1),
-                    rgba(16, 185, 129, 0.2)
-                  )
-                  1;
-              "
-            />
-          </div>
           <div class="flex items-center gap-3">
-            <div class="rounded-lg bg-emerald-500/20 p-2 text-emerald-400">
-              <UIcon name="i-heroicons-battery-100" class="h-5 w-5" />
-            </div>
+            <UIcon name="i-heroicons-battery-100" class="h-5 w-5 text-emerald-400" />
             <h3 class="text-lg font-semibold text-white">{{ t('card1_title') }}</h3>
           </div>
           <p class="mt-4 text-sm leading-6 text-gray-300">{{ t('card1_desc') }}</p>
-          <p class="mt-3 text-xs text-gray-400">{{ t('card1_cue') }}</p>
+          <p class="mt-3 text-xs text-gray-500">{{ t('card1_cue') }}</p>
         </article>
 
         <article
-          class="relative rounded-2xl bg-gray-900/80 p-6 backdrop-blur-[12px] border-none shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]"
+          class="rounded-2xl border border-white/10 bg-[oklch(16%_0.02_155)] p-6 lg:col-span-7"
         >
-          <div class="absolute inset-0 rounded-2xl p-px pointer-events-none z-50">
-            <div
-              class="w-full h-full rounded-2xl border border-white/10"
-              style="
-                border-image: linear-gradient(
-                    to bottom right,
-                    rgba(255, 255, 255, 0.1),
-                    rgba(59, 130, 246, 0.2)
-                  )
-                  1;
-              "
-            />
-          </div>
           <div class="flex items-center gap-3">
-            <div class="rounded-lg bg-blue-500/20 p-2 text-blue-400">
-              <UIcon name="i-heroicons-chart-bar-square" class="h-5 w-5" />
-            </div>
+            <UIcon name="i-heroicons-chart-bar-square" class="h-5 w-5 text-sky-400" />
             <h3 class="text-lg font-semibold text-white">{{ t('card2_title') }}</h3>
           </div>
-          <p class="mt-4 text-sm leading-6 text-gray-300">{{ t('card2_desc') }}</p>
-          <p class="mt-3 text-xs text-gray-400">{{ t('card2_cue') }}</p>
+          <p class="mt-3 text-sm leading-6 text-gray-300">{{ t('card2_desc') }}</p>
+          <p class="mt-2 text-xs text-gray-500">{{ t('card2_cue') }}</p>
         </article>
 
         <article
-          class="relative rounded-2xl bg-gray-900/80 p-6 backdrop-blur-[12px] border-none shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]"
+          class="rounded-2xl border border-white/10 bg-[oklch(16%_0.02_155)] p-6 lg:col-span-7"
         >
-          <div class="absolute inset-0 rounded-2xl p-px pointer-events-none z-50">
-            <div
-              class="w-full h-full rounded-2xl border border-white/10"
-              style="
-                border-image: linear-gradient(
-                    to bottom right,
-                    rgba(255, 255, 255, 0.1),
-                    rgba(245, 158, 11, 0.2)
-                  )
-                  1;
-              "
-            />
-          </div>
           <div class="flex items-center gap-3">
-            <div class="rounded-lg bg-amber-500/20 p-2 text-amber-400">
-              <UIcon name="i-heroicons-clock" class="h-5 w-5" />
-            </div>
+            <UIcon name="i-heroicons-clock" class="h-5 w-5 text-amber-400" />
             <h3 class="text-lg font-semibold text-white">{{ t('card3_title') }}</h3>
           </div>
-          <p class="mt-4 text-sm leading-6 text-gray-300">{{ t('card3_desc') }}</p>
-          <p class="mt-3 text-xs text-gray-400">{{ t('card3_cue') }}</p>
+          <p class="mt-3 text-sm leading-6 text-gray-300">{{ t('card3_desc') }}</p>
+          <p class="mt-2 text-xs text-gray-500">{{ t('card3_cue') }}</p>
         </article>
       </div>
 
-      <div class="mt-16 grid gap-6 lg:grid-cols-5">
-        <div
-          class="relative rounded-3xl bg-gray-900/80 p-6 lg:col-span-3 border-none shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]"
-        >
-          <div class="absolute inset-0 rounded-3xl p-px pointer-events-none z-50">
-            <div
-              class="w-full h-full rounded-3xl border border-white/10"
-              style="
-                border-image: linear-gradient(
-                    to bottom right,
-                    rgba(255, 255, 255, 0.1),
-                    rgba(0, 220, 130, 0.2)
-                  )
-                  1;
-              "
-            />
-          </div>
+      <div class="mt-12 grid gap-5 lg:grid-cols-5">
+        <div class="rounded-2xl border border-white/10 bg-[oklch(16%_0.02_155)] p-6 lg:col-span-3">
           <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p class="text-sm font-semibold text-white">{{ t('demo_title') }}</p>
-              <p class="text-xs text-gray-400">{{ t('demo_subtitle') }}</p>
+              <p class="text-xs text-gray-500">{{ t('demo_subtitle') }}</p>
             </div>
             <UBadge color="neutral" variant="subtle" size="sm" class="!text-xs">
               {{ t('scenario_label', { name: t('scenario.' + activeScenario.id + '.name') }) }}
@@ -131,6 +65,7 @@
               size="sm"
               :color="selectedScenarioId === scenario.id ? 'primary' : 'neutral'"
               :variant="selectedScenarioId === scenario.id ? 'solid' : 'outline'"
+              class="whitespace-nowrap"
               @click="
                 () => {
                   selectedScenarioId = scenario.id
@@ -141,7 +76,7 @@
             </UButton>
           </div>
 
-          <div class="mt-6 rounded-2xl border border-gray-800 bg-gray-950/70 p-4">
+          <div class="mt-6 rounded-xl border border-white/8 bg-black/40 p-4">
             <svg viewBox="0 0 100 46" class="h-48 w-full" preserveAspectRatio="none">
               <line
                 x1="4"
@@ -167,7 +102,6 @@
                 r="1.25"
                 fill="#34d399"
               />
-
               <line
                 v-for="marker in eventMarkers"
                 :key="marker.labelKey"
@@ -178,7 +112,6 @@
                 stroke="rgba(148,163,184,0.35)"
                 stroke-dasharray="1.5 2"
               />
-
               <defs>
                 <linearGradient id="fuel-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
                   <stop offset="0%" stop-color="#f43f5e" />
@@ -187,58 +120,46 @@
                 </linearGradient>
               </defs>
             </svg>
-
-            <div class="mt-2 grid grid-cols-3 gap-2 text-xs text-gray-400 sm:grid-cols-6">
+            <div class="mt-2 grid grid-cols-3 gap-2 text-xs text-gray-500 sm:grid-cols-6">
               <span v-for="label in timelineLabels" :key="label" class="text-center">{{
                 label
               }}</span>
             </div>
           </div>
 
-          <div class="mt-4 flex flex-wrap gap-3 text-xs text-gray-300">
-            <span class="rounded-full border border-gray-700 bg-gray-900/80 px-2.5 py-1">{{
+          <div class="mt-4 flex flex-wrap gap-3 text-xs text-gray-400">
+            <span class="rounded-full border border-white/10 px-2.5 py-1">{{
               t('threshold_label')
             }}</span>
             <span
               v-for="marker in eventMarkers"
               :key="`${marker.labelKey}-legend`"
-              class="rounded-full border border-gray-700 bg-gray-900/80 px-2.5 py-1"
+              class="rounded-full border border-white/10 px-2.5 py-1"
             >
               {{ t(marker.labelKey) }}
             </span>
           </div>
         </div>
 
-        <div
-          class="relative rounded-3xl bg-gray-900/80 p-6 lg:col-span-2 border-none shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]"
-        >
-          <div class="absolute inset-0 rounded-3xl p-px pointer-events-none z-50">
-            <div
-              class="w-full h-full rounded-3xl border border-white/10"
-              style="
-                border-image: linear-gradient(
-                    to bottom right,
-                    rgba(255, 255, 255, 0.1),
-                    rgba(0, 220, 130, 0.2)
-                  )
-                  1;
-              "
-            />
-          </div>
+        <div class="rounded-2xl border border-white/10 bg-[oklch(16%_0.02_155)] p-6 lg:col-span-2">
           <p class="text-sm font-semibold text-white">{{ t('outcome_title') }}</p>
-          <p class="mt-1 text-xs text-gray-400">{{ t('outcome_subtitle') }}</p>
+          <p class="mt-1 text-xs text-gray-500">{{ t('outcome_subtitle') }}</p>
 
           <div class="mt-6 space-y-3">
-            <div class="rounded-xl border border-gray-800 bg-gray-950/80 p-4">
-              <p class="text-xs uppercase tracking-wide text-gray-400">{{ t('start_workout') }}</p>
-              <p class="mt-1 text-2xl font-bold text-white">{{ activeScenario.startWorkout }}%</p>
+            <div class="rounded-xl border border-white/8 bg-black/40 p-4">
+              <p class="text-xs uppercase tracking-wide text-gray-500">{{ t('start_workout') }}</p>
+              <p class="mt-1 text-2xl font-bold tabular-nums text-white">
+                {{ activeScenario.startWorkout }}%
+              </p>
             </div>
-            <div class="rounded-xl border border-gray-800 bg-gray-950/80 p-4">
-              <p class="text-xs uppercase tracking-wide text-gray-400">{{ t('end_workout') }}</p>
-              <p class="mt-1 text-2xl font-bold text-white">{{ activeScenario.endWorkout }}%</p>
+            <div class="rounded-xl border border-white/8 bg-black/40 p-4">
+              <p class="text-xs uppercase tracking-wide text-gray-500">{{ t('end_workout') }}</p>
+              <p class="mt-1 text-2xl font-bold tabular-nums text-white">
+                {{ activeScenario.endWorkout }}%
+              </p>
             </div>
-            <div class="rounded-xl border border-gray-800 bg-gray-950/80 p-4">
-              <p class="text-xs uppercase tracking-wide text-gray-400">
+            <div class="rounded-xl border border-white/8 bg-black/40 p-4">
+              <p class="text-xs uppercase tracking-wide text-gray-500">
                 {{ t('expected_quality') }}
               </p>
               <p class="mt-1 text-lg font-semibold text-emerald-300">
@@ -247,24 +168,29 @@
             </div>
           </div>
 
-          <p class="mt-5 text-sm leading-6 text-gray-300">
+          <p class="mt-5 text-sm leading-6 text-gray-400">
             {{ t('scenario.' + activeScenario.id + '.note') }}
           </p>
 
           <div class="mt-6 flex flex-wrap gap-3">
-            <UButton to="/join" color="primary" size="lg">{{ t('cta_primary') }}</UButton>
-            <UButton to="#how-it-works" color="neutral" variant="ghost" size="lg">{{
-              t('cta_secondary')
+            <UButton to="/join" color="primary" size="lg" class="whitespace-nowrap">{{
+              t('cta_primary')
             }}</UButton>
+            <UButton
+              to="#how-it-works"
+              color="neutral"
+              variant="ghost"
+              size="lg"
+              class="whitespace-nowrap"
+              >{{ t('cta_secondary') }}</UButton
+            >
           </div>
         </div>
       </div>
 
-      <div class="mt-8">
-        <p class="text-xs text-gray-400">
-          {{ t('disclaimer') }}
-        </p>
-      </div>
+      <p class="mt-8 text-xs text-gray-500">
+        {{ t('disclaimer') }}
+      </p>
     </div>
   </section>
 </template>

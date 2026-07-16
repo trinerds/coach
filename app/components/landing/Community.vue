@@ -1,184 +1,86 @@
 <template>
-  <div class="bg-gray-950 py-24 sm:py-32 relative overflow-hidden">
-    <div class="mx-auto max-w-7xl px-6 lg:px-8 relative z-10">
-      <div class="mx-auto max-w-2xl text-center mb-20 lg:mx-0 lg:text-left lg:max-w-none">
-        <h2 class="text-xs font-black uppercase tracking-[0.2em] text-primary-500 mb-4 font-mono">
-          {{ t('label') }}
-        </h2>
+  <div class="relative overflow-hidden">
+    <div class="relative z-10 mx-auto max-w-7xl px-6 lg:px-8">
+      <div class="mx-auto max-w-2xl text-left lg:mx-0">
         <p
-          class="text-5xl font-black tracking-tight text-white sm:text-6xl font-athletic italic uppercase leading-[0.85]"
+          class="font-athletic text-4xl font-bold uppercase leading-[0.9] tracking-tight text-white sm:text-5xl"
         >
           {{ t('headline') }}
         </p>
       </div>
 
-      <div
-        class="mx-auto mt-16 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:mx-0 lg:max-w-none lg:grid-cols-3"
-      >
-        <!-- Testimonial 1 -->
-        <div
-          class="relative rounded-[2.5rem] p-8 sm:p-10 floating-card-base grain-overlay transition-all duration-500 group border-none shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]"
-        >
-          <!-- 1px Gradient Border Overlay -->
-          <div class="absolute inset-0 rounded-[2.5rem] p-px pointer-events-none z-50">
-            <div
-              class="w-full h-full rounded-[2.5rem] border border-white/10"
-              style="
-                border-image: linear-gradient(
-                    to bottom right,
-                    rgba(255, 255, 255, 0.1),
-                    rgba(0, 220, 130, 0.2)
-                  )
-                  1;
-              "
+      <!-- Lead quote + two supporting — not three equal cards -->
+      <div class="mx-auto mt-12 grid grid-cols-1 gap-5 lg:mx-0 lg:grid-cols-12">
+        <article class="floating-card-base rounded-2xl p-8 sm:p-10 lg:col-span-7">
+          <div class="mb-6 flex items-center gap-x-4">
+            <UAvatar
+              :alt="t('t1_author')"
+              class="h-12 w-12 rounded-xl border border-white/10 object-cover"
             />
-          </div>
-          <div class="flex items-center gap-x-4 mb-8">
-            <div class="relative">
-              <div
-                class="absolute inset-0 bg-primary-500/20 blur-xl rounded-full scale-110 group-hover:scale-150 transition-transform duration-500"
-              />
-              <UAvatar
-                alt="Sarah J"
-                class="relative h-14 w-14 rounded-2xl object-cover border border-white/10 grayscale group-hover:grayscale-0 transition-all duration-500"
-              />
-            </div>
             <div>
-              <div
-                class="text-lg font-black text-white italic font-athletic uppercase tracking-tight group-hover:text-primary-500 transition-colors"
-              >
+              <div class="font-athletic text-lg font-bold uppercase tracking-tight text-white">
                 {{ t('t1_author') }}
               </div>
-              <div class="text-xs font-black uppercase tracking-widest text-slate-500 mt-0.5">
+              <div class="mt-0.5 text-xs font-bold uppercase tracking-widest text-slate-500">
                 {{ t('t1_role') }}
               </div>
             </div>
           </div>
-          <div class="relative">
-            <UIcon
-              name="i-heroicons-chat-bubble-bottom-center-text"
-              class="absolute -top-4 -left-2 w-10 h-10 text-white/5 -z-10"
-            />
-            <p class="text-lg text-gray-400 font-medium leading-relaxed italic">
-              “{{ t('t1_quote') }}”
-            </p>
-          </div>
-        </div>
+          <p class="text-lg font-medium leading-relaxed text-gray-300">“{{ t('t1_quote') }}”</p>
+        </article>
 
-        <!-- Testimonial 2 -->
-        <div
-          class="relative rounded-[2.5rem] p-8 sm:p-10 floating-card-base grain-overlay transition-all duration-500 group border-none shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]"
-        >
-          <!-- 1px Gradient Border Overlay -->
-          <div class="absolute inset-0 rounded-[2.5rem] p-px pointer-events-none z-50">
-            <div
-              class="w-full h-full rounded-[2.5rem] border border-white/10"
-              style="
-                border-image: linear-gradient(
-                    to bottom right,
-                    rgba(255, 255, 255, 0.1),
-                    rgba(0, 220, 130, 0.2)
-                  )
-                  1;
-              "
-            />
-          </div>
-          <div class="flex items-center gap-x-4 mb-8">
-            <div class="relative">
-              <div
-                class="absolute inset-0 bg-primary-500/20 blur-xl rounded-full scale-110 group-hover:scale-150 transition-transform duration-500"
-              />
+        <div class="flex flex-col gap-5 lg:col-span-5">
+          <article class="floating-card-base flex-1 rounded-2xl p-7">
+            <div class="mb-4 flex items-center gap-x-3">
               <UAvatar
-                alt="Mike C"
-                class="relative h-14 w-14 rounded-2xl object-cover border border-white/10 grayscale group-hover:grayscale-0 transition-all duration-500"
+                :alt="t('t2_author')"
+                class="h-10 w-10 rounded-lg border border-white/10 object-cover"
               />
-            </div>
-            <div>
-              <div
-                class="text-lg font-black text-white italic font-athletic uppercase tracking-tight group-hover:text-primary-500 transition-colors"
-              >
-                {{ t('t2_author') }}
-              </div>
-              <div class="text-xs font-black uppercase tracking-widest text-slate-500 mt-0.5">
-                {{ t('t2_role') }}
+              <div>
+                <div class="text-sm font-bold uppercase tracking-tight text-white">
+                  {{ t('t2_author') }}
+                </div>
+                <div class="text-xs font-bold uppercase tracking-widest text-slate-500">
+                  {{ t('t2_role') }}
+                </div>
               </div>
             </div>
-          </div>
-          <div class="relative">
-            <UIcon
-              name="i-heroicons-chat-bubble-bottom-center-text"
-              class="absolute -top-4 -left-2 w-10 h-10 text-white/5 -z-10"
-            />
-            <p class="text-lg text-gray-400 font-medium leading-relaxed italic">
-              “{{ t('t2_quote') }}”
-            </p>
-          </div>
-        </div>
+            <p class="text-base font-medium leading-relaxed text-gray-400">“{{ t('t2_quote') }}”</p>
+          </article>
 
-        <!-- Testimonial 3 -->
-        <div
-          class="relative rounded-[2.5rem] p-8 sm:p-10 floating-card-base grain-overlay transition-all duration-500 group border-none shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]"
-        >
-          <!-- 1px Gradient Border Overlay -->
-          <div class="absolute inset-0 rounded-[2.5rem] p-px pointer-events-none z-50">
-            <div
-              class="w-full h-full rounded-[2.5rem] border border-white/10"
-              style="
-                border-image: linear-gradient(
-                    to bottom right,
-                    rgba(255, 255, 255, 0.1),
-                    rgba(0, 220, 130, 0.2)
-                  )
-                  1;
-              "
-            />
-          </div>
-          <div class="flex items-center gap-x-4 mb-8">
-            <div class="relative">
-              <div
-                class="absolute inset-0 bg-primary-500/20 blur-xl rounded-full scale-110 group-hover:scale-150 transition-transform duration-500"
-              />
+          <article class="floating-card-base flex-1 rounded-2xl p-7">
+            <div class="mb-4 flex items-center gap-x-3">
               <UAvatar
-                alt="David R"
-                class="relative h-14 w-14 rounded-2xl object-cover border border-white/10 grayscale group-hover:grayscale-0 transition-all duration-500"
+                :alt="t('t3_author')"
+                class="h-10 w-10 rounded-lg border border-white/10 object-cover"
               />
-            </div>
-            <div>
-              <div
-                class="text-lg font-black text-white italic font-athletic uppercase tracking-tight group-hover:text-primary-500 transition-colors"
-              >
-                {{ t('t3_author') }}
-              </div>
-              <div class="text-xs font-black uppercase tracking-widest text-slate-500 mt-0.5">
-                {{ t('t3_role') }}
+              <div>
+                <div class="text-sm font-bold uppercase tracking-tight text-white">
+                  {{ t('t3_author') }}
+                </div>
+                <div class="text-xs font-bold uppercase tracking-widest text-slate-500">
+                  {{ t('t3_role') }}
+                </div>
               </div>
             </div>
-          </div>
-          <div class="relative">
-            <UIcon
-              name="i-heroicons-chat-bubble-bottom-center-text"
-              class="absolute -top-4 -left-2 w-10 h-10 text-white/5 -z-10"
-            />
-            <p class="text-lg text-gray-400 font-medium leading-relaxed italic">
-              “{{ t('t3_quote') }}”
-            </p>
-          </div>
+            <p class="text-base font-medium leading-relaxed text-gray-400">“{{ t('t3_quote') }}”</p>
+          </article>
         </div>
       </div>
 
-      <!-- Community CTA -->
-      <div class="mt-20 flex justify-center">
+      <div class="mt-12 flex justify-start">
         <UButton
-          to="#"
+          to="https://discord.gg/dPYkzg49T9"
+          target="_blank"
           color="neutral"
           variant="link"
           size="xl"
-          class="font-black uppercase tracking-[0.2em] group text-slate-500 hover:text-white"
+          class="group font-bold uppercase tracking-[0.15em] text-slate-400 hover:text-white"
         >
-          {{ t('discord_cta') }} <span class="text-primary-500 ml-2">Discord</span>
+          {{ t('discord_cta') }} <span class="ml-2 text-primary-400">Discord</span>
           <UIcon
             name="i-heroicons-arrow-right"
-            class="ml-2 w-5 h-5 transition-transform group-hover:translate-x-2"
+            class="ml-2 h-5 w-5 transition-transform duration-200 group-hover:translate-x-1"
           />
         </UButton>
       </div>

@@ -111,7 +111,7 @@
             {{ t(`plan.${plan.key}.name`) }}
           </h3>
 
-          <div class="flex items-baseline gap-2 mb-2 font-athletic italic">
+          <div class="flex items-baseline gap-2 mb-2 font-athletic">
             <span class="text-6xl font-black text-white leading-none">
               {{
                 formatPrice(
@@ -207,7 +207,7 @@
           </div>
 
           <div class="relative z-10">
-            <h3 class="text-3xl font-black text-white font-athletic italic uppercase mb-6">
+            <h3 class="text-3xl font-black text-white font-athletic uppercase mb-6">
               {{ t('modal.title') }}
             </h3>
             <p class="text-lg text-gray-400 font-medium leading-relaxed mb-8">
