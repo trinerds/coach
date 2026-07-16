@@ -660,7 +660,8 @@ export const WorkoutConverter = {
     const sportType = workout.type?.toLowerCase() || ''
     const isSwim = sportType.includes('swim')
     const isRun = !isSwim && sportType.includes('run')
-    const fallbackLoadPreference = isRun || isSwim ? 'HR_PACE_POWER' : 'POWER_HR_PACE'
+    // HR-first matches the system Default profile for athletes without power meters.
+    const fallbackLoadPreference = 'HR_PACE_POWER'
     const currentPolicySource = workout.sportSettings || null
     const snapshotPolicySource = workout.generationSettingsSnapshot || null
     const hasExplicitTargetPolicy = Boolean(

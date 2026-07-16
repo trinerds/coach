@@ -1,6 +1,6 @@
 type MetricKey = 'PACE' | 'HR' | 'POWER'
 
-const DEFAULT_PRIORITY: MetricKey[] = ['HR', 'POWER', 'PACE']
+const DEFAULT_PRIORITY: MetricKey[] = ['HR', 'PACE', 'POWER']
 const VALID_METRICS = new Set<MetricKey>(['PACE', 'HR', 'POWER'])
 
 function isMetricKey(value: string): value is MetricKey {
@@ -78,7 +78,7 @@ export function resolveMetricPriorityContext(
   const secondaryMetric = priority[1] || null
 
   return {
-    loadPreference: loadPreference || 'HR_POWER_PACE',
+    loadPreference: loadPreference || 'HR_PACE_POWER',
     priority,
     primaryMetric,
     primaryMetricAvailable: isAvailable(primaryMetric),

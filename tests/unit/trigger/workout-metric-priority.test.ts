@@ -12,8 +12,8 @@ describe('workout metric priority', () => {
     expect(parseLoadPreference('PACE_HR_POWER')).toEqual(['PACE', 'HR', 'POWER'])
   })
 
-  it('defaults to HR > POWER > PACE when preference is missing', () => {
-    expect(parseLoadPreference(undefined)).toEqual(['HR', 'POWER', 'PACE'])
+  it('defaults to HR > PACE > POWER when preference is missing', () => {
+    expect(parseLoadPreference(undefined)).toEqual(['HR', 'PACE', 'POWER'])
   })
 
   it('marks pace as primary and condenses HR when pace data is available', () => {

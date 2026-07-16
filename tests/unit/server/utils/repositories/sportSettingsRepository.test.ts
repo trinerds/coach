@@ -37,7 +37,7 @@ describe('sportSettingsRepository', () => {
         isDefault: true,
         id: 's-1',
         ftp: 250,
-        loadPreference: 'POWER_HR_PACE'
+        loadPreference: 'HR_PACE_POWER'
       })
       expect(prisma.user.findUnique).not.toHaveBeenCalled()
     })
@@ -63,7 +63,8 @@ describe('sportSettingsRepository', () => {
           data: expect.objectContaining({
             userId,
             isDefault: true,
-            ftp: 200
+            ftp: 200,
+            loadPreference: 'HR_PACE_POWER'
           })
         })
       )

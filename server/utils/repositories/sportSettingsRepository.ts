@@ -96,7 +96,8 @@ export const sportSettingsRepository = {
     const prisma = prismaOverride || globalPrisma
     const { targetPolicy, loadPreference, targetFormatPolicy } =
       resolveTargetPolicyAndLoadPreference({
-        loadPreference: 'POWER_HR_PACE'
+        // HR-first: works across sports and for athletes without a power meter.
+        loadPreference: 'HR_PACE_POWER'
       })
     return await prisma.sportSettings
       .create({

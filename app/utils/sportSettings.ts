@@ -62,7 +62,7 @@ export function getPreferredMetric(
   }
 
   if (order.length === 0) {
-    const legacy = String(settings?.loadPreference || 'POWER_HR_PACE')
+    const legacy = String(settings?.loadPreference || 'HR_PACE_POWER')
       .split('_')
       .map((token) => token.trim().toUpperCase())
     for (const token of legacy) {
@@ -78,7 +78,7 @@ export function getPreferredMetric(
     order.splice(0, order.length, primaryMetric, ...rest)
   }
 
-  for (const metric of ['POWER', 'HR', 'PACE'] as const) {
+  for (const metric of ['HR', 'PACE', 'POWER'] as const) {
     if (!order.includes(metric)) order.push(metric)
   }
 

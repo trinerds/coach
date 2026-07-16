@@ -9,7 +9,7 @@ export interface TargetPolicy {
   preferRangesForSteady: boolean
 }
 
-const METRIC_ORDER: MetricTarget[] = ['power', 'heartRate', 'pace', 'rpe']
+const METRIC_ORDER: MetricTarget[] = ['heartRate', 'pace', 'power', 'rpe']
 
 function normalizeMetricToken(token: unknown): MetricTarget | null {
   if (typeof token !== 'string') return null
@@ -59,7 +59,7 @@ export function normalizeTargetPolicy(
     const withoutPrimary = fallbackOrder.filter((metric) => metric !== explicitPrimary)
     fallbackOrder.splice(0, fallbackOrder.length, explicitPrimary, ...withoutPrimary)
   }
-  const primaryMetric = explicitPrimary || fallbackOrder[0] || 'power'
+  const primaryMetric = explicitPrimary || fallbackOrder[0] || 'heartRate'
 
   const result: TargetPolicy = {
     primaryMetric,
