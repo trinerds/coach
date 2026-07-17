@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import { useTranslate, useTolgee } from '@tolgee/vue'
   import { sanitizeCallbackUrl } from '#shared/safe-callback-url'
 
   definePageMeta({
@@ -6,6 +7,8 @@
     auth: false
   })
 
+  const { t } = useTranslate('partners')
+  const tolgee = useTolgee(['language'])
   const route = useRoute()
   const router = useRouter()
   const toast = useToast()
@@ -33,6 +36,26 @@
   const priority = ref<'LOW' | 'MEDIUM' | 'HIGH'>('HIGH')
   const phase = ref('BUILD')
 
+  const dateLocale = computed(() => {
+    const lang = tolgee.value.getLanguage() || 'en'
+    if (lang === 'hu') return 'hu-HU'
+    if (lang === 'zh') return 'zh-CN'
+    return lang
+  })
+
+  const priorityItems = computed(() => [
+    { label: t.value('priority_high'), value: 'HIGH' },
+    { label: t.value('priority_medium'), value: 'MEDIUM' },
+    { label: t.value('priority_low'), value: 'LOW' }
+  ])
+
+  const phaseItems = computed(() => [
+    { label: t.value('phase_build'), value: 'BUILD' },
+    { label: t.value('phase_base'), value: 'BASE' },
+    { label: t.value('phase_peak'), value: 'PEAK' },
+    { label: t.value('phase_taper'), value: 'TAPER' }
+  ])
+
   const callbackPath = computed(() =>
     sanitizeCallbackUrl(`/partners/${slug.value}?redeem=1`, '/dashboard')
   )
@@ -48,35 +71,52 @@
   )
 
   const headline = computed(() => {
-    if (!campaign.value) return 'Partner offer'
-    return `${campaign.value.accessDurationDays} days of Coach Watts ${campaign.value.grantedTier} for ${campaign.value.partnerName}`
+    if (!campaign.value) return t.value('headline_fallback')
+    return t.value('headline', {
+      days: campaign.value.accessDurationDays,
+      tier: campaign.value.grantedTier,
+      partner: campaign.value.partnerName
+    })
   })
 
   const benefitCopy = computed(() => {
     if (!campaign.value) return ''
     if (campaign.value.grantedTier === 'PRO') {
-      return 'Full PRO access: automatic sync and analysis, deep-reasoning AI, priority processing, and proactive coaching insights.'
+      return t.value('benefit_pro')
     }
-    return 'Supporter access: automatic sync and analysis with priority processing.'
+    return t.value('benefit_supporter')
   })
 
   const statusMessage = computed(() => {
     if (loading.value) return null
     if (error.value) return error.value
-    if (redemptionResult.value?.message) return redemptionResult.value.message
+
+    if (redemptionResult.value) {
+      const endsAt = redemptionResult.value.redemption?.endsAt
+      const tier = redemptionResult.value.redemption?.grantedTier || campaign.value?.grantedTier
+      if (endsAt && tier) {
+        return t.value('toast_access_until', {
+          tier,
+          date: new Date(endsAt).toLocaleDateString(dateLocale.value)
+        })
+      }
+      if (redemptionResult.value.status === 'ALREADY_REDEEMED') {
+        return t.value('status_already_redeemed')
+      }
+    }
 
     switch (availability.value) {
       case 'DISABLED':
-        return 'This partner offer is currently unavailable.'
+        return t.value('status_disabled')
       case 'NOT_STARTED':
-        return 'This partner offer is not open yet.'
+        return t.value('status_not_started')
       case 'EXPIRED':
-        return 'This partner offer has ended.'
+        return t.value('status_expired')
       case 'CAPACITY_REACHED':
-        return `This pilot offer has reached its ${campaign.value?.maxRedemptions || 0}-member capacity.`
+        return t.value('status_capacity', { max: campaign.value?.maxRedemptions || 0 })
       default:
         if (userState.value?.alreadyRedeemed) {
-          return 'You have already redeemed this offer.'
+          return t.value('status_already_redeemed')
         }
         return null
     }
@@ -91,13 +131,40 @@
     )
   })
 
+  const ctaLabel = computed(() => {
+    if (!session.value) return t.value('cta_sign_up_redeem')
+    if (canRedeem.value) return t.value('cta_redeem')
+    if (userState.value?.alreadyRedeemed || redemptionResult.value) {
+      return t.value('cta_redeemed')
+    }
+    return t.value('cta_unavailable')
+  })
+
   function formatEventDate(iso: string) {
-    return new Date(iso).toLocaleDateString()
+    return new Date(iso).toLocaleDateString(dateLocale.value)
   }
 
   function eventLocation(event: any) {
-    if (event.isVirtual) return 'Virtual'
-    return event.location || [event.city, event.country].filter(Boolean).join(', ') || 'TBA'
+    if (event.isVirtual) return t.value('virtual')
+    return (
+      event.location || [event.city, event.country].filter(Boolean).join(', ') || t.value('tba')
+    )
+  }
+
+  function redeemErrorDescription(err: any) {
+    const reason = err.data?.reason || err.data?.data?.reason
+    switch (reason) {
+      case 'disabled':
+        return t.value('status_disabled')
+      case 'not_started':
+        return t.value('status_not_started')
+      case 'expired':
+        return t.value('status_expired')
+      case 'capacity_reached':
+        return t.value('status_capacity', { max: campaign.value?.maxRedemptions || 0 })
+      default:
+        return t.value('toast_try_again')
+    }
   }
 
   async function fetchCampaign() {
@@ -106,8 +173,8 @@
     try {
       campaignData.value = await $fetch(`/api/partners/${slug.value}`)
       trackPartnerPageView(slug.value, campaignData.value.campaign.availability)
-    } catch (err: any) {
-      error.value = err.data?.message || 'Partner offer not found.'
+    } catch {
+      error.value = t.value('error_offer_not_found')
     } finally {
       loading.value = false
     }
@@ -132,9 +199,21 @@
       )
       await userStore.fetchUser(true)
       await fetchCampaign()
+
+      const endsAt = response.redemption?.endsAt
+      const tier = response.redemption?.grantedTier
       toast.add({
-        title: response.status === 'ALREADY_REDEEMED' ? 'Already redeemed' : 'Offer activated',
-        description: response.message,
+        title:
+          response.status === 'ALREADY_REDEEMED'
+            ? t.value('toast_already_redeemed')
+            : t.value('toast_offer_activated'),
+        description:
+          endsAt && tier
+            ? t.value('toast_access_until', {
+                tier,
+                date: new Date(endsAt).toLocaleDateString(dateLocale.value)
+              })
+            : t.value('status_already_redeemed'),
         color: 'success'
       })
 
@@ -142,11 +221,11 @@
         confirmEvent.value = events.value[0]
       }
     } catch (err: any) {
-      const reason = err.data?.reason || err.data?.message || 'unknown'
+      const reason = err.data?.reason || err.data?.data?.reason || err.data?.message || 'unknown'
       trackPartnerRedemption(slug.value, 'rejected', reason)
       toast.add({
-        title: 'Could not redeem offer',
-        description: err.data?.message || 'Please try again later.',
+        title: t.value('toast_redeem_failed'),
+        description: redeemErrorDescription(err),
         color: 'error'
       })
     } finally {
@@ -174,16 +253,22 @@
         trackPartnerEventJoinCompleted(slug.value, event.slug)
       }
       toast.add({
-        title: response.status === 'ALREADY_JOINED' ? 'Already added' : 'Goal created',
-        description: response.message,
+        title:
+          response.status === 'ALREADY_JOINED'
+            ? t.value('toast_already_added')
+            : t.value('toast_goal_created'),
+        description:
+          response.status === 'ALREADY_JOINED'
+            ? t.value('toast_already_in_goals_desc')
+            : t.value('toast_goal_added_desc'),
         color: 'success'
       })
       confirmEvent.value = null
       await fetchCampaign()
-    } catch (err: any) {
+    } catch {
       toast.add({
-        title: 'Could not add event',
-        description: err.data?.message || 'Please try again later.',
+        title: t.value('toast_add_event_failed'),
+        description: t.value('toast_try_again'),
         color: 'error'
       })
     } finally {
@@ -214,9 +299,7 @@
 
   useSeoMeta({
     title: () => `${headline.value} | Coach Watts`,
-    description: () =>
-      benefitCopy.value ||
-      'Redeem a time-limited partner offer for Coach Watts. No payment card required.'
+    description: () => benefitCopy.value || t.value('meta_partner_fallback')
   })
 </script>
 
@@ -228,22 +311,37 @@
           name="i-heroicons-arrow-path"
           class="w-12 h-12 text-primary-500 animate-spin mx-auto"
         />
-        <p class="text-neutral-500 font-medium">Loading partner offer...</p>
+        <p class="text-neutral-500 font-medium">{{ t('loading_offer') }}</p>
       </div>
 
       <div v-else-if="error" class="p-10 text-center space-y-6">
         <UIcon name="i-heroicons-exclamation-triangle" class="w-12 h-12 text-error-500 mx-auto" />
         <div class="space-y-2">
-          <h1 class="text-2xl font-black uppercase tracking-tight">Offer unavailable</h1>
+          <h1 class="text-2xl font-black uppercase tracking-tight">
+            {{ t('offer_unavailable_title') }}
+          </h1>
           <p class="text-neutral-500">{{ error }}</p>
         </div>
-        <UButton to="/" color="neutral" variant="ghost" label="Back to home" block size="lg" />
+        <UButton
+          to="/"
+          color="neutral"
+          variant="ghost"
+          :label="t('back_to_home')"
+          block
+          size="lg"
+        />
       </div>
 
       <div v-else-if="campaign" class="p-0">
         <div class="bg-primary-600 p-8 text-white space-y-3">
-          <p class="text-[10px] font-black uppercase tracking-[0.2em] opacity-80">Partner offer</p>
-          <h1 class="text-3xl font-black uppercase tracking-tight leading-tight">{{ headline }}</h1>
+          <p class="text-[10px] font-black uppercase tracking-[0.2em] opacity-80">
+            {{ t('partner_offer_label') }}
+          </p>
+          <h1
+            class="text-2xl sm:text-3xl font-black uppercase tracking-tight leading-tight break-words"
+          >
+            {{ headline }}
+          </h1>
           <p class="text-sm text-primary-50/90">{{ campaign.campaignName }}</p>
         </div>
 
@@ -252,25 +350,30 @@
 
           <div class="grid gap-3 sm:grid-cols-2">
             <div class="rounded-xl border border-neutral-200 dark:border-neutral-800 p-4">
-              <p class="text-xs font-bold uppercase tracking-wide text-neutral-500">Payment</p>
-              <p class="mt-1 font-semibold">No payment card required</p>
+              <p class="text-xs font-bold uppercase tracking-wide text-neutral-500">
+                {{ t('payment_label') }}
+              </p>
+              <p class="mt-1 font-semibold">{{ t('payment_value') }}</p>
             </div>
             <div class="rounded-xl border border-neutral-200 dark:border-neutral-800 p-4">
-              <p class="text-xs font-bold uppercase tracking-wide text-neutral-500">Billing</p>
-              <p class="mt-1 font-semibold">No automatic charge</p>
+              <p class="text-xs font-bold uppercase tracking-wide text-neutral-500">
+                {{ t('billing_label') }}
+              </p>
+              <p class="mt-1 font-semibold">{{ t('billing_value') }}</p>
             </div>
           </div>
 
           <p class="text-sm text-neutral-500">
-            After {{ campaign.accessDurationDays }} days, your account continues on the permanent
-            FREE tier unless you choose to upgrade.
+            {{ t('after_days', { days: campaign.accessDurationDays }) }}
           </p>
 
           <p v-if="campaign.maxRedemptions" class="text-xs text-neutral-500">
-            This pilot offer is limited to {{ campaign.maxRedemptions }} members ({{
-              campaign.redemptionCount
+            {{
+              t('capacity', {
+                max: campaign.maxRedemptions,
+                count: campaign.redemptionCount
+              })
             }}
-            redeemed so far).
           </p>
 
           <UAlert
@@ -292,15 +395,7 @@
               :disabled="Boolean(session) && !canRedeem && !hasRedeemed"
               @click="redeemOffer"
             >
-              {{
-                session
-                  ? canRedeem
-                    ? 'Redeem offer'
-                    : userState?.alreadyRedeemed || redemptionResult
-                      ? 'Offer redeemed'
-                      : 'Offer unavailable'
-                  : 'Sign up to redeem'
-              }}
+              {{ ctaLabel }}
             </UButton>
 
             <UButton
@@ -308,7 +403,7 @@
               :to="loginUrl"
               color="neutral"
               variant="ghost"
-              label="Already have an account? Log in"
+              :label="t('already_have_account')"
               block
             />
           </div>
@@ -319,11 +414,10 @@
           >
             <div>
               <h2 class="text-lg font-black uppercase tracking-tight">
-                {{ hasRedeemed ? 'Next step: add your event' : 'Associated events' }}
+                {{ hasRedeemed ? t('next_step_add_event') : t('associated_events') }}
               </h2>
               <p class="text-sm text-neutral-500 mt-1">
-                Adding an event creates a Coach Watts training goal. It is not official race
-                registration.
+                {{ t('event_goal_disclaimer') }}
               </p>
             </div>
 
@@ -338,15 +432,21 @@
                   <p class="font-bold text-lg">{{ event.title }}</p>
                   <p class="text-sm text-neutral-500">{{ event.organizerName }}</p>
                 </div>
-                <UBadge v-if="event.isPrimary" color="primary" variant="subtle">Primary</UBadge>
+                <UBadge v-if="event.isPrimary" color="primary" variant="subtle">
+                  {{ t('primary_badge') }}
+                </UBadge>
               </div>
 
               <div class="text-sm text-neutral-600 dark:text-neutral-300 space-y-1">
                 <p>{{ formatEventDate(event.date) }} · {{ eventLocation(event) }}</p>
                 <p v-if="event.distance || event.elevation">
-                  <span v-if="event.distance">{{ event.distance }} km</span>
+                  <span v-if="event.distance">{{
+                    t('course_distance', { distance: event.distance })
+                  }}</span>
                   <span v-if="event.distance && event.elevation"> · </span>
-                  <span v-if="event.elevation">{{ event.elevation }} m elev</span>
+                  <span v-if="event.elevation">{{
+                    t('course_elevation', { elevation: event.elevation })
+                  }}</span>
                 </p>
               </div>
 
@@ -361,7 +461,7 @@
                   size="sm"
                   @click="trackOfficialEventRegistrationClick(slug, event.slug)"
                 >
-                  Official registration
+                  {{ t('official_registration') }}
                 </UButton>
 
                 <UButton
@@ -371,7 +471,7 @@
                   variant="soft"
                   size="sm"
                 >
-                  Already in your Coach Watts goals
+                  {{ t('already_in_goals') }}
                 </UButton>
 
                 <UButton
@@ -379,10 +479,17 @@
                   color="primary"
                   size="sm"
                   :loading="joiningSlug === event.slug"
-                  :disabled="!session"
-                  @click="confirmEvent = event"
+                  @click="
+                    () => {
+                      if (session) {
+                        confirmEvent = event
+                        return
+                      }
+                      void navigateTo(loginUrl)
+                    }
+                  "
                 >
-                  {{ session ? 'Add to my Coach Watts goals' : 'Log in to add goal' }}
+                  {{ session ? t('add_to_goals') : t('log_in_to_add_goal') }}
                 </UButton>
 
                 <UButton
@@ -391,7 +498,7 @@
                   variant="ghost"
                   size="sm"
                 >
-                  Event details
+                  {{ t('event_details') }}
                 </UButton>
               </div>
             </div>
@@ -402,7 +509,7 @@
             to="/dashboard"
             color="neutral"
             variant="soft"
-            label="Go to dashboard"
+            :label="t('go_to_dashboard')"
             block
           />
         </div>
@@ -413,32 +520,26 @@
       <template #content>
         <UCard>
           <template #header>
-            <h3 class="font-bold text-lg">Confirm training goal</h3>
+            <h3 class="font-bold text-lg">{{ t('confirm_goal_title') }}</h3>
           </template>
           <p class="text-sm text-neutral-600 dark:text-neutral-300 mb-4">
-            This adds <strong>{{ confirmEvent?.title }}</strong> as a Coach Watts training goal. It
-            does not register you for the official race.
+            {{ t('confirm_goal_body', { title: confirmEvent?.title }) }}
           </p>
           <div class="grid gap-3 sm:grid-cols-2 mb-6">
-            <UFormField label="Priority">
+            <UFormField :label="t('priority_label')">
               <USelect
                 v-model="priority"
-                :items="[
-                  { label: 'High', value: 'HIGH' },
-                  { label: 'Medium', value: 'MEDIUM' },
-                  { label: 'Low', value: 'LOW' }
-                ]"
+                :items="priorityItems"
+                class="w-full"
+                :ui="{ content: 'min-w-fit' }"
               />
             </UFormField>
-            <UFormField label="Phase">
+            <UFormField :label="t('phase_label')">
               <USelect
                 v-model="phase"
-                :items="[
-                  { label: 'Build', value: 'BUILD' },
-                  { label: 'Base', value: 'BASE' },
-                  { label: 'Peak', value: 'PEAK' },
-                  { label: 'Taper', value: 'TAPER' }
-                ]"
+                :items="phaseItems"
+                class="w-full"
+                :ui="{ content: 'min-w-fit' }"
               />
             </UFormField>
           </div>
@@ -452,7 +553,7 @@
                 }
               "
             >
-              Cancel
+              {{ t('cancel') }}
             </UButton>
             <UButton
               color="primary"
@@ -463,7 +564,7 @@
                 }
               "
             >
-              Confirm and add goal
+              {{ t('confirm_and_add') }}
             </UButton>
           </div>
         </UCard>

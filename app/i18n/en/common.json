@@ -128,6 +128,7 @@
   "impersonation_toast_stopped_description": "Returning to admin account",
   "impersonation_toast_stopped_title": "Impersonation stopped",
   "nav": {
+    "dashboard": "Dashboard",
     "get_started": "Get Started",
     "how_it_works": "How it Works",
     "integrations": "Integrations",
@@ -136,6 +137,7 @@
     "sign_in": "Sign In",
     "stories": "Stories"
   },
+  "nav_dashboard": "Dashboard",
   "nav_get_started": "Get Started",
   "nav_how_it_works": "How it Works",
   "nav_integrations": "Integrations",

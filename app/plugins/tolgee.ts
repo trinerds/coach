@@ -18,6 +18,7 @@ import enPricing from '../i18n/en/pricing.json'
 import enAuth from '../i18n/en/auth.json'
 import enSupport from '../i18n/en/support.json'
 import enStories from '../i18n/en/stories.json'
+import enPartners from '../i18n/en/partners.json'
 import enWorksWith from '../i18n/en/works-with.json'
 import enLegend from '../i18n/en/legend.json'
 import enOnboarding from '../i18n/en/onboarding.json'
@@ -81,6 +82,7 @@ import huPricing from '../i18n/hu/pricing.json'
 import huAuth from '../i18n/hu/auth.json'
 import huSupport from '../i18n/hu/support.json'
 import huStories from '../i18n/hu/stories.json'
+import huPartners from '../i18n/hu/partners.json'
 import huLegend from '../i18n/hu/legend.json'
 import huOnboarding from '../i18n/hu/onboarding.json'
 import huWorksWith from '../i18n/hu/works-with.json'
@@ -393,6 +395,7 @@ export default defineNuxtPlugin((nuxtApp) => {
       'en:auth': enAuth,
       'en:support': enSupport,
       'en:stories': enStories,
+      'en:partners': enPartners,
       'en:works-with': enWorksWith,
       'en:legend': enLegend,
       'en:onboarding': enOnboarding,
@@ -425,6 +428,7 @@ export default defineNuxtPlugin((nuxtApp) => {
       'es:auth': esAuth,
       'es:support': esSupport,
       'es:stories': esStories,
+      'es:partners': enPartners,
       'es:works-with': esWorksWith,
       'es:legend': esLegend,
       'es:onboarding': esOnboarding,
@@ -456,6 +460,7 @@ export default defineNuxtPlugin((nuxtApp) => {
       'hu:auth': huAuth,
       'hu:support': huSupport,
       'hu:stories': huStories,
+      'hu:partners': huPartners,
       'hu:legend': huLegend,
       'hu:onboarding': huOnboarding,
       'hu:works-with': huWorksWith,
@@ -484,6 +489,7 @@ export default defineNuxtPlugin((nuxtApp) => {
       'de:auth': deAuth,
       'de:support': deSupport,
       'de:stories': deStories,
+      'de:partners': enPartners,
       'de:chat': deChat,
       'de:fitness': deFitness,
       'de:hu-bento': deHuBento,
@@ -514,6 +520,7 @@ export default defineNuxtPlugin((nuxtApp) => {
       'fr:fitness': frFitness,
       'fr:hu-bento': frHuBento,
       'fr:stories': frStories,
+      'fr:partners': enPartners,
       'fr:support': frSupport,
       'fr:test-dynamic': frTestDynamic,
       'fr:works-with': frWorksWith,
@@ -541,6 +548,7 @@ export default defineNuxtPlugin((nuxtApp) => {
       'it:chat': itChat,
       'it:hu-bento': itHuBento,
       'it:stories': itStories,
+      'it:partners': enPartners,
       'it:support': itSupport,
       'it:test-dynamic': itTestDynamic,
       'it:works-with': itWorksWith,
@@ -569,6 +577,7 @@ export default defineNuxtPlugin((nuxtApp) => {
       'nl:chat': nlChat,
       'nl:hu-bento': nlHuBento,
       'nl:stories': nlStories,
+      'nl:partners': enPartners,
       'nl:support': nlSupport,
       'nl:test-dynamic': nlTestDynamic,
       'nl:works-with': nlWorksWith,
@@ -597,6 +606,7 @@ export default defineNuxtPlugin((nuxtApp) => {
       'ru:chat': ruChat,
       'ru:hu-bento': ruHuBento,
       'ru:stories': ruStories,
+      'ru:partners': enPartners,
       'ru:support': ruSupport,
       'ru:test-dynamic': ruTestDynamic,
       'ru:works-with': ruWorksWith,
@@ -625,6 +635,7 @@ export default defineNuxtPlugin((nuxtApp) => {
       'ja:chat': jaChat,
       'ja:hu-bento': jaHuBento,
       'ja:stories': jaStories,
+      'ja:partners': enPartners,
       'ja:support': jaSupport,
       'ja:test-dynamic': jaTestDynamic,
       'ja:works-with': jaWorksWith,
@@ -653,6 +664,7 @@ export default defineNuxtPlugin((nuxtApp) => {
       'zh:chat': zhChat,
       'zh:hu-bento': zhHuBento,
       'zh:stories': zhStories,
+      'zh:partners': enPartners,
       'zh:support': zhSupport,
       'zh:test-dynamic': zhTestDynamic,
       'zh:works-with': zhWorksWith,

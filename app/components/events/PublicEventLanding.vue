@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import { useTranslate, useTolgee } from '@tolgee/vue'
   import { sanitizeCallbackUrl } from '#shared/safe-callback-url'
 
   const props = defineProps<{
@@ -6,6 +7,8 @@
     campaignSlug?: string | null
   }>()
 
+  const { t } = useTranslate('partners')
+  const tolgee = useTolgee(['language'])
   const route = useRoute()
   const toast = useToast()
   const { data: session } = useAuth()
@@ -25,6 +28,26 @@
   const priority = ref<'LOW' | 'MEDIUM' | 'HIGH'>('HIGH')
   const phase = ref('BUILD')
 
+  const dateLocale = computed(() => {
+    const lang = tolgee.value.getLanguage() || 'en'
+    if (lang === 'hu') return 'hu-HU'
+    if (lang === 'zh') return 'zh-CN'
+    return lang
+  })
+
+  const priorityItems = computed(() => [
+    { label: t.value('priority_high'), value: 'HIGH' },
+    { label: t.value('priority_medium'), value: 'MEDIUM' },
+    { label: t.value('priority_low'), value: 'LOW' }
+  ])
+
+  const phaseItems = computed(() => [
+    { label: t.value('phase_build'), value: 'BUILD' },
+    { label: t.value('phase_base'), value: 'BASE' },
+    { label: t.value('phase_peak'), value: 'PEAK' },
+    { label: t.value('phase_taper'), value: 'TAPER' }
+  ])
+
   const event = computed(() => payload.value?.event)
   const enrollment = computed(() => payload.value?.enrollment)
 
@@ -39,7 +62,7 @@
 
   const locationLabel = computed(() => {
     if (!event.value) return null
-    if (event.value.isVirtual) return 'Virtual'
+    if (event.value.isVirtual) return t.value('virtual')
     return (
       event.value.location ||
       [event.value.city, event.value.country].filter(Boolean).join(', ') ||
@@ -53,8 +76,8 @@
     try {
       payload.value = await $fetch(`/api/public-events/${props.slug}`)
       trackPartnerEventView(props.campaignSlug || null, props.slug)
-    } catch (err: any) {
-      error.value = err.data?.message || 'Event not found.'
+    } catch {
+      error.value = t.value('error_event_not_found')
     } finally {
       loading.value = false
     }
@@ -80,16 +103,22 @@
         trackPartnerEventJoinCompleted(props.campaignSlug || null, props.slug)
       }
       toast.add({
-        title: response.status === 'ALREADY_JOINED' ? 'Already added' : 'Goal created',
-        description: response.message,
+        title:
+          response.status === 'ALREADY_JOINED'
+            ? t.value('toast_already_added')
+            : t.value('toast_goal_created'),
+        description:
+          response.status === 'ALREADY_JOINED'
+            ? t.value('toast_already_in_goals_desc')
+            : t.value('toast_goal_added_desc'),
         color: 'success'
       })
       showConfirm.value = false
       await fetchEvent()
-    } catch (err: any) {
+    } catch {
       toast.add({
-        title: 'Could not add event',
-        description: err.data?.message || 'Please try again later.',
+        title: t.value('toast_add_event_failed'),
+        description: t.value('toast_try_again'),
         color: 'error'
       })
     } finally {
@@ -134,22 +163,35 @@
           name="i-heroicons-arrow-path"
           class="w-12 h-12 text-primary-500 animate-spin mx-auto"
         />
-        <p class="text-neutral-500 font-medium">Loading event...</p>
+        <p class="text-neutral-500 font-medium">{{ t('loading_event') }}</p>
       </div>
 
       <div v-else-if="error" class="p-10 text-center space-y-6">
         <UIcon name="i-heroicons-exclamation-triangle" class="w-12 h-12 text-error-500 mx-auto" />
         <div class="space-y-2">
-          <h1 class="text-2xl font-black uppercase tracking-tight">Event unavailable</h1>
+          <h1 class="text-2xl font-black uppercase tracking-tight">
+            {{ t('event_unavailable_title') }}
+          </h1>
           <p class="text-neutral-500">{{ error }}</p>
         </div>
-        <UButton to="/" color="neutral" variant="ghost" label="Back to home" block size="lg" />
+        <UButton
+          to="/"
+          color="neutral"
+          variant="ghost"
+          :label="t('back_to_home')"
+          block
+          size="lg"
+        />
       </div>
 
       <div v-else-if="event" class="p-0">
         <div class="bg-primary-600 p-8 text-white space-y-3">
-          <p class="text-[10px] font-black uppercase tracking-[0.2em] opacity-80">Public event</p>
-          <h1 class="text-3xl font-black uppercase tracking-tight leading-tight">
+          <p class="text-[10px] font-black uppercase tracking-[0.2em] opacity-80">
+            {{ t('public_event_label') }}
+          </p>
+          <h1
+            class="text-2xl sm:text-3xl font-black uppercase tracking-tight leading-tight break-words"
+          >
             {{ event.title }}
           </h1>
           <p class="text-sm text-primary-50/90">{{ event.organizerName }}</p>
@@ -162,9 +204,11 @@
 
           <div class="grid gap-3 sm:grid-cols-2">
             <div class="rounded-xl border border-neutral-200 dark:border-neutral-800 p-4">
-              <p class="text-xs font-bold uppercase tracking-wide text-neutral-500">Date</p>
+              <p class="text-xs font-bold uppercase tracking-wide text-neutral-500">
+                {{ t('date_label') }}
+              </p>
               <p class="mt-1 font-semibold">
-                {{ new Date(event.date).toLocaleDateString() }}
+                {{ new Date(event.date).toLocaleDateString(dateLocale) }}
                 <span v-if="event.startTime" class="text-neutral-500">
                   · {{ event.startTime }}</span
                 >
@@ -172,25 +216,35 @@
               <p class="text-xs text-neutral-500 mt-1">{{ event.timezone }}</p>
             </div>
             <div class="rounded-xl border border-neutral-200 dark:border-neutral-800 p-4">
-              <p class="text-xs font-bold uppercase tracking-wide text-neutral-500">Location</p>
-              <p class="mt-1 font-semibold">{{ locationLabel || 'TBA' }}</p>
+              <p class="text-xs font-bold uppercase tracking-wide text-neutral-500">
+                {{ t('location_label') }}
+              </p>
+              <p class="mt-1 font-semibold">{{ locationLabel || t('tba') }}</p>
             </div>
             <div
               v-if="event.distance || event.elevation"
               class="rounded-xl border border-neutral-200 dark:border-neutral-800 p-4"
             >
-              <p class="text-xs font-bold uppercase tracking-wide text-neutral-500">Course</p>
+              <p class="text-xs font-bold uppercase tracking-wide text-neutral-500">
+                {{ t('course_label') }}
+              </p>
               <p class="mt-1 font-semibold">
-                <span v-if="event.distance">{{ event.distance }} km</span>
+                <span v-if="event.distance">{{
+                  t('course_distance', { distance: event.distance })
+                }}</span>
                 <span v-if="event.distance && event.elevation"> · </span>
-                <span v-if="event.elevation">{{ event.elevation }} m elev</span>
+                <span v-if="event.elevation">{{
+                  t('course_elevation', { elevation: event.elevation })
+                }}</span>
               </p>
             </div>
             <div
               v-if="event.type || event.subType"
               class="rounded-xl border border-neutral-200 dark:border-neutral-800 p-4"
             >
-              <p class="text-xs font-bold uppercase tracking-wide text-neutral-500">Sport</p>
+              <p class="text-xs font-bold uppercase tracking-wide text-neutral-500">
+                {{ t('sport_label') }}
+              </p>
               <p class="mt-1 font-semibold">
                 {{ [event.type, event.subType].filter(Boolean).join(' · ') }}
               </p>
@@ -200,11 +254,11 @@
           <UAlert
             color="neutral"
             variant="subtle"
-            title="Coach Watts training goal, not official race registration"
-            description="Adding this event creates a personal training goal in Coach Watts. Official race entry is handled separately by the organizer."
+            :title="t('training_goal_alert_title')"
+            :description="t('training_goal_alert_desc')"
           />
 
-          <div class="space-y-3">
+          <div class="grid gap-3 sm:grid-cols-2">
             <UButton
               v-if="event.registrationUrl"
               :to="event.registrationUrl"
@@ -215,17 +269,18 @@
               block
               @click="onOfficialRegistrationClick"
             >
-              Official race registration
+              {{ t('official_race_registration') }}
             </UButton>
 
             <UButton
               v-if="enrollment?.enrolled && enrollment.goalId"
-              :to="`/profile/goals`"
+              to="/profile/goals"
               color="primary"
               variant="soft"
               block
+              :class="event.registrationUrl ? '' : 'sm:col-span-2'"
             >
-              Already in your Coach Watts goals
+              {{ t('already_in_goals') }}
             </UButton>
 
             <UButton
@@ -234,6 +289,7 @@
               size="xl"
               block
               class="font-black uppercase tracking-wide"
+              :class="event.registrationUrl ? '' : 'sm:col-span-2'"
               :loading="joining"
               @click="
                 () => {
@@ -245,18 +301,18 @@
                 }
               "
             >
-              {{ session ? 'Add as my Coach Watts training goal' : 'Sign up to add this goal' }}
+              {{ session ? t('add_as_training_goal') : t('sign_up_to_add_goal') }}
             </UButton>
-
-            <UButton
-              v-if="!session"
-              :to="loginUrl"
-              color="neutral"
-              variant="ghost"
-              label="Already have an account? Log in"
-              block
-            />
           </div>
+
+          <UButton
+            v-if="!session"
+            :to="loginUrl"
+            color="neutral"
+            variant="ghost"
+            :label="t('already_have_account')"
+            block
+          />
         </div>
       </div>
     </UCard>
@@ -265,32 +321,26 @@
       <template #content>
         <UCard>
           <template #header>
-            <h3 class="font-bold text-lg">Confirm training goal</h3>
+            <h3 class="font-bold text-lg">{{ t('confirm_goal_title') }}</h3>
           </template>
           <p class="text-sm text-neutral-600 dark:text-neutral-300 mb-4">
-            This adds <strong>{{ event?.title }}</strong> as a Coach Watts training goal. It does
-            not register you for the official race.
+            {{ t('confirm_goal_body', { title: event?.title }) }}
           </p>
           <div class="grid gap-3 sm:grid-cols-2 mb-6">
-            <UFormField label="Priority">
+            <UFormField :label="t('priority_label')">
               <USelect
                 v-model="priority"
-                :items="[
-                  { label: 'High', value: 'HIGH' },
-                  { label: 'Medium', value: 'MEDIUM' },
-                  { label: 'Low', value: 'LOW' }
-                ]"
+                :items="priorityItems"
+                class="w-full"
+                :ui="{ content: 'min-w-fit' }"
               />
             </UFormField>
-            <UFormField label="Phase">
+            <UFormField :label="t('phase_label')">
               <USelect
                 v-model="phase"
-                :items="[
-                  { label: 'Build', value: 'BUILD' },
-                  { label: 'Base', value: 'BASE' },
-                  { label: 'Peak', value: 'PEAK' },
-                  { label: 'Taper', value: 'TAPER' }
-                ]"
+                :items="phaseItems"
+                class="w-full"
+                :ui="{ content: 'min-w-fit' }"
               />
             </UFormField>
           </div>
@@ -304,10 +354,10 @@
                 }
               "
             >
-              Cancel
+              {{ t('cancel') }}
             </UButton>
             <UButton color="primary" :loading="joining" @click="joinEvent">
-              Confirm and add goal
+              {{ t('confirm_and_add') }}
             </UButton>
           </div>
         </UCard>

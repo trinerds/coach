@@ -55,23 +55,31 @@
               </template>
             </ClientOnly>
           </div>
-          <UButton
-            v-if="!isAuthPage"
-            to="/join"
-            color="primary"
-            size="sm"
-            class="whitespace-nowrap sm:hidden"
-          >
-            {{ t('nav.get_started') }}
-          </UButton>
-          <div v-if="!isAuthPage" class="hidden items-center gap-2 sm:flex">
-            <UButton to="/login" variant="ghost" color="neutral" class="whitespace-nowrap">{{
-              t('nav.sign_in')
-            }}</UButton>
-            <UButton to="/join" color="primary" class="whitespace-nowrap">{{
-              t('nav.get_started')
-            }}</UButton>
-          </div>
+
+          <template v-if="!isAuthPage && isSignedIn">
+            <UButton to="/dashboard" color="primary" size="sm" class="whitespace-nowrap sm:hidden">
+              Dashboard
+            </UButton>
+            <div class="hidden items-center gap-2 sm:flex">
+              <UButton to="/dashboard" color="primary" class="whitespace-nowrap">
+                Dashboard
+              </UButton>
+            </div>
+          </template>
+
+          <template v-else-if="!isAuthPage">
+            <UButton to="/join" color="primary" size="sm" class="whitespace-nowrap sm:hidden">
+              {{ t('nav.get_started') }}
+            </UButton>
+            <div class="hidden items-center gap-2 sm:flex">
+              <UButton to="/login" variant="ghost" color="neutral" class="whitespace-nowrap">{{
+                t('nav.sign_in')
+              }}</UButton>
+              <UButton to="/join" color="primary" class="whitespace-nowrap">{{
+                t('nav.get_started')
+              }}</UButton>
+            </div>
+          </template>
 
           <UPopover class="lg:hidden">
             <UButton icon="i-heroicons-bars-3" color="neutral" variant="ghost" />
@@ -102,7 +110,11 @@
                   class="text-sm font-medium whitespace-nowrap transition-colors hover:text-primary"
                   >{{ t('nav.stories') }}</NuxtLink
                 >
-                <template v-if="!isAuthPage">
+                <template v-if="!isAuthPage && isSignedIn">
+                  <hr class="border-white/10" />
+                  <UButton to="/dashboard" color="primary" block>Dashboard</UButton>
+                </template>
+                <template v-else-if="!isAuthPage">
                   <hr class="border-white/10" />
                   <UButton to="/login" variant="ghost" color="neutral" block>{{
                     t('nav.sign_in')
@@ -129,8 +141,12 @@
   import PublicFooter from '~/components/layout/PublicFooter.vue'
 
   const route = useRoute()
+  const { data: authData, status: authStatus } = useAuth()
   const { t } = useTranslate('common')
   const isAuthPage = computed(() => route.path === '/join' || route.path === '/login')
+  const isSignedIn = computed(
+    () => authStatus.value === 'authenticated' || Boolean(authData.value?.user)
+  )
 
   useHead({
     link: [
