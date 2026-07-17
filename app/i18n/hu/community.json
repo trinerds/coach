@@ -1,15 +1,15 @@
 {
-  "description": "Többet építünk, mint kódot. Adatvezérelt állóképességi atléták közösségét építjük.",
-  "discord_cta": "Csatlakozz a beszélgetéshez itt:",
-  "headline": "Notes from the saddle",
+  "description": "Nem csak egy alkalmazást építünk, hanem adatokra támaszkodó állóképességi sportolók közösségét is.",
+  "discord_cta": "Csatlakozz a beszélgetéshez a Discordon:",
+  "headline": "Történetek a nyeregből",
   "label": "KÖZÖSSÉG",
   "t1_author": "Maya Okonkwo",
-  "t1_quote": "\"Végre áttörtem a 4 W/kg korlátot, évek stagnálása után. Az AI meglátások pontosan azonosították, hol edzettem túl magam.\"",
-  "t1_role": "2. kat. Versenyző",
+  "t1_quote": "Évek stagnálása után végre átléptem a 4 W/kg-os határt. Az AI-elemzés pontosan megmutatta, hol edzettem túl magam.",
+  "t1_role": "2. kategóriás versenyző",
   "t2_author": "Jonas Keller",
-  "t2_quote": "\"Az adaptív tervezés mentette meg a szezonomat, amikor a munka megőrült. Automatikusan igazította a hetemet, hogy ne égjem ki magam. Olyan, mintha profi edző lenne a zsebemben, aki valóban érti, hogy van munkám.\"",
-  "t2_role": "Kavicsos Kerékpáros",
+  "t2_quote": "Az adaptív tervezés mentette meg a szezonomat, amikor teljesen elborított a munka. Automatikusan átalakította a hetemet, így nem hajtottam túl magam. Mintha egy profi edző lenne a zsebemben, aki azt is érti, hogy dolgozom mellette.",
+  "t2_role": "Gravel kerékpáros",
   "t3_author": "Elena Ruiz",
-  "t3_quote": "\"Az átláthatóság azt jelenti, hogy megbízhatok az algoritmusokban. Nincsenek fekete dobozok, csak tiszta adattudomány alkalmazva a fiziológiámra.\"",
+  "t3_quote": "Az átláthatóság miatt megbízhatok az algoritmusokban. Nincs fekete doboz: pontosan látom, hogyan használja fel az adatokat a szervezetem működésének megértéséhez.",
   "t3_role": "Triatlonista"
 }

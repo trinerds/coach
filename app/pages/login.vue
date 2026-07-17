@@ -13,19 +13,20 @@
           <h2
             class="font-athletic mt-6 text-3xl font-bold uppercase leading-[0.95] tracking-tight text-white"
           >
-            Your coaching <span class="text-primary-400">dashboard</span>
+            {{ t('login.marketing_title') }}
+            <span class="text-primary-400">{{ t('login.marketing_title_accent') }}</span>
           </h2>
           <p class="mt-4 text-sm font-medium leading-relaxed text-gray-400">
-            Sign in to continue adaptive training, recovery, and fueling guidance.
+            {{ t('login.marketing_description') }}
           </p>
           <ul class="mt-8 space-y-3 text-sm text-gray-400">
             <li class="flex items-center gap-2">
               <UIcon name="i-heroicons-check-circle-solid" class="h-4 w-4 text-primary-400" />
-              Daily readiness-aware plans
+              {{ t('login.benefit_readiness') }}
             </li>
             <li class="flex items-center gap-2">
               <UIcon name="i-heroicons-check-circle-solid" class="h-4 w-4 text-primary-400" />
-              Connected training &amp; wellness data
+              {{ t('login.benefit_connected') }}
             </li>
           </ul>
         </aside>
@@ -35,10 +36,11 @@
             <h1
               class="font-athletic text-4xl font-bold uppercase leading-[0.9] tracking-tight text-white sm:text-5xl"
             >
-              Welcome <span class="text-primary-400">back</span>
+              {{ t('login.heading') }}
+              <span class="text-primary-400">{{ t('login.heading_accent') }}</span>
             </h1>
             <p class="mt-4 text-base font-medium text-gray-400 sm:text-lg">
-              Sign in to continue coaching.
+              {{ t('login.form_subtitle') }}
             </p>
 
             <div class="mt-8 space-y-3">
@@ -56,7 +58,7 @@
                   }
                 "
               >
-                {{ isInitializing ? 'Connecting…' : t('login.google') }}
+                {{ isInitializing ? t('login.connecting') : t('login.google') }}
               </UButton>
 
               <UButton
@@ -75,7 +77,7 @@
                 <template #leading>
                   <UIcon name="i-simple-icons-strava" class="h-5 w-5 text-[#FC4C02]" />
                 </template>
-                {{ isInitializing ? 'Connecting…' : t('login.strava') }}
+                {{ isInitializing ? t('login.connecting') : t('login.strava') }}
               </UButton>
 
               <UButton
@@ -94,7 +96,7 @@
                 <template #leading>
                   <img src="/images/logos/intervals.png" alt="" class="h-5 w-5" />
                 </template>
-                {{ isInitializing ? 'Connecting…' : t('login.intervals') }}
+                {{ isInitializing ? t('login.connecting') : t('login.intervals') }}
               </UButton>
             </div>
 
@@ -134,7 +136,7 @@
                 class="mx-auto h-8 w-8 animate-spin text-primary-400"
               />
               <p class="font-athletic mt-4 text-lg font-bold uppercase tracking-wide text-white">
-                Signing you in
+                {{ t('login.signing_in') }}
               </p>
             </div>
           </div>
@@ -162,14 +164,14 @@
   const callbackUrl = (route.query.callbackUrl as string) || '/dashboard'
 
   useSeoMeta({
-    title: 'Sign in | Coach Watts',
-    ogTitle: 'Login - Coach Watts AI Endurance Coaching',
-    description: 'Sign in to access your personalized AI training dashboard.',
-    ogDescription: 'Sign in to access your personalized AI training dashboard.',
+    title: () => t.value('login.seo_title'),
+    ogTitle: () => t.value('login.seo_og_title'),
+    description: () => t.value('login.seo_description'),
+    ogDescription: () => t.value('login.seo_description'),
     ogImage: '/images/og-image.png',
     twitterCard: 'summary_large_image',
-    twitterTitle: 'Login - Coach Watts AI Endurance Coaching',
-    twitterDescription: 'Sign in to access your personalized AI training dashboard.',
+    twitterTitle: () => t.value('login.seo_og_title'),
+    twitterDescription: () => t.value('login.seo_description'),
     twitterImage: '/images/og-image.png'
   })
 
@@ -186,8 +188,8 @@
       await signIn('google', { callbackUrl })
     } catch (error: any) {
       toast.add({
-        title: 'Login Failed',
-        description: error.message || 'Could not initiate Google login.',
+        title: t.value('login.error_title'),
+        description: error.message || t.value('login.error_google'),
         color: 'error'
       })
       isInitializing.value = false
@@ -203,8 +205,8 @@
       await signIn('strava', { callbackUrl })
     } catch (error: any) {
       toast.add({
-        title: 'Login Failed',
-        description: error.message || 'Could not initiate Strava login.',
+        title: t.value('login.error_title'),
+        description: error.message || t.value('login.error_strava'),
         color: 'error'
       })
       isInitializing.value = false
@@ -220,8 +222,8 @@
       await signIn('intervals', { callbackUrl })
     } catch (error: any) {
       toast.add({
-        title: 'Login Failed',
-        description: error.message || 'Could not initiate Intervals login.',
+        title: t.value('login.error_title'),
+        description: error.message || t.value('login.error_intervals'),
         color: 'error'
       })
       isInitializing.value = false

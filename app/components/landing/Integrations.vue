@@ -7,37 +7,37 @@
     {
       name: 'Garmin',
       src: '/images/logos/Garmin_Connect_app_1024x1024.png',
-      status: 'Auto-Import',
+      statusKey: 'status_auto_import',
       color: '#007cc3'
     },
     {
       name: 'Strava',
       src: '/images/logos/strava.svg',
-      status: '2-Way Sync',
+      statusKey: 'status_two_way_sync',
       color: '#FC6100'
     },
     {
       name: 'Rouvy',
       src: '/images/logos/rouvy-symbol-rgb.svg',
-      status: '2-Way Sync',
+      statusKey: 'status_two_way_sync',
       color: '#E01E26'
     },
     {
       name: 'Intervals.icu',
       src: '/images/logos/intervals.png',
-      status: '2-Way Sync',
+      statusKey: 'status_two_way_sync',
       color: '#00DC82'
     },
     {
       name: 'WHOOP',
       src: '/images/logos/whoop_square.svg',
-      status: '2-Way Sync',
+      statusKey: 'status_two_way_sync',
       color: '#000000'
     },
     {
       name: 'Oura',
       src: '/images/logos/oura.svg',
-      status: '2-Way Sync',
+      statusKey: 'status_two_way_sync',
       color: '#FFFFFF'
     }
   ]
@@ -50,11 +50,11 @@
         <h2
           class="font-athletic text-4xl font-bold uppercase leading-[0.9] tracking-tight text-white sm:text-5xl"
         >
-          Your Data, <span class="text-primary-400">Unified.</span>
+          {{ t('landing_title') }}
+          <span class="text-primary-400">{{ t('landing_title_accent') }}</span>
         </h2>
         <p class="mt-5 max-w-xl text-lg font-medium leading-relaxed text-gray-400">
-          We sync with the tools you already use. Stop jumping between apps and see the full picture
-          of your performance.
+          {{ t('landing_description') }}
         </p>
       </div>
 
@@ -77,7 +77,7 @@
           </p>
           <span
             class="mt-2 text-center text-xs font-bold uppercase tracking-widest text-primary-400"
-            >{{ integ.status }}</span
+            >{{ t(integ.statusKey) }}</span
           >
         </div>
       </div>
@@ -90,7 +90,7 @@
           size="xl"
           class="group font-bold uppercase tracking-[0.15em]"
         >
-          Explore all 20+ integrations
+          {{ t('landing_cta') }}
           <UIcon
             name="i-heroicons-arrow-right-20-solid"
             class="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1"

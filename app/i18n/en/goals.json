@@ -4,15 +4,19 @@
   "cta": "Start Tracking Goals",
   "description": "Whether it's a podium finish, a power target, or weight loss, Coach Watts keeps you on track with personalized adaptive coaching.",
   "event_badge": "Due Oct 12",
+  "event_example": "Gran Fondo New York",
   "event_priority": "High Priority",
   "event_sub": "Peak for race day with periodized blocks.",
   "event_title": "Event Prep",
   "headline": "Set Goals. Crush Them. Don't Just Train. Train with Purpose.",
   "label": "GOALS",
   "perf_badge": "Target: 300W",
+  "perf_example": "Increase FTP to 300W",
   "perf_sub": "Structured intervals to boost threshold.",
   "perf_title": "Performance",
   "weight_badge": "-2.5kg to go",
   "weight_sub": "Fuel targets adapt to training load, not just calories.",
-  "weight_title": "Weight"
+  "weight_title": "Weight",
+  "weight_example": "Reach 70kg Race Weight",
+  "consistency_example": "Ride 5 days/week"
 }

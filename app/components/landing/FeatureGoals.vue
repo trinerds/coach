@@ -20,7 +20,7 @@
             <h3 class="font-semibold text-white">{{ t('event_title') }}</h3>
           </div>
           <p class="mt-4 text-sm text-gray-400">
-            "Gran Fondo New York" <br />
+            “{{ t('event_example') }}” <br />
             <span class="text-xs text-gray-500">{{ t('event_sub') }}</span>
           </p>
           <div class="mt-4 flex gap-2">
@@ -39,7 +39,7 @@
             <h3 class="font-semibold text-white">{{ t('perf_title') }}</h3>
           </div>
           <p class="mt-4 text-sm text-gray-400">
-            "Increase FTP to 300W" <br />
+            “{{ t('perf_example') }}” <br />
             <span class="text-xs text-gray-500">{{ t('perf_sub') }}</span>
           </p>
           <div class="mt-4 flex items-center gap-3">
@@ -58,7 +58,7 @@
             <h3 class="font-semibold text-white">{{ t('weight_title') }}</h3>
           </div>
           <p class="mt-4 text-sm text-gray-400">
-            "Reach 70kg Race Weight" <br />
+            “{{ t('weight_example') }}” <br />
             <span class="text-xs text-gray-500">{{ t('weight_sub') }}</span>
           </p>
           <div class="mt-4">
@@ -76,7 +76,7 @@
             </h3>
           </div>
           <p class="mt-4 text-sm text-gray-400">
-            "Ride 5 days/week" <br />
+            “{{ t('consistency_example') }}” <br />
             <span class="text-xs text-gray-500">{{ t('consistency_sub') }}</span>
           </p>
           <div class="mt-4 flex gap-1.5">

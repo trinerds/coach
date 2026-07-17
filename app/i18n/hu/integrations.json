@@ -1,3 +1,9 @@
 {
-  "label": "Integrációk"
+  "label": "Integrációk",
+  "landing_title": "Minden adatod",
+  "landing_title_accent": "egy helyen.",
+  "landing_description": "Összekapcsoljuk a már használt eszközeidet és alkalmazásaidat, így egyetlen áttekinthető képet kapsz a teljesítményedről.",
+  "landing_cta": "Mind a 20+ integráció megtekintése",
+  "status_auto_import": "Automatikus importálás",
+  "status_two_way_sync": "Kétirányú szinkronizálás"
 }

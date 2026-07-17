@@ -1,15 +1,18 @@
 {
-  "badge": "Átlátható Intelligencia",
+  "badge": "Átlátható mesterséges intelligencia",
   "badge_link": "Tekintsd meg az architektúrát",
-  "card_fitness": "FITNESZ PONTSZÁM",
-  "card_insight": "Napi Elemzés",
+  "card_fitness": "FITTSÉGI PONTSZÁM",
+  "card_insight": "Napi elemzés",
   "card_live": "Élő",
   "card_recovery": "REGENERÁCIÓ",
-  "cta_primary": "Szerezd meg digitális ikerpéldányodat (Ingyenes)",
+  "cta_primary": "Ismerd meg a digitális ikeredet – ingyen",
   "cta_secondary": "Nézd meg, hogyan működik",
-  "description": "Az AI Állóképességi Edző, amely minden nap alkalmazkodik az edzésedhez, regenerációdhoz és táplálkozásodhoz. Edzési és táplálkozási naplóidat egyértelmű teljesítménydöntésekké alakítjuk.",
+  "description": "Az AI-alapú állóképességi edző, amely nap mint nap alkalmazkodik az edzésedhez, a regenerációdhoz és az energia-utánpótlásodhoz. Edzés- és táplálkozási naplóidból világos, jól követhető javaslatokat készít.",
   "headline_1": "Tárd fel valódi lehetőségeidet.",
   "headline_2": "Hagyd el a találgatást. Kezdj győzni.",
   "hero_title": "Eddz okosabban",
-  "tagline": "Edzz wattban. Táplálkozz fiziológia szerint."
+  "tagline": "Edzz wattok alapján. Frissíts a szervezeted igényei szerint.",
+  "preview_aria": "Termékelőnézet élő edzői elemzéssel, fittségi és regenerációs adatokkal",
+  "preview_insight": "Alacsony a regenerációs értéked (34%). Az intervallokat 2-es zónás edzésre cseréljük…",
+  "preview_recovery_low": "Alacsony"
 }

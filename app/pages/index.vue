@@ -53,17 +53,14 @@
   })
 
   useSeoMeta({
-    title: 'AI Endurance Coaching',
-    ogTitle: 'Coach Watts - AI Endurance Coaching',
-    description:
-      'Coach Watts is your AI-powered endurance coach. Optimize training, recovery, and glycogen-aware fueling with personalized daily guidance.',
-    ogDescription:
-      'Coach Watts is your AI-powered endurance coach. Optimize training, recovery, and glycogen-aware fueling with personalized daily guidance.',
+    title: () => t.value('seo.home_title'),
+    ogTitle: () => t.value('seo.home_og_title'),
+    description: () => t.value('seo.home_description'),
+    ogDescription: () => t.value('seo.home_description'),
     ogImage: '/images/og-image.png',
     twitterCard: 'summary_large_image',
-    twitterTitle: 'Coach Watts - AI Endurance Coaching',
-    twitterDescription:
-      'Coach Watts is your AI-powered endurance coach. Optimize training, recovery, and glycogen-aware fueling with personalized daily guidance.',
+    twitterTitle: () => t.value('seo.home_og_title'),
+    twitterDescription: () => t.value('seo.home_description'),
     twitterImage: '/images/og-image.png'
   })
 

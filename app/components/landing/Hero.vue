@@ -171,9 +171,7 @@
               </div>
             </div>
           </div>
-          <figcaption class="sr-only">
-            Product preview showing live coaching insight, fitness, and recovery
-          </figcaption>
+          <figcaption class="sr-only">{{ t('preview_aria') }}</figcaption>
         </figure>
       </motion.div>
     </div>
@@ -197,24 +195,22 @@
     recoveryLabel: string
   }
 
-  const baseScenario: DashboardScenario = {
-    insight: 'Recovery is low (34%). Switching intervals to Zone 2...',
+  const activeScenario = computed<DashboardScenario>(() => ({
+    insight: t.value('preview_insight'),
     fitness: 72,
     fitnessDelta: '+2.4',
     fitnessAvg: 68,
     fitnessBars: [36, 54, 47, 74, 100],
     fitnessTooltips: ['Mon: 62', 'Tue: 66', 'Wed: 65', 'Thu: 70', 'Today: 72'],
     recovery: 34,
-    recoveryLabel: 'Low'
-  }
+    recoveryLabel: t.value('preview_recovery_low')
+  }))
 
   const dashboardRef = ref<HTMLElement | { $el?: Element } | null>(null)
   const isDashboardVisible = ref(false)
   const typedInsight = ref('')
   const isTyping = ref(false)
   const chartCycle = ref(0)
-
-  const activeScenario = computed(() => baseScenario)
 
   let typeTimer: ReturnType<typeof setInterval> | null = null
   let visibilityObserver: IntersectionObserver | null = null

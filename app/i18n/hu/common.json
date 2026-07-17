@@ -3,8 +3,8 @@
   "banner_exit": "Kilépés",
   "coaching_banner_active": "Megtekintés mint {name}",
   "cta": {
-    "description": "Csatlakozz az állóképességi atlétákhoz, akik a Coach Watts-t használják az okosabb edzéshez és a magabiztos feltöltéshez minden nap.",
-    "headline": "Csatlakozz a várólistához",
+    "description": "Csatlakozz az állóképességi sportolókhoz, akik a Coach Watts segítségével edzenek okosabban, és minden nap tudatosabban tervezik meg az energia-utánpótlásukat.",
+    "headline": "Készen állsz okosabban edzeni?",
     "primary": "Kezdj el ingyen",
     "secondary": "Sikertörténetek olvasása"
   },
@@ -76,13 +76,18 @@
   "impersonation_toast_stopped_description": "Visszatérés az adminisztrátori fiókhoz",
   "impersonation_toast_stopped_title": "Megszemélyesítés leállítva",
   "nav": {
-    "get_started": "Kezdés",
-    "how_it_works": "Hogyan Működik",
+    "get_started": "Kezdés ingyen",
+    "how_it_works": "Hogyan működik",
     "integrations": "Integrációk",
     "pricing": "Árazás",
     "pricing_badge": "Ingyenes",
     "sign_in": "Bejelentkezés",
     "stories": "Történetek"
+  },
+  "seo": {
+    "home_title": "AI-alapú állóképességi edzés",
+    "home_og_title": "Coach Watts – AI-alapú állóképességi edzés",
+    "home_description": "A Coach Watts személyre szabott AI-edzőként segít összehangolni az edzést, a regenerációt és az energia-utánpótlást."
   },
   "nav_get_started": "Kezdés",
   "nav_how_it_works": "Hogyan Működik",

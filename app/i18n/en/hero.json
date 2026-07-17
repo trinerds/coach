@@ -8,5 +8,8 @@
   "cta_primary": "Claim Your Digital Twin (Free)",
   "cta_secondary": "See How It Works",
   "description": "The AI Endurance Coach that adapts training, recovery, and fueling every day. Start free — 14-day full-access trial included.",
-  "headline_1": "Train by Watts. Fuel by Physiology."
+  "headline_1": "Train by Watts. Fuel by Physiology.",
+  "preview_aria": "Product preview showing live coaching insight, fitness, and recovery",
+  "preview_insight": "Recovery is low (34%). Switching intervals to Zone 2...",
+  "preview_recovery_low": "Low"
 }

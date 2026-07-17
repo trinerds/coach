@@ -14,7 +14,8 @@
             <h2
               class="font-athletic mt-6 text-3xl font-bold uppercase leading-[0.95] tracking-tight text-white"
             >
-              Eliminate the <span class="text-primary-400">guesswork</span>
+              {{ t('join.hero_title') }}
+              <span class="text-primary-400">{{ t('join.hero_title_accent') }}</span>
             </h2>
             <p class="mt-4 text-sm font-medium leading-relaxed text-gray-400">
               {{ joinTagline }}
@@ -165,17 +166,14 @@
   const callbackUrl = (route.query.callbackUrl as string) || '/dashboard'
 
   useSeoMeta({
-    title: 'Create your account',
-    ogTitle: 'Join Coach Watts - AI Endurance Coaching',
-    description:
-      'Create your Coach Watts account and get personalized AI training, recovery analytics, and daily coaching insights.',
-    ogDescription:
-      'Create your Coach Watts account and get personalized AI training, recovery analytics, and daily coaching insights.',
+    title: () => t.value('join.seo_title'),
+    ogTitle: () => t.value('join.seo_og_title'),
+    description: () => t.value('join.seo_description'),
+    ogDescription: () => t.value('join.seo_description'),
     ogImage: '/images/og-image.png',
     twitterCard: 'summary_large_image',
-    twitterTitle: 'Join Coach Watts - AI Endurance Coaching',
-    twitterDescription:
-      'Create your Coach Watts account and get personalized AI training, recovery analytics, and daily coaching insights.',
+    twitterTitle: () => t.value('join.seo_og_title'),
+    twitterDescription: () => t.value('join.seo_description'),
     twitterImage: '/images/og-image.png'
   })
 
@@ -231,23 +229,23 @@
 
   const userInquiry = computed(() => {
     if (referral.value === 'hall-of-fame') {
-      return 'I want to break my 5K personal best. Can you help?'
+      return t.value('join.hall_of_fame_user_message')
     }
     return t.value('join.user_message')
   })
 
   const aiGreeting = computed(() => {
     if (referral.value === 'hall-of-fame') {
-      return 'Absolutely. I see your current best is 18:42 from last June.'
+      return t.value('join.hall_of_fame_ai_greeting')
     }
-    return "I noticed your <span class='text-primary-400 font-bold'>HRV</span> dropped to 28ms overnight."
+    return t.value('join.ai_greeting')
   })
 
   const aiAdvice = computed(() => {
     if (referral.value === 'hall-of-fame') {
-      return "Based on your current fatigue profile, we need to focus on <span class='font-bold text-primary-400'>Threshold Intervals</span> this week to push that ceiling."
+      return t.value('join.hall_of_fame_ai_advice')
     }
-    return "Let's swap your intervals for a <span class='font-bold text-primary-400'>Zone 2 Recovery Ride</span>. We'll get back to intensity tomorrow."
+    return t.value('join.ai_advice')
   })
 
   function showSignupError(

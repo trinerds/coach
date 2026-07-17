@@ -1,5 +1,11 @@
 {
   "label": "Integrations",
+  "landing_title": "Your Data,",
+  "landing_title_accent": "Unified.",
+  "landing_description": "We sync with the tools you already use. Stop jumping between apps and see the full picture of your performance.",
+  "landing_cta": "Explore all 20+ integrations",
+  "status_auto_import": "Auto-Import",
+  "status_two_way_sync": "2-Way Sync",
   "connect_back": "Back",
   "connect_cancel": "Cancel",
   "connect_failed_title": "Connection Failed",

@@ -137,6 +137,11 @@
     "sign_in": "Sign In",
     "stories": "Stories"
   },
+  "seo": {
+    "home_title": "AI Endurance Coaching",
+    "home_og_title": "Coach Watts - AI Endurance Coaching",
+    "home_description": "Coach Watts is your AI-powered endurance coach. Optimize training, recovery, and glycogen-aware fueling with personalized daily guidance."
+  },
   "nav_dashboard": "Dashboard",
   "nav_get_started": "Get Started",
   "nav_how_it_works": "How it Works",

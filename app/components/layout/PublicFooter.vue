@@ -12,7 +12,7 @@
             />
           </NuxtLink>
           <p class="text-sm leading-relaxed text-gray-400">
-            AI-powered endurance coaching that adapts to your life, recovery, and goals.
+            {{ t('footer.tagline') }}
           </p>
         </div>
 
@@ -20,24 +20,26 @@
           class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-gray-400"
           aria-label="Footer"
         >
-          <NuxtLink to="/#pricing" class="whitespace-nowrap transition-colors hover:text-white"
-            >Pricing</NuxtLink
+          <NuxtLink to="/#pricing" class="whitespace-nowrap transition-colors hover:text-white">{{
+            t('footer.pricing')
+          }}</NuxtLink>
+          <NuxtLink to="/works-with" class="whitespace-nowrap transition-colors hover:text-white">{{
+            t('nav.integrations')
+          }}</NuxtLink>
+          <NuxtLink
+            to="/documentation"
+            class="whitespace-nowrap transition-colors hover:text-white"
+            >{{ t('footer.docs') }}</NuxtLink
           >
-          <NuxtLink to="/works-with" class="whitespace-nowrap transition-colors hover:text-white"
-            >Integrations</NuxtLink
-          >
-          <NuxtLink to="/documentation" class="whitespace-nowrap transition-colors hover:text-white"
-            >Docs</NuxtLink
-          >
-          <NuxtLink to="/support" class="whitespace-nowrap transition-colors hover:text-white"
-            >Support</NuxtLink
-          >
-          <NuxtLink to="/privacy" class="whitespace-nowrap transition-colors hover:text-white"
-            >Privacy</NuxtLink
-          >
-          <NuxtLink to="/terms" class="whitespace-nowrap transition-colors hover:text-white"
-            >Terms</NuxtLink
-          >
+          <NuxtLink to="/support" class="whitespace-nowrap transition-colors hover:text-white">{{
+            t('footer.support')
+          }}</NuxtLink>
+          <NuxtLink to="/privacy" class="whitespace-nowrap transition-colors hover:text-white">{{
+            t('footer.privacy')
+          }}</NuxtLink>
+          <NuxtLink to="/terms" class="whitespace-nowrap transition-colors hover:text-white">{{
+            t('footer.terms')
+          }}</NuxtLink>
           <a
             href="https://discord.gg/dPYkzg49T9"
             target="_blank"
