@@ -1710,9 +1710,9 @@
     },
     warmupTime: 10,
     cooldownTime: 10,
-    loadPreference: 'POWER_HR_PACE',
+    loadPreference: 'HR_PACE_POWER',
     targetPolicy: {
-      primaryMetric: 'power',
+      primaryMetric: 'heartRate',
       strictPrimary: true,
       allowMixedTargetsPerStep: false,
       defaultTargetStyle: 'range',
@@ -1831,12 +1831,12 @@
   ]
 
   const LOAD_PREFERENCES = [
-    'POWER_HR_PACE',
-    'POWER_PACE_HR',
-    'HR_POWER_PACE',
     'HR_PACE_POWER',
+    'HR_POWER_PACE',
+    'PACE_HR_POWER',
     'PACE_POWER_HR',
-    'PACE_HR_POWER'
+    'POWER_HR_PACE',
+    'POWER_PACE_HR'
   ]
   const TARGET_METRICS = ['heartRate', 'power', 'pace', 'rpe']
   const TARGET_STYLES = ['range', 'value']
@@ -2308,9 +2308,9 @@
       },
       warmupTime: 10,
       cooldownTime: 10,
-      loadPreference: 'POWER_HR_PACE',
+      loadPreference: 'HR_PACE_POWER',
       targetPolicy: {
-        primaryMetric: 'power',
+        primaryMetric: 'heartRate',
         strictPrimary: true,
         allowMixedTargetsPerStep: false,
         defaultTargetStyle: 'range',
@@ -2339,12 +2339,13 @@
   }
 
   function derivePrimaryMetric(loadPreference?: string): string {
-    if (!loadPreference) return 'power'
+    if (!loadPreference) return 'heartRate'
     const first = loadPreference.split('_')[0]?.toUpperCase()
     if (first === 'HR') return 'heartRate'
     if (first === 'PACE') return 'pace'
     if (first === 'RPE') return 'rpe'
-    return 'power'
+    if (first === 'POWER') return 'power'
+    return 'heartRate'
   }
 
   function metricToLoadPreferenceToken(metric?: string): string {
@@ -2359,7 +2360,7 @@
     primaryMetric?: string
   ): string {
     const preferred = metricToLoadPreferenceToken(primaryMetric)
-    const tokens = String(loadPreference || 'POWER_HR_PACE')
+    const tokens = String(loadPreference || 'HR_PACE_POWER')
       .split('_')
       .map((token) => token.trim().toUpperCase())
       .filter((token) => ['POWER', 'HR', 'PACE', 'RPE'].includes(token))
@@ -2368,7 +2369,7 @@
     for (const token of tokens) {
       if (!ordered.includes(token)) ordered.push(token)
     }
-    for (const token of ['POWER', 'HR', 'PACE']) {
+    for (const token of ['HR', 'PACE', 'POWER']) {
       if (!ordered.includes(token)) ordered.push(token)
     }
 
