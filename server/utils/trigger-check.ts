@@ -8,6 +8,26 @@ const RUNNING_STATUSES = new Set([
   'FROZEN'
 ])
 
+/** Trigger runs older than this are treated as stale and ignored for sync guards. */
+export const STALE_TRIGGER_RUN_MS = 2 * 60 * 60 * 1000
+
+function getRunTimestamp(run: {
+  startedAt?: string | Date | null
+  createdAt?: string | Date | null
+}) {
+  return run.startedAt || run.createdAt || null
+}
+
+export function isRunFresh(
+  run: { startedAt?: string | Date | null; createdAt?: string | Date | null },
+  nowMs = Date.now(),
+  maxAgeMs = STALE_TRIGGER_RUN_MS
+): boolean {
+  const timestamp = getRunTimestamp(run)
+  if (!timestamp) return true
+  return nowMs - new Date(timestamp).getTime() <= maxAgeMs
+}
+
 export async function isTaskRunning(taskIdentifier: string, userId: string): Promise<boolean> {
   try {
     // @ts-expect-error - SDK v3 types mismatch for filter params
@@ -20,8 +40,19 @@ export async function isTaskRunning(taskIdentifier: string, userId: string): Pro
       limit: 10
     })
 
-    // Trigger API may ignore status filters; verify client-side.
-    return activeRuns.data.some((run) => RUNNING_STATUSES.has(run.status))
+    const nowMs = Date.now()
+
+    // Trigger API may ignore status filters; verify client-side and skip stale runs.
+    return activeRuns.data.some((run) => {
+      if (!RUNNING_STATUSES.has(run.status)) return false
+      if (!isRunFresh(run, nowMs)) {
+        console.warn(
+          `[Sync] Ignoring stale Trigger run ${run.id} for ${taskIdentifier} (status=${run.status})`
+        )
+        return false
+      }
+      return true
+    })
   } catch (error) {
     console.warn(`Failed to check running status for task ${taskIdentifier}:`, error)
     return false // Fail open to allow retry if check fails
@@ -32,7 +63,12 @@ export async function isRunIdRunning(runId: string): Promise<boolean> {
   try {
     const run = await runs.retrieve(runId)
     const runningStatuses = ['EXECUTING', 'QUEUED', 'WAITING_FOR_DEPLOY', 'REATTEMPTING', 'FROZEN']
-    return runningStatuses.includes(run.status)
+    if (!runningStatuses.includes(run.status)) return false
+    if (!isRunFresh(run)) {
+      console.warn(`[Sync] Ignoring stale Trigger run ${runId} (status=${run.status})`)
+      return false
+    }
+    return true
   } catch (error) {
     console.warn(`Failed to check running status for run ${runId}:`, error)
     return false

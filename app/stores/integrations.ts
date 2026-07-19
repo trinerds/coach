@@ -109,13 +109,42 @@ export const useIntegrationStore = defineStore('integration', () => {
       )
     } catch (error: any) {
       console.error('Error syncing data:', error)
-      syncingData.value = false
 
+      const statusCode = error.statusCode || error.status || error.data?.statusCode
+      const conflict =
+        statusCode === 409 ||
+        error.data?.data?.code === 'SYNC_IN_PROGRESS' ||
+        error.data?.code === 'SYNC_IN_PROGRESS'
+      const reason = error.data?.data?.reason || error.data?.reason
+      const message =
+        error.data?.message ||
+        (conflict
+          ? 'A sync is already in progress. You can monitor it in the activity monitor.'
+          : 'Failed to sync data. Please try again.')
+
+      if (conflict) {
+        // Adopt in-progress UI when the batch sync itself is already running.
+        syncingData.value = reason === 'ingest-all'
+        showDashboardProgressToast(
+          toast,
+          {
+            title: 'Sync already in progress',
+            description: message,
+            color: 'warning',
+            icon: 'i-heroicons-arrow-path',
+            duration: 5000
+          },
+          'integration.sync.in_progress'
+        )
+        return
+      }
+
+      syncingData.value = false
       showDashboardProgressToast(
         toast,
         {
           title: 'Sync Failed',
-          description: error.data?.message || 'Failed to sync data. Please try again.',
+          description: message,
           color: 'error',
           icon: 'i-heroicons-exclamation-circle',
           duration: 3000

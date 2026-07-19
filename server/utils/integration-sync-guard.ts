@@ -19,6 +19,11 @@ export const PROVIDER_INGEST_TASKS: Record<string, string> = {
 
 const STALE_SYNC_MESSAGE = 'Previous sync did not complete'
 
+export type SyncBlockReason = 'ingest-all' | 'provider'
+
+export type SyncBlockResult =
+  { blocked: false } | { blocked: true; provider: string; reason: SyncBlockReason }
+
 export async function clearStaleSyncStatus(integrationId: string, provider: string) {
   await prisma.integration.update({
     where: { id: integrationId },
@@ -56,7 +61,7 @@ export async function isProviderActivelySyncing(
 export async function resolveProviderSyncBlock(
   userId: string,
   integration: { id: string; provider: string; syncStatus: string | null | undefined }
-): Promise<{ blocked: boolean; provider?: string }> {
+): Promise<SyncBlockResult> {
   if (integration.syncStatus !== 'SYNCING') {
     return { blocked: false }
   }
@@ -68,16 +73,14 @@ export async function resolveProviderSyncBlock(
   )
 
   if (activelySyncing) {
-    return { blocked: true, provider: integration.provider }
+    return { blocked: true, provider: integration.provider, reason: 'provider' }
   }
 
   await clearStaleSyncStatus(integration.id, integration.provider)
   return { blocked: false }
 }
 
-export async function resolveSyncAllBlock(
-  userId: string
-): Promise<{ blocked: boolean; provider?: string }> {
+export async function resolveSyncAllBlock(userId: string): Promise<SyncBlockResult> {
   const batchRunning = await isTaskRunning('ingest-all', userId)
   if (batchRunning) {
     const syncingIntegration = await prisma.integration.findFirst({
@@ -87,7 +90,8 @@ export async function resolveSyncAllBlock(
 
     return {
       blocked: true,
-      provider: syncingIntegration?.provider || 'all'
+      provider: syncingIntegration?.provider || 'all',
+      reason: 'ingest-all'
     }
   }
 
@@ -107,4 +111,17 @@ export async function resolveSyncAllBlock(
   }
 
   return { blocked: false }
+}
+
+export function formatSyncInProgressMessage(block: {
+  provider: string
+  reason: SyncBlockReason
+}): string {
+  if (block.reason === 'ingest-all') {
+    return block.provider === 'all'
+      ? 'A sync of all connected apps is already in progress. You can monitor it in the activity monitor.'
+      : `A sync of all connected apps is already in progress (currently syncing ${block.provider}). You can monitor it in the activity monitor.`
+  }
+
+  return `${block.provider} sync is already in progress. Sync All will be available when it finishes, or sync other apps individually from Settings.`
 }

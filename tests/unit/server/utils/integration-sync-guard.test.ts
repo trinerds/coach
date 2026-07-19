@@ -60,7 +60,7 @@ describe('integration-sync-guard', () => {
       syncStatus: 'SYNCING'
     })
 
-    expect(result).toEqual({ blocked: true, provider: 'oura' })
+    expect(result).toEqual({ blocked: true, provider: 'oura', reason: 'provider' })
     expect(prismaMock.integration.update).not.toHaveBeenCalled()
   })
 
@@ -86,7 +86,35 @@ describe('integration-sync-guard', () => {
 
     const result = await resolveSyncAllBlock('user-1')
 
-    expect(result).toEqual({ blocked: true, provider: 'oura' })
+    expect(result).toEqual({ blocked: true, provider: 'oura', reason: 'ingest-all' })
     expect(prismaMock.integration.update).not.toHaveBeenCalled()
+  })
+
+  it('blocks sync-all when a provider ingest task is actively running', async () => {
+    isTaskRunningMock.mockImplementation(async (taskId: string) => taskId === 'ingest-oura')
+    prismaMock.integration.findMany.mockResolvedValue([
+      { id: 'integration-oura', provider: 'oura', syncStatus: 'SYNCING' }
+    ])
+
+    const { resolveSyncAllBlock } = await import('../../../../server/utils/integration-sync-guard')
+
+    const result = await resolveSyncAllBlock('user-1')
+
+    expect(result).toEqual({ blocked: true, provider: 'oura', reason: 'provider' })
+  })
+
+  it('formats sync-in-progress messages for batch and provider blocks', async () => {
+    const { formatSyncInProgressMessage } =
+      await import('../../../../server/utils/integration-sync-guard')
+
+    expect(formatSyncInProgressMessage({ provider: 'all', reason: 'ingest-all' })).toContain(
+      'all connected apps'
+    )
+    expect(formatSyncInProgressMessage({ provider: 'oura', reason: 'ingest-all' })).toContain(
+      'oura'
+    )
+    expect(formatSyncInProgressMessage({ provider: 'oura', reason: 'provider' })).toContain(
+      'Sync All will be available'
+    )
   })
 })
