@@ -1,12 +1,7 @@
-import { oauthRepository } from '../../utils/repositories/oauthRepository'
 import { getEffectiveUserId } from '../../utils/coaching'
 import { prisma } from '../../utils/db'
-import {
-  parseScopeString,
-  validateMcpOAuthScopes,
-  validateRestOAuthScopes
-} from '../../utils/oauth/scopes'
-import { assertMcpResource, isMcpResourceRequest } from '../../utils/oauth/resource'
+import { isMcpResourceRequest } from '../../utils/oauth/resource'
+import { issueAuthorizationCodeRedirect } from '../../utils/oauth/issue-authorization-code'
 
 function normalizeBodyValue(value: unknown) {
   return typeof value === 'string' ? value : undefined
@@ -108,37 +103,17 @@ export default defineEventHandler(async (event) => {
     return sendRedirect(event, errorUrl.toString(), 303)
   }
 
-  const requestedScopes = parseScopeString(scope)
-  const scopes = requestedScopes.length > 0 ? requestedScopes : isMcpFlow ? [] : ['profile:read']
-
-  try {
-    if (isMcpFlow) {
-      validateMcpOAuthScopes(scopes)
-    } else {
-      validateRestOAuthScopes(scopes)
-    }
-  } catch (error) {
-    throw createError({
-      statusCode: 400,
-      message: error instanceof Error ? error.message : 'Invalid scopes'
-    })
-  }
-
-  const normalizedResource = isMcpFlow ? assertMcpResource(resource, siteUrl) : undefined
-
-  const authCode = await oauthRepository.createAuthCode({
-    appId: app.id,
+  const location = await issueAuthorizationCodeRedirect({
+    app,
     userId,
     redirectUri: redirect_uri,
-    scopes,
-    resource: normalizedResource,
+    scope,
+    state,
+    resource,
     codeChallenge: code_challenge,
-    codeChallengeMethod: isMcpFlow ? 'S256' : code_challenge_method
+    codeChallengeMethod: code_challenge_method,
+    siteUrl
   })
 
-  const successUrl = new URL(redirect_uri)
-  successUrl.searchParams.set('code', authCode.code)
-  if (state) successUrl.searchParams.set('state', state)
-
-  return sendRedirect(event, successUrl.toString(), 303)
+  return sendRedirect(event, location, 303)
 })

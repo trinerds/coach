@@ -1,15 +1,27 @@
 import { prisma } from '../../utils/db'
+import { getServerSession } from '../../utils/session'
 import { parseScopeString, validateMcpOAuthScopes } from '../../utils/oauth/scopes'
 import { assertMcpResource, isMcpResourceRequest } from '../../utils/oauth/resource'
+import { issueAuthorizationCodeRedirect } from '../../utils/oauth/issue-authorization-code'
 
 defineRouteMeta({
   openAPI: {
     tags: ['OAuth'],
     summary: 'Authorize OAuth Application',
     description:
-      'Initiates the OAuth 2.0 authorization code flow. Validates parameters and redirects to the consent screen.'
+      'Initiates the OAuth 2.0 authorization code flow. Official apps skip consent when the user is signed in; other apps redirect to the consent screen.'
   }
 })
+
+function buildAuthorizeApiPath(query: Record<string, string | undefined>): string {
+  const params = new URLSearchParams()
+  for (const [key, value] of Object.entries(query)) {
+    if (value != null && value !== '') {
+      params.set(key, value)
+    }
+  }
+  return `/api/oauth/authorize?${params.toString()}`
+}
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -84,6 +96,45 @@ export default defineEventHandler(async (event) => {
         message: error instanceof Error ? error.message : 'Invalid MCP authorization request'
       })
     }
+  }
+
+  // First-party official apps: skip consent when signed in (unless prompt=consent).
+  if (app.isOfficial && prompt !== 'consent') {
+    const session = await getServerSession(event)
+
+    if (session?.user?.id) {
+      const location = await issueAuthorizationCodeRedirect({
+        app,
+        userId: session.user.id,
+        redirectUri,
+        scope,
+        state,
+        resource,
+        codeChallenge,
+        codeChallengeMethod: isMcpFlow ? 'S256' : codeChallengeMethod,
+        siteUrl
+      })
+      return sendRedirect(event, location)
+    }
+
+    const authorizePath = buildAuthorizeApiPath({
+      response_type: responseType,
+      client_id: clientId,
+      redirect_uri: redirectUri,
+      scope: scope || (isMcpFlow ? '' : 'profile:read'),
+      state,
+      prompt,
+      resource,
+      code_challenge: codeChallenge,
+      code_challenge_method: codeChallenge
+        ? isMcpFlow
+          ? 'S256'
+          : codeChallengeMethod || 'S256'
+        : undefined
+    })
+    const loginUrl = new URL('/oauth/login', siteUrl)
+    loginUrl.searchParams.set('callbackUrl', authorizePath)
+    return sendRedirect(event, loginUrl.toString())
   }
 
   const consentUrl = new URL('/oauth/authorize', siteUrl)

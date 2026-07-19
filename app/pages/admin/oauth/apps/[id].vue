@@ -53,6 +53,7 @@
               <div class="flex items-center justify-between">
                 <h3 class="font-semibold text-lg">Application Details</h3>
                 <div class="flex gap-2">
+                  <UBadge v-if="data.app.isOfficial" color="info" variant="soft">Official</UBadge>
                   <UBadge v-if="data.app.isTrusted" color="success" variant="soft">Trusted</UBadge>
                   <UBadge :color="data.app.isPublic ? 'primary' : 'neutral'" variant="soft">
                     {{ data.app.isPublic ? 'Public' : 'Private' }}

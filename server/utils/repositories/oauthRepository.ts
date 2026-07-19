@@ -22,6 +22,7 @@ export const oauthRepository = {
         clientId: true,
         redirectUris: true,
         isTrusted: true,
+        isOfficial: true,
         isPublic: true,
         isPublicClient: true,
         registrationType: true,

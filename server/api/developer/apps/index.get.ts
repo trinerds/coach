@@ -25,6 +25,7 @@ defineRouteMeta({
                   clientId: { type: 'string' },
                   redirectUris: { type: 'array', items: { type: 'string' } },
                   isTrusted: { type: 'boolean' },
+                  isOfficial: { type: 'boolean' },
                   isPublic: { type: 'boolean' },
                   createdAt: { type: 'string', format: 'date-time' },
                   updatedAt: { type: 'string', format: 'date-time' },
