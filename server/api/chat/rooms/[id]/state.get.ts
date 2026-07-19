@@ -1,14 +1,10 @@
-import { getServerSession } from '../../../../utils/session'
+import { requireAuth } from '../../../../utils/auth-guard'
 import { prisma } from '../../../../utils/db'
 import { ACTIVE_CHAT_TURN_STATUSES } from '../../../../utils/chat/turns'
 
 export default defineEventHandler(async (event) => {
-  const session = await getServerSession(event)
-  if (!session?.user) {
-    throw createError({ statusCode: 401, message: 'Unauthorized' })
-  }
-
-  const userId = (session.user as any).id
+  const user = await requireAuth(event, ['chat:read'])
+  const userId = user.id
   const roomId = getRouterParam(event, 'id')
 
   if (!userId || !roomId) {

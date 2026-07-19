@@ -21,15 +21,15 @@ It should be updated as implementation decisions land. It does **not** replace f
 
 ### Related reading
 
-| Topic | Doc |
-| --- | --- |
+| Topic                    | Doc                                                                                    |
+| ------------------------ | -------------------------------------------------------------------------------------- |
 | Activity recommendations | [Activity Recommendations](../02-features/recommendations/activity-recommendations.md) |
-| AI chat | [Chat Overview](../02-features/chat/overview.md) |
-| OAuth IdP (internal) | [OAuth Provider](../02-features/oauth-provider.md) |
-| Developer auth (PKCE) | [Authentication](../developer/authentication.md) |
-| Scopes | [Scopes](../developer/scopes.md) |
-| Notifications / realtime | [Realtime Message Bus](../01-architecture/realtime-message-bus.md) |
-| Web mobile UX review | [Mobile Review Report](./mobile_review_report.md) |
+| AI chat                  | [Chat Overview](../02-features/chat/overview.md)                                       |
+| OAuth IdP (internal)     | [OAuth Provider](../02-features/oauth-provider.md)                                     |
+| Developer auth (PKCE)    | [Authentication](../developer/authentication.md)                                       |
+| Scopes                   | [Scopes](../developer/scopes.md)                                                       |
+| Notifications / realtime | [Realtime Message Bus](../01-architecture/realtime-message-bus.md)                     |
+| Web mobile UX review     | [Mobile Review Report](./mobile_review_report.md)                                      |
 
 ---
 
@@ -51,26 +51,26 @@ If a screen exists mainly to configure, explore, or architect training, it belon
 
 Prefer one shared TypeScript client over separate Swift/Kotlin apps, so the Coach Watts team stays in one language ecosystem.
 
-| Layer | Choice | Notes |
-| --- | --- | --- |
-| Runtime | **Expo (React Native) + TypeScript** | Use a **dev client** when native modules are required (HealthKit, etc.) |
-| Navigation | **Expo Router** | File-based routes; mirrors Nuxt mental model |
-| UI | React Native + **NativeWind** (or existing design tokens adapted) | Native feel; avoid rebuilding the entire Nuxt UI system |
-| Server state | **TanStack Query** | Cache today / recs; stale-while-revalidate; offline retry |
-| Auth storage | **expo-secure-store** | Access + refresh tokens only on device |
-| Local cache | MMKV and/or SQLite | Offline “today’s workout” snapshot |
-| Push | **Expo Notifications** → APNs / FCM | Analysis ready, new recommendation, sync finished |
-| Observability | **Sentry React Native** | Align with existing Sentry usage |
-| Charts (lite) | Victory Native or Skia | Summary only; deep analytics stay on web |
-| Health (later) | HealthKit / Health Connect libs | Sleep, RHR, optional workout write-back |
+| Layer          | Choice                                                            | Notes                                                                   |
+| -------------- | ----------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Runtime        | **Expo (React Native) + TypeScript**                              | Use a **dev client** when native modules are required (HealthKit, etc.) |
+| Navigation     | **Expo Router**                                                   | File-based routes; mirrors Nuxt mental model                            |
+| UI             | React Native + **NativeWind** (or existing design tokens adapted) | Native feel; avoid rebuilding the entire Nuxt UI system                 |
+| Server state   | **TanStack Query**                                                | Cache today / recs; stale-while-revalidate; offline retry               |
+| Auth storage   | **expo-secure-store**                                             | Access + refresh tokens only on device                                  |
+| Local cache    | MMKV and/or SQLite                                                | Offline “today’s workout” snapshot                                      |
+| Push           | **Expo Notifications** → APNs / FCM                               | Analysis ready, new recommendation, sync finished                       |
+| Observability  | **Sentry React Native**                                           | Align with existing Sentry usage                                        |
+| Charts (lite)  | Victory Native or Skia                                            | Summary only; deep analytics stay on web                                |
+| Health (later) | HealthKit / Health Connect libs                                   | Sleep, RHR, optional workout write-back                                 |
 
 ### Alternatives (not recommended for v1)
 
-| Option | When to reconsider |
-| --- | --- |
-| Flutter | Strong custom UI/charts, but leaves the TypeScript monorepo |
-| Kotlin Multiplatform + SwiftUI/Compose | Best true-native UX; higher cost for a small team |
-| Capacitor wrapping Nuxt | Acceptable for a PWA experiment; weak for HealthKit, push reliability, offline workout UX |
+| Option                                 | When to reconsider                                                                        |
+| -------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Flutter                                | Strong custom UI/charts, but leaves the TypeScript monorepo                               |
+| Kotlin Multiplatform + SwiftUI/Compose | Best true-native UX; higher cost for a small team                                         |
+| Capacitor wrapping Nuxt                | Acceptable for a PWA experiment; weak for HealthKit, push reliability, offline workout UX |
 
 ### Repository layout (target)
 
@@ -128,25 +128,25 @@ Use a single **Open in browser** escape hatch instead of half-porting these surf
 
 Bottom tabs — **four maximum**:
 
-| Tab | Route (suggested) | Role |
-| --- | --- | --- |
-| **Today** | `/(tabs)/today` | Home. One scroll, one decision. |
-| **Log** | `/(tabs)/log` | Check-in + wellness. Input-first. |
-| **Coach** | `/(tabs)/coach` | Chat (+ optional recent recommendation context). |
-| **More** | `/(tabs)/more` | Activities, notifications, settings, open web. |
+| Tab       | Route (suggested) | Role                                             |
+| --------- | ----------------- | ------------------------------------------------ |
+| **Today** | `/(tabs)/today`   | Home. One scroll, one decision.                  |
+| **Log**   | `/(tabs)/log`     | Check-in + wellness. Input-first.                |
+| **Coach** | `/(tabs)/coach`   | Chat (+ optional recent recommendation context). |
+| **More**  | `/(tabs)/more`    | Activities, notifications, settings, open web.   |
 
 Unread badge belongs on **More** (or a bell in the Today header) — not a fifth tab.
 
 ### 5.2 Push / stack screens (not tabs)
 
-| Screen | Purpose |
-| --- | --- |
-| Recommendation detail | Full reasoning + modifications |
-| Planned workout detail | Intervals / zones / duration |
-| Activity summary | Lightweight completed-session view |
-| Notification detail / list | Inbox when opened from More or push |
-| Sign-in / instance setup | First launch and re-auth |
-| Settings | Notification prefs, account, open web, sign out |
+| Screen                     | Purpose                                         |
+| -------------------------- | ----------------------------------------------- |
+| Recommendation detail      | Full reasoning + modifications                  |
+| Planned workout detail     | Intervals / zones / duration                    |
+| Activity summary           | Lightweight completed-session view              |
+| Notification detail / list | Inbox when opened from More or push             |
+| Sign-in / instance setup   | First launch and re-auth                        |
+| Settings                   | Notification prefs, account, open web, sign out |
 
 ### 5.3 Today screen composition (top → bottom)
 
@@ -218,17 +218,18 @@ Coach Watts already exposes OAuth 2.0 + PKCE as an identity provider. The compan
 
 ### Suggested scopes (v1)
 
-| Scope | Why |
-| --- | --- |
-| `profile:read` | Name, basics, FTP display |
-| `workout:read` | Recent activities + planned workout surface |
-| `health:read` | Recovery strip |
-| `health:write` | Check-in / wellness log |
-| `recommendations:read` | Today’s recommendation |
-| `recommendations:write` | Accept / dismiss |
-| `planning:read` | Today’s planned workout |
-| `offline_access` | Refresh tokens |
-| Chat access | Use existing chat APIs under an agreed scope or first-party session bridge — **decide before impl** (see Open Questions) |
+| Scope                   | Why                                                 |
+| ----------------------- | --------------------------------------------------- |
+| `profile:read`          | Name, basics, FTP display                           |
+| `workout:read`          | Recent activities + planned workout surface         |
+| `health:read`           | Recovery strip                                      |
+| `health:write`          | Check-in / wellness log                             |
+| `recommendations:read`  | Today’s recommendation                              |
+| `recommendations:write` | Accept / dismiss                                    |
+| `planning:read`         | Today’s planned workout                             |
+| `chat:read`             | Room list, messages, turn state, WS-backed catch-up |
+| `chat:write`            | Send messages; resume/retry turns                   |
+| `offline_access`        | Refresh tokens                                      |
 
 Public docs today: [developer/authentication.md](../developer/authentication.md), [developer/scopes.md](../developer/scopes.md).
 
@@ -244,16 +245,16 @@ Prefer a thin **companion-oriented** BFF or curated existing endpoints. Do not f
 
 ### 8.1 Must-have endpoints (logical)
 
-| Capability | Suggested contract | Notes |
-| --- | --- | --- |
-| Bootstrap / home | `GET /api/mobile/today` (new) **or** compose dashboard + today-recommendation | Single payload: recommendation, planned workout, recovery strip, unread count |
-| Recommendation actions | existing accept / dismiss recommendation APIs | Map to `recommendations:write` |
-| Wellness check-in | existing wellness POST/PATCH | Map to `health:write` |
-| Recent activities | workouts list (limited, recent) | Cap page size for mobile |
-| Chat | existing chat room / messages / stream APIs | Confirm mobile auth + streaming strategy |
-| Notifications list + read | existing `/api/notifications` | |
-| Push device register | `POST /api/mobile/devices` (new) | Store Expo push token + platform + user |
-| Push preferences | reuse / extend communication prefs | Align with email notification taxonomy where sensible |
+| Capability                | Suggested contract                                                            | Notes                                                                         |
+| ------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Bootstrap / home          | `GET /api/mobile/today` (new) **or** compose dashboard + today-recommendation | Single payload: recommendation, planned workout, recovery strip, unread count |
+| Recommendation actions    | existing accept / dismiss recommendation APIs                                 | Map to `recommendations:write`                                                |
+| Wellness check-in         | existing wellness POST/PATCH                                                  | Map to `health:write`                                                         |
+| Recent activities         | workouts list (limited, recent)                                               | Cap page size for mobile                                                      |
+| Chat                      | existing chat room / messages + WebSocket                                     | Bearer on chat REST + `GET /api/websocket-token`; poll is fallback only       |
+| Notifications list + read | existing `/api/notifications`                                                 |                                                                               |
+| Push device register      | `POST /api/mobile/devices` (new)                                              | Store Expo push token + platform + user                                       |
+| Push preferences          | reuse / extend communication prefs                                            | Align with email notification taxonomy where sensible                         |
 
 ### 8.2 Backend prerequisites before UI polish
 
@@ -264,12 +265,12 @@ Prefer a thin **companion-oriented** BFF or curated existing endpoints. Do not f
 
 ### 8.3 Push event types (initial)
 
-| Event | Deep-link target |
-| --- | --- |
-| `RECOMMENDATION_READY` | Today / recommendation detail |
-| `WORKOUT_ANALYSIS_READY` | Activity summary |
-| `SYNC_COMPLETED` | Today (refresh) |
-| `COACH_MESSAGE` (if applicable) | Coach tab |
+| Event                           | Deep-link target              |
+| ------------------------------- | ----------------------------- |
+| `RECOMMENDATION_READY`          | Today / recommendation detail |
+| `WORKOUT_ANALYSIS_READY`        | Activity summary              |
+| `SYNC_COMPLETED`                | Today (refresh)               |
+| `COACH_MESSAGE` (if applicable) | Coach tab                     |
 
 Reuse the existing notification taxonomy where possible; extend rather than invent a parallel system.
 
@@ -277,32 +278,32 @@ Reuse the existing notification taxonomy where possible; extend rather than inve
 
 ## 9. Screen → data mapping
 
-| Screen | Primary data | Mutations |
-| --- | --- | --- |
-| Today | today aggregate | accept / modify / rest recommendation |
-| Recommendation detail | recommendation by id | same actions |
-| Planned workout detail | planned workout by id | none in v1 (export later) |
-| Log | none (form) | create/update wellness |
-| Coach | chat room + messages | send message |
-| Recent activities | workouts page | none |
-| Activity summary | workout by id | none |
-| Notifications | notifications page | mark read / mark all |
-| Settings | profile + prefs | update push prefs; sign out |
+| Screen                 | Primary data          | Mutations                             |
+| ---------------------- | --------------------- | ------------------------------------- |
+| Today                  | today aggregate       | accept / modify / rest recommendation |
+| Recommendation detail  | recommendation by id  | same actions                          |
+| Planned workout detail | planned workout by id | none in v1 (export later)             |
+| Log                    | none (form)           | create/update wellness                |
+| Coach                  | chat room + messages  | send message                          |
+| Recent activities      | workouts page         | none                                  |
+| Activity summary       | workout by id         | none                                  |
+| Notifications          | notifications page    | mark read / mark all                  |
+| Settings               | profile + prefs       | update push prefs; sign out           |
 
 ---
 
 ## 10. Non-functional requirements
 
-| Area | Baseline |
-| --- | --- |
-| Platforms | iOS + Android via Expo |
-| Offline | Read last cached Today; queue wellness check-in when offline (v1 soft; harden in v1.5) |
-| Perf | Today usable interaction target &lt; 2s on warm cache; show skeleton immediately |
-| i18n | Reuse Tolgee keys / same locales as web where practical |
-| Accessibility | Dynamic type, VoiceOver/TalkBack labels on primary CTAs |
-| Privacy | Health data only with granted scopes; no health metrics in analytics events |
-| Branding | Follow [BRANDING.md](../../BRANDING.md); companion is Coach Watts, not a generic fitness shell |
-| Observability | Sentry + minimal product analytics events (open Today, accept rec, check-in saved) |
+| Area          | Baseline                                                                                       |
+| ------------- | ---------------------------------------------------------------------------------------------- |
+| Platforms     | iOS + Android via Expo                                                                         |
+| Offline       | Read last cached Today; queue wellness check-in when offline (v1 soft; harden in v1.5)         |
+| Perf          | Today usable interaction target &lt; 2s on warm cache; show skeleton immediately               |
+| i18n          | Reuse Tolgee keys / same locales as web where practical                                        |
+| Accessibility | Dynamic type, VoiceOver/TalkBack labels on primary CTAs                                        |
+| Privacy       | Health data only with granted scopes; no health metrics in analytics events                    |
+| Branding      | Follow [BRANDING.md](../../BRANDING.md); companion is Coach Watts, not a generic fitness shell |
+| Observability | Sentry + minimal product analytics events (open Today, accept rec, check-in saved)             |
 
 ---
 
@@ -346,12 +347,12 @@ Each phase should ship behind store builds only when the Auth + Today loop is pr
 
 ## 12. Testing baseline
 
-| Layer | Expectation |
-| --- | --- |
-| Unit | Token refresh, today payload mappers, recommendation action state machine |
-| Integration | OAuth PKCE against local / staging IdP; wellness write; recommendation accept |
-| E2E (Detox or Maestro) | Login → Today → Accept; Login → Log → Save; Push deep-link → Activity |
-| Manual device | Self-hosted instance URL; airplane-mode check-in queue; notification permission denial UX |
+| Layer                  | Expectation                                                                               |
+| ---------------------- | ----------------------------------------------------------------------------------------- |
+| Unit                   | Token refresh, today payload mappers, recommendation action state machine                 |
+| Integration            | OAuth PKCE against local / staging IdP; wellness write; recommendation accept             |
+| E2E (Detox or Maestro) | Login → Today → Accept; Login → Log → Save; Push deep-link → Activity                     |
+| Manual device          | Self-hosted instance URL; airplane-mode check-in queue; notification permission denial UX |
 
 ---
 
@@ -359,33 +360,41 @@ Each phase should ship behind store builds only when the Auth + Today loop is pr
 
 Resolve before or during Phase 0–1:
 
-1. **First-party vs developer OAuth app** — Is the official companion a hard-coded first-party client, or registered like third-party apps?
-2. **Chat authorization** — Which scope (or first-party exemption) covers mobile chat send/stream?
+1. ~~**First-party vs developer OAuth app**~~ — **Decided:** first-party Official Mobile App (`isOfficial` + `isPublicClient` via `oauth:create-system-app --official --public-client`).
+2. ~~**Chat authorization**~~ — **Decided:** REST scopes `chat:read` / `chat:write` (already in `REST_OAUTH_SCOPES`).
 3. **Modify recommendation UX** — Inline choices on Today vs dedicated detail screen?
 4. **Hosted vs self-hosted distribution** — Single App Store binary with instance picker, or separate branded builds?
-5. **Streaming chat** — SSE / WebSocket / polling parity with web under mobile networks?
+5. ~~**Streaming chat**~~ — **Decided (2026-07-19):** WebSocket (same events as web) after `POST /api/chat/messages`; poll is safety net only. No new SSE endpoint.
 6. **Companion aggregate API** — New `/api/mobile/*` namespace vs documenting a composition of existing endpoints?
 
 Decisions should be recorded here when made.
+
+### Chat / realtime backend contract (coach-wattz)
+
+- `GET /api/websocket-token` accepts cookie session **or** Bearer (same `generateWsToken` mint).
+- Chat REST used by mobile (`messages`, room state, resume/retry) uses `requireAuth` with `chat:read` / `chat:write`.
+- Durable-turn architecture unchanged: do not re-bind full LLM streaming to the original POST HTTP response.
 
 ---
 
 ## 14. Decision log
 
-| Date | Decision | Rationale |
-| --- | --- | --- |
-| 2026-07-14 | Companion, not full port | Protect focus on daily athlete loop; web keeps depth |
-| 2026-07-14 | Expo + TypeScript | Align with existing Nuxt/TS team skills; OTA-friendly |
-| 2026-07-14 | Four-tab IA: Today / Log / Coach / More | One job per tab; avoid dashboard clone |
-| 2026-07-14 | OAuth PKCE + Bearer tokens | Existing IdP; cookie sessions are web-only |
+| Date       | Decision                                     | Rationale                                                             |
+| ---------- | -------------------------------------------- | --------------------------------------------------------------------- |
+| 2026-07-14 | Companion, not full port                     | Protect focus on daily athlete loop; web keeps depth                  |
+| 2026-07-14 | Expo + TypeScript                            | Align with existing Nuxt/TS team skills; OTA-friendly                 |
+| 2026-07-14 | Four-tab IA: Today / Log / Coach / More      | One job per tab; avoid dashboard clone                                |
+| 2026-07-14 | OAuth PKCE + Bearer tokens                   | Existing IdP; cookie sessions are web-only                            |
+| 2026-07-19 | Chat scopes `chat:read` / `chat:write`       | Match existing chat REST guards; Official Mobile App may request them |
+| 2026-07-19 | Chat streaming via WebSocket + poll fallback | Parity with web; Bearer can mint WS token; no SSE                     |
 
 ---
 
 ## 15. Implementation checklist (living)
 
 - [ ] Create `clients/mobile` Expo scaffold
-- [ ] Register OAuth client + redirect URIs (dev/prod)
-- [ ] Decide and document chat auth approach
+- [ ] Register OAuth client + redirect URIs (dev/prod) — `oauth:create-system-app --name="Official Mobile App" --official --public-client`
+- [x] Decide and document chat auth approach (Bearer + `chat:read`/`chat:write` + WS)
 - [ ] Ship `GET` today aggregate (or composition guide)
 - [ ] Ship device registration + push send hooks
 - [ ] Implement Phase 0–1 screens

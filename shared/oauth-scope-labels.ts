@@ -98,6 +98,18 @@ export const MCP_SCOPE_LABELS: Record<
     description: 'Run AI-powered generation tools.',
     icon: 'i-heroicons-sparkles'
   },
+  'chat:read': {
+    id: 'chat:read',
+    title: 'Read Chat',
+    description: 'View your Coach chat rooms, messages, and turn status.',
+    icon: 'i-heroicons-chat-bubble-left-right'
+  },
+  'chat:write': {
+    id: 'chat:write',
+    title: 'Send Chat Messages',
+    description: 'Send messages to Coach and manage chat turns.',
+    icon: 'i-heroicons-paper-airplane'
+  },
   offline_access: {
     id: 'offline_access',
     title: 'Offline Access',

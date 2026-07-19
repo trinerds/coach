@@ -143,6 +143,8 @@ The intended chat transport model is:
 - websocket for live deltas and upserts
 - HTTP polling only as fallback
 
+Mobile companion clients mint the WS token with Bearer via `GET /api/websocket-token` (same short-lived token as cookie sessions). Do not introduce a separate SSE stream for chat.
+
 ### Important Consequence
 
 A connected websocket is not the same as healthy chat realtime.

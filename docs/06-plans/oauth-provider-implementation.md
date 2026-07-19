@@ -287,8 +287,11 @@ S3_SECRET_KEY=...
 
 Extend the CLI for administrative tasks.
 
-- `pnpm cw:cli oauth:create-system-app --name="Official Mobile App"`
-  - Creates an app marked `isTrusted=true` (skips consent screen if needed).
+- `pnpm cw:cli oauth:create-system-app --name="Official Mobile App" --official --public-client`
+  - Creates an app marked `isTrusted=true`.
+  - `--official` sets `isOfficial=true` (skips consent when the user is signed in).
+  - `--public-client` sets `isPublicClient=true` for native PKCE (no client secret at token exchange).
+  - May request REST scopes including `chat:read` and `chat:write`.
 - `pnpm cw:cli oauth:rotate-secret --client-id="..."`
 - `pnpm cw:cli audit:tail --follow`
   - Live streams rows from `AuditLog`.

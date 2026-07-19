@@ -14,6 +14,8 @@ When requesting authorization, you must specify which scopes your application ne
 | `health:write`    | Log health metrics.                    | Log HRV, sleep, weight        |
 | `nutrition:read`  | Read nutrition logs.                   | Daily calories, macros        |
 | `nutrition:write` | Log nutrition data.                    | Log calories, carbs, protein  |
+| `chat:read`       | Read Coach chat.                       | Rooms, messages, turn state   |
+| `chat:write`      | Send Coach chat messages.              | Post messages, resume/retry   |
 | `offline_access`  | Long-lived access.                     | Returns a `refresh_token`     |
 
 ## MCP scopes

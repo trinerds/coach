@@ -1,17 +1,15 @@
-import { getServerSession } from '../utils/session'
+import { requireAuth } from '../utils/auth-guard'
 import { generateWsToken } from '../utils/ws-auth'
 
+/**
+ * Mint a short-lived WebSocket auth token.
+ *
+ * Supports cookie sessions (web) and OAuth Bearer / API keys (mobile companion)
+ * via requireAuth. The returned token is the same HMAC token verifyWsToken accepts
+ * on `/api/websocket`.
+ */
 export default defineEventHandler(async (event) => {
-  const session = await getServerSession(event)
-
-  if (!session?.user?.id) {
-    console.error('[WS Token] Unauthorized - Session:', session)
-    throw createError({
-      statusCode: 401,
-      message: 'Unauthorized'
-    })
-  }
-
-  const token = generateWsToken(session.user.id)
+  const user = await requireAuth(event)
+  const token = generateWsToken(user.id)
   return { token }
 })
