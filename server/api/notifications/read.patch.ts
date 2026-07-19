@@ -1,12 +1,9 @@
-import { getServerSession } from '../../utils/session'
+import { requireAuth } from '../../utils/auth-guard'
 import { markAllNotificationsAsRead, markNotificationAsRead } from '../../utils/notifications'
 
 export default defineEventHandler(async (event) => {
-  const session = await getServerSession(event)
-  if (!session?.user?.id) {
-    throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
-  }
-  const userId = session.user.id
+  const user = await requireAuth(event, ['profile:write'])
+  const userId = user.id
 
   const body = await readBody(event)
   const { id, all } = body

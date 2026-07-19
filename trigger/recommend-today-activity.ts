@@ -32,6 +32,8 @@ import {
   formatPromptDistance
 } from '../server/utils/ai-prompt-format'
 import { isWithinPreferredEmailTime } from '../server/utils/email-schedule'
+import { createUserNotification } from '../server/utils/notifications'
+import { sendExpoPushToUser } from '../server/utils/expo-push'
 import { bodyMetricResolver } from '../server/utils/services/bodyMetricResolver'
 import {
   getMoodLabel,
@@ -1088,6 +1090,34 @@ Maintain your **${aiSettings.aiPersona}** persona throughout.`
         recommendationId: recommendation.id,
         decision: analysis.recommendation
       })
+
+      // Inbox + Expo push for AUTOMATIC daily recommendations (companion app)
+      if (source === 'AUTOMATIC') {
+        const decisionLabel = analysis.recommendation.toUpperCase().replace('_', ' ')
+        const pushTitle = "Today's recommendation is ready"
+        const pushBody = `Coach Watts suggests: ${decisionLabel}`
+        try {
+          const notification = await createUserNotification(userId, {
+            title: pushTitle,
+            message: pushBody,
+            icon: 'i-heroicons-bolt',
+            link: '/'
+          })
+          await sendExpoPushToUser(userId, {
+            title: pushTitle,
+            body: pushBody,
+            type: 'RECOMMENDATION_READY',
+            path: '/(app)/(tabs)/today',
+            notificationId: notification.id,
+            extra: { recommendationId: recommendation.id }
+          })
+        } catch (pushError) {
+          logger.warn('Failed to notify mobile about recommendation', {
+            recommendationId: recommendation.id,
+            error: pushError
+          })
+        }
+      }
 
       // TRIGGER EMAIL (Only if AUTOMATIC and preferences allow)
       if (

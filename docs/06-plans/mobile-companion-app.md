@@ -245,16 +245,29 @@ Prefer a thin **companion-oriented** BFF or curated existing endpoints. Do not f
 
 ### 8.1 Must-have endpoints (logical)
 
-| Capability                | Suggested contract                                                            | Notes                                                                         |
-| ------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| Bootstrap / home          | `GET /api/mobile/today` (new) **or** compose dashboard + today-recommendation | Single payload: recommendation, planned workout, recovery strip, unread count |
-| Recommendation actions    | existing accept / dismiss recommendation APIs                                 | Map to `recommendations:write`                                                |
-| Wellness check-in         | existing wellness POST/PATCH                                                  | Map to `health:write`                                                         |
-| Recent activities         | workouts list (limited, recent)                                               | Cap page size for mobile                                                      |
-| Chat                      | existing chat room / messages + WebSocket                                     | Bearer on chat REST + `GET /api/websocket-token`; poll is fallback only       |
-| Notifications list + read | existing `/api/notifications`                                                 |                                                                               |
-| Push device register      | `POST /api/mobile/devices` (new)                                              | Store Expo push token + platform + user                                       |
-| Push preferences          | reuse / extend communication prefs                                            | Align with email notification taxonomy where sensible                         |
+| Capability                | Suggested contract                                                            | Notes                                                                                                           |
+| ------------------------- | ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Bootstrap / home          | `GET /api/mobile/today` (new) **or** compose dashboard + today-recommendation | Single payload: recommendation, planned workout, recovery strip, unread count                                   |
+| Recommendation actions    | existing accept / dismiss recommendation APIs                                 | Map to `recommendations:write`                                                                                  |
+| Wellness check-in         | existing wellness POST/PATCH                                                  | Map to `health:write`                                                                                           |
+| Recent activities         | workouts list (limited, recent)                                               | Cap page size for mobile                                                                                        |
+| Chat                      | existing chat room / messages + WebSocket                                     | Bearer on chat REST + `GET /api/websocket-token`; poll is fallback only                                         |
+| Notifications list + read | existing `/api/notifications`                                                 | `GET` list (`profile:read`); `PATCH /api/notifications/read` (`profile:write`) with `{ id }` or `{ all: true }` |
+| Push device register      | `POST /api/mobile/devices` (`profile:write`)                                  | Body: `{ token, platform: 'ios'\|'android', appVersion? }` — upsert by token                                    |
+| Push device unregister    | `DELETE /api/mobile/devices` (`profile:write`)                                | Body: `{ token }` — remove for current user (sign-out)                                                          |
+| Push preferences          | reuse / extend communication prefs                                            | Align with email notification taxonomy where sensible                                                           |
+
+#### `POST /api/mobile/devices` contract
+
+```json
+// request
+{ "token": "ExponentPushToken[…]", "platform": "ios", "appVersion": "0.1.0" }
+
+// 200 response
+{ "id": "…", "token": "…", "platform": "ios", "appVersion": "0.1.0", "updatedAt": "…" }
+```
+
+Idempotent upsert on `token`. Ownership moves to the current user if the token was previously registered to someone else. Send Expo pushes via `server/utils/expo-push.ts` (`sendExpoPushToUser`) with `data.type` from §8.3 and optional `data.path`.
 
 ### 8.2 Backend prerequisites before UI polish
 
@@ -371,8 +384,8 @@ Decisions should be recorded here when made.
 
 ### Chat / realtime backend contract (coach-wattz)
 
-- `GET /api/websocket-token` accepts cookie session **or** Bearer (same `generateWsToken` mint).
-- Chat REST used by mobile (`messages`, room state, resume/retry) uses `requireAuth` with `chat:read` / `chat:write`.
+- `GET /api/websocket-token` accepts cookie session **or** Bearer; OAuth mints embed granted scopes in the WS token (`null` for session/API key = unrestricted).
+- Chat REST used by mobile (`messages`, room state, resume/retry) uses `requireAuth` with `chat:read` / `chat:write`. WS `chat_*` delivery requires `chat:read`; inbound `chat_message` requires `chat:write`.
 - Durable-turn architecture unchanged: do not re-bind full LLM streaming to the original POST HTTP response.
 
 ---
