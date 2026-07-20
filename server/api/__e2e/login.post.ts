@@ -1,12 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import { createError, readBody, setCookie } from 'h3'
 import { prisma } from '../../utils/db'
-
-function assertE2eMode() {
-  if (process.env.E2E_MODE !== 'true') {
-    throw createError({ statusCode: 404, statusMessage: 'Not Found' })
-  }
-}
+import { assertE2eMode } from '../../utils/e2e-guard'
 
 export default defineEventHandler(async (event) => {
   assertE2eMode()

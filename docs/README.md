@@ -320,9 +320,11 @@ npx trigger.dev@latest deploy  # Deploy jobs to production
 
 ### E2E Tests
 
-- Critical user flows
-- Authentication
-- Report generation
+Dedicated compose stack (Postgres, Redis, Nuxt/API) shared by web Playwright and the companion mobile app. See [E2E testing runbook](./04-guides/e2e-testing.md).
+
+- Public pages + cookie session login (web)
+- Bearer token mint + today recommendation (API / mobile)
+- Broader critical flows (reports, check-in, accept) still to expand
 
 ## 📊 Performance Considerations
 

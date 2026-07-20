@@ -5,6 +5,8 @@ import { v4 as uuidv4 } from 'uuid'
 
 export default defineNitroPlugin((nitroApp: any) => {
   nitroApp.hooks.hook('request', async (event: any) => {
+    // Dedicated E2E stack must not inherit local AUTH_BYPASS_USER from .env
+    if (process.env.E2E_MODE === 'true') return
     if (!process.env.AUTH_BYPASS_USER) return
 
     const url = event.node.req.url || ''

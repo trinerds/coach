@@ -263,9 +263,10 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     authOrigin: process.env.NUXT_AUTH_ORIGIN || 'http://localhost:3099',
-    authBypassEnabled: !!process.env.AUTH_BYPASS_USER,
-    authBypassUser: process.env.AUTH_BYPASS_USER || '',
-    authBypassName: process.env.AUTH_BYPASS_NAME || '',
+    // E2E stack must exercise real auth redirects; ignore local AUTH_BYPASS_USER.
+    authBypassEnabled: process.env.E2E_MODE === 'true' ? false : !!process.env.AUTH_BYPASS_USER,
+    authBypassUser: process.env.E2E_MODE === 'true' ? '' : process.env.AUTH_BYPASS_USER || '',
+    authBypassName: process.env.E2E_MODE === 'true' ? '' : process.env.AUTH_BYPASS_NAME || '',
 
     // MCP server
     mcpEnabled: process.env.NUXT_MCP_ENABLED !== 'false',
@@ -310,9 +311,9 @@ export default defineNuxtConfig({
       sentryRelease,
       sentryEnabled,
       sentryDsn: process.env.SENTRY_DSN || '',
-      authBypassEnabled: !!process.env.AUTH_BYPASS_USER,
-      authBypassUser: process.env.AUTH_BYPASS_USER || '',
-      authBypassName: process.env.AUTH_BYPASS_NAME || '',
+      authBypassEnabled: process.env.E2E_MODE === 'true' ? false : !!process.env.AUTH_BYPASS_USER,
+      authBypassUser: process.env.E2E_MODE === 'true' ? '' : process.env.AUTH_BYPASS_USER || '',
+      authBypassName: process.env.E2E_MODE === 'true' ? '' : process.env.AUTH_BYPASS_NAME || '',
       stripePublishableKey: process.env.STRIPE_PUBLISHABLE_KEY || '',
       stripeSupporterMonthlyPriceId: process.env.STRIPE_SUPPORTER_MONTHLY_PRICE_ID || '',
       stripeSupporterAnnualPriceId: process.env.STRIPE_SUPPORTER_ANNUAL_PRICE_ID || '',

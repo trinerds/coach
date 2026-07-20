@@ -1,7 +1,7 @@
 import { execSync } from 'node:child_process'
 import { loadE2eEnv, getE2eRootDir } from '../helpers/env.ts'
 import { createE2ePrisma, resetDatabase, waitForPostgres } from '../helpers/db.ts'
-import { seedE2eUsers } from '../seed.ts'
+import { E2E_MOBILE_CLIENT_ID, seedE2eData } from '../seed.ts'
 
 async function main() {
   loadE2eEnv()
@@ -28,11 +28,14 @@ async function main() {
   const { prisma, pool } = createE2ePrisma(connectionString)
 
   try {
-    console.log('[e2e] Seeding deterministic test users...')
-    const users = await seedE2eUsers(prisma)
-    console.log('[e2e] Seeded users:', {
-      athlete: users.athlete.email,
-      admin: users.admin.email
+    console.log('[e2e] Seeding deterministic E2E fixtures...')
+    const seeded = await seedE2eData(prisma)
+    console.log('[e2e] Seeded:', {
+      athlete: seeded.athlete.email,
+      admin: seeded.admin.email,
+      mobileClientId: seeded.mobileApp.clientId,
+      todayRecommendationId: seeded.todayRecommendation.id,
+      expectedMobileClientId: E2E_MOBILE_CLIENT_ID
     })
   } finally {
     await prisma.$disconnect()

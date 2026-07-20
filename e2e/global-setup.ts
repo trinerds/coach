@@ -1,4 +1,5 @@
 import { loadE2eEnv } from './helpers/env.ts'
+import { getE2eBaseUrl, waitForApp } from './helpers/app.ts'
 import { execSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 
@@ -10,4 +11,8 @@ export default async function globalSetup() {
     stdio: 'inherit',
     env: process.env
   })
+
+  const baseUrl = getE2eBaseUrl()
+  console.log(`[e2e] Waiting for app at ${baseUrl}...`)
+  await waitForApp(baseUrl)
 }

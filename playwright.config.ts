@@ -1,14 +1,13 @@
 import { loadE2eEnv } from './e2e/helpers/env.ts'
+import { getE2eBaseUrl } from './e2e/helpers/app.ts'
 import { fileURLToPath } from 'node:url'
 import { defineConfig, devices } from '@playwright/test'
-import type { ConfigOptions } from '@nuxt/test-utils/playwright'
 
 loadE2eEnv()
 
-const rootDir = fileURLToPath(new URL('.', import.meta.url))
-const e2ePort = Number(process.env.E2E_PORT ?? 3199)
+const baseURL = getE2eBaseUrl()
 
-export default defineConfig<ConfigOptions>({
+export default defineConfig({
   testDir: './e2e/tests',
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
@@ -18,17 +17,9 @@ export default defineConfig<ConfigOptions>({
   reporter: [['list'], ['html', { open: 'never' }]],
   globalSetup: fileURLToPath(new URL('./e2e/global-setup.ts', import.meta.url)),
   use: {
+    baseURL,
     trace: 'on-first-retry',
-    nuxt: {
-      rootDir,
-      port: e2ePort,
-      env: {
-        ...process.env,
-        E2E_MODE: 'true',
-        NUXT_AUTH_ORIGIN: `http://localhost:${e2ePort}/api/auth`,
-        NUXT_PUBLIC_SITE_URL: `http://localhost:${e2ePort}/`
-      }
-    }
+    screenshot: 'only-on-failure'
   },
   projects: [
     {

@@ -360,12 +360,12 @@ Each phase should ship behind store builds only when the Auth + Today loop is pr
 
 ## 12. Testing baseline
 
-| Layer                  | Expectation                                                                               |
-| ---------------------- | ----------------------------------------------------------------------------------------- |
-| Unit                   | Token refresh, today payload mappers, recommendation action state machine                 |
-| Integration            | OAuth PKCE against local / staging IdP; wellness write; recommendation accept             |
-| E2E (Detox or Maestro) | Login → Today → Accept; Login → Log → Save; Push deep-link → Activity                     |
-| Manual device          | Self-hosted instance URL; airplane-mode check-in queue; notification permission denial UX |
+| Layer                  | Expectation                                                                                                                                                                                              |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Unit                   | Token refresh, today payload mappers, recommendation action state machine                                                                                                                                |
+| Integration            | OAuth PKCE against local / staging IdP; wellness write; recommendation accept                                                                                                                            |
+| E2E (Detox or Maestro) | Against shared e2e stack (`:3199`); Bearer via `POST /api/__e2e/token`. Flows: Login → Today → Accept; Login → Log → Save; Push deep-link → Activity. See [e2e-testing.md](../04-guides/e2e-testing.md). |
+| Manual device          | Same e2e or self-hosted instance URL; airplane-mode check-in queue; notification permission denial UX                                                                                                    |
 
 ---
 
