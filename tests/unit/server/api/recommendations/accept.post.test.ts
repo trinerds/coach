@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { getServerSession } from '../../../../../server/utils/session'
+import { requireAuth } from '../../../../../server/utils/auth-guard'
 import { prisma } from '../../../../../server/utils/db'
 import { tasks } from '@trigger.dev/sdk/v3'
 import {
@@ -17,8 +17,8 @@ vi.stubGlobal('createError', (err: any) => {
   return error
 })
 
-vi.mock('../../../../../server/utils/session', () => ({
-  getServerSession: vi.fn()
+vi.mock('../../../../../server/utils/auth-guard', () => ({
+  requireAuth: vi.fn()
 }))
 
 vi.mock('../../../../../server/utils/db', () => ({
@@ -66,7 +66,7 @@ const getHandler = async () => {
 describe('POST /api/recommendations/[id]/accept', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.mocked(getServerSession).mockResolvedValue({ user: { id: 'user-1' } } as any)
+    vi.mocked(requireAuth).mockResolvedValue({ id: 'user-1' } as any)
     vi.mocked(autoUploadPlannedWorkoutToIntervalsIfEnabled).mockResolvedValue({
       attempted: false,
       synced: false

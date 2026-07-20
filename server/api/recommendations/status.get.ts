@@ -1,5 +1,4 @@
-import { getServerSession } from '../../utils/session'
-import { prisma } from '../../utils/db'
+import { requireAuth } from '../../utils/auth-guard'
 import { isTaskRunning, isRunIdRunning } from '../../utils/trigger-check'
 
 defineRouteMeta({
@@ -36,14 +35,7 @@ defineRouteMeta({
 })
 
 export default defineEventHandler(async (event) => {
-  const session = await getServerSession(event)
-
-  if (!session?.user?.email) {
-    throw createError({
-      statusCode: 401,
-      message: 'Unauthorized'
-    })
-  }
+  const user = await requireAuth(event, ['recommendation:read'])
 
   const query = getQuery(event)
   const jobId = query.jobId as string
@@ -54,18 +46,6 @@ export default defineEventHandler(async (event) => {
       isRunning,
       task: isRunning ? 'recommendation' : null
     }
-  }
-
-  const user = await prisma.user.findUnique({
-    where: { email: session.user.email },
-    select: { id: true }
-  })
-
-  if (!user) {
-    throw createError({
-      statusCode: 404,
-      message: 'User not found'
-    })
   }
 
   // Check analysis task first (since it runs first in the chain)

@@ -1,4 +1,4 @@
-import { getServerSession } from '../../../utils/session'
+import { requireAuth } from '../../../utils/auth-guard'
 import { prisma } from '../../../utils/db'
 import {
   syncPlannedWorkoutToIntervals,
@@ -36,12 +36,8 @@ defineRouteMeta({
 })
 
 export default defineEventHandler(async (event) => {
-  const session = await getServerSession(event)
-  if (!session?.user) {
-    throw createError({ statusCode: 401, message: 'Unauthorized' })
-  }
-
-  const userId = (session.user as any).id
+  const user = await requireAuth(event, ['recommendation:read'])
+  const userId = user.id
   const id = getRouterParam(event, 'id')
 
   if (!id) {

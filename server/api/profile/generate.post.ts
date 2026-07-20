@@ -1,4 +1,4 @@
-import { getServerSession } from '../../utils/session'
+import { requireAuth } from '../../utils/auth-guard'
 import { tasks } from '@trigger.dev/sdk/v3'
 import { publishTaskRunStartedEvent } from '../../utils/task-run-events'
 import { prisma } from '../../utils/db'
@@ -32,16 +32,8 @@ defineRouteMeta({
 })
 
 export default defineEventHandler(async (event) => {
-  const session = await getServerSession(event)
-
-  if (!session?.user) {
-    throw createError({
-      statusCode: 401,
-      message: 'Unauthorized'
-    })
-  }
-
-  const userId = (session.user as any).id
+  const user = await requireAuth(event, ['profile:write'])
+  const userId = user.id
 
   // 0. Quota Check
   try {

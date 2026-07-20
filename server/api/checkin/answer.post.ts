@@ -1,10 +1,8 @@
+import { requireAuth } from '../../utils/auth-guard'
 import { dailyCheckinRepository } from '../../utils/repositories/dailyCheckinRepository'
 
 export default defineEventHandler(async (event) => {
-  const session = await getServerSession(event)
-  if (!session?.user) {
-    throw createError({ statusCode: 401, message: 'Unauthorized' })
-  }
+  const user = await requireAuth(event, ['health:write'])
 
   const body = await readBody(event)
   const { checkinId, answers, userNotes } = body
@@ -20,7 +18,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, message: 'Check-in not found' })
   }
 
-  if (checkin.userId !== session.user.id) {
+  if (checkin.userId !== user.id) {
     throw createError({ statusCode: 403, message: 'Forbidden' })
   }
 

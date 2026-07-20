@@ -1,4 +1,4 @@
-import { getServerSession } from '../../utils/session'
+import { requireAuth } from '../../utils/auth-guard'
 
 defineRouteMeta({
   openAPI: {
@@ -40,14 +40,7 @@ defineRouteMeta({
 })
 
 export default defineEventHandler(async (event) => {
-  const session = await getServerSession(event)
-
-  if (!session?.user) {
-    throw createError({
-      statusCode: 401,
-      message: 'Unauthorized'
-    })
-  }
+  const user = await requireAuth(event, ['profile:read'])
 
   const id = getRouterParam(event, 'id')
 
@@ -61,7 +54,7 @@ export default defineEventHandler(async (event) => {
   const report = await prisma.report.findFirst({
     where: {
       id,
-      userId: (session.user as any).id
+      userId: user.id
     },
     include: {
       template: true,

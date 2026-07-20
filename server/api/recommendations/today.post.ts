@@ -1,7 +1,6 @@
-import { getServerSession } from '../../utils/session'
+import { requireAuth } from '../../utils/auth-guard'
 import { getUserTimezone, getUserLocalDate } from '../../utils/date'
 import { tasks } from '@trigger.dev/sdk/v3'
-import { prisma } from '../../utils/db'
 import { activityRecommendationRepository } from '../../utils/repositories/activityRecommendationRepository'
 import { checkQuota } from '../../utils/quotas/engine'
 import { publishTaskRunStartedEvent } from '../../utils/task-run-events'
@@ -35,16 +34,9 @@ defineRouteMeta({
 
 export default defineEventHandler(async (event) => {
   try {
-    const session = await getServerSession(event)
-
-    if (!session?.user) {
-      throw createError({
-        statusCode: 401,
-        message: 'Unauthorized'
-      })
-    }
-
-    const userId = (session.user as any).id
+    // Same scope as accept — generate is a companion write under recommendation:read.
+    const user = await requireAuth(event, ['recommendation:read'])
+    const userId = user.id
 
     // 0. Quota Check
     try {

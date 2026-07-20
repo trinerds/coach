@@ -1,4 +1,4 @@
-import { getServerSession } from '../../utils/session'
+import { requireAuth } from '../../utils/auth-guard'
 
 defineRouteMeta({
   openAPI: {
@@ -56,14 +56,7 @@ defineRouteMeta({
 })
 
 export default defineEventHandler(async (event) => {
-  const session = await getServerSession(event)
-
-  if (!session?.user) {
-    throw createError({
-      statusCode: 401,
-      message: 'Unauthorized'
-    })
-  }
+  const user = await requireAuth(event, ['profile:read'])
 
   const query = getQuery(event)
   const limit = query.limit ? parseInt(query.limit as string) : 10
@@ -71,7 +64,7 @@ export default defineEventHandler(async (event) => {
   const beforeDate = query.beforeDate as string | undefined
 
   const where: any = {
-    userId: (session.user as any).id
+    userId: user.id
   }
 
   if (type) {
