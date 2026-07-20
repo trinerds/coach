@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid'
-import { getServerSession } from '#auth'
+import { requireAuth } from '../../utils/auth-guard'
 import { uploadPublicAsset } from '../../utils/storage'
 
 function normalizeMediaType(mediaType?: string) {
@@ -8,11 +8,8 @@ function normalizeMediaType(mediaType?: string) {
 }
 
 export default defineEventHandler(async (event) => {
-  // 1. Check Auth
-  const session = await getServerSession(event)
-  if (!session) {
-    throw createError({ statusCode: 401, message: 'Unauthorized' })
-  }
+  // Session, API key, or OAuth Bearer with chat:write (mobile companion).
+  const user = await requireAuth(event, ['chat:write'])
 
   // 2. Read Multipart Data
   const files = await readMultipartFormData(event)
@@ -57,16 +54,14 @@ export default defineEventHandler(async (event) => {
   if (file.data.length > MAX_SIZE) {
     throw createError({
       statusCode: 400,
-      message: isVideo
-        ? 'File too large. Max 40MB for video.'
-        : 'File too large. Max 15MB.'
+      message: isVideo ? 'File too large. Max 40MB for video.' : 'File too large. Max 15MB.'
     })
   }
 
   // 4. Generate unique filename to prevent collisions
   // Extract extension or default to bin if unknown
   const ext = file.filename.split('.').pop() || 'bin'
-  const userId = (session.user as any)?.id || 'anonymous'
+  const userId = user.id || 'anonymous'
   const uniqueFilename = `uploads/${userId}/${uuidv4()}.${ext}`
 
   // 5. Upload
