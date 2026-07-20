@@ -230,4 +230,57 @@ describe('workoutTools', () => {
       ])
     })
   })
+
+  describe('get_workout_analysis', () => {
+    it('omits the duplicate markdown report when structured analysis is available', async () => {
+      vi.mocked(workoutRepository.getById).mockResolvedValue({
+        id: 'w1',
+        title: 'Afternoon Ride',
+        date: new Date('2026-07-18T12:00:00Z'),
+        aiAnalysis: '# Full duplicate markdown report',
+        aiAnalysisJson: {
+          executive_summary: 'Strong workout with late-session fade.'
+        },
+        aiAnalysisStatus: 'COMPLETED',
+        overallScore: 6
+      } as any)
+
+      const result = await tools.get_workout_analysis.execute(
+        { workout_id: 'w1' },
+        { toolCallId: '1', messages: [] }
+      )
+
+      expect(result).toMatchObject({
+        id: 'w1',
+        title: 'Afternoon Ride',
+        date: expect.any(String),
+        aiAnalysisJson: {
+          executive_summary: 'Strong workout with late-session fade.'
+        },
+        overallScore: 6
+      })
+      expect(result).not.toHaveProperty('aiAnalysis')
+    })
+
+    it('keeps the markdown report when no structured analysis is available', async () => {
+      vi.mocked(workoutRepository.getById).mockResolvedValue({
+        id: 'w1',
+        title: 'Afternoon Ride',
+        date: new Date('2026-07-18T12:00:00Z'),
+        aiAnalysis: '# Legacy workout report',
+        aiAnalysisJson: null,
+        aiAnalysisStatus: 'COMPLETED'
+      } as any)
+
+      const result = await tools.get_workout_analysis.execute(
+        { workout_id: 'w1' },
+        { toolCallId: '1', messages: [] }
+      )
+
+      expect(result).toMatchObject({
+        aiAnalysis: '# Legacy workout report',
+        aiAnalysisJson: null
+      })
+    })
+  })
 })

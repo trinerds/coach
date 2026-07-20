@@ -54,7 +54,70 @@ export type WorkerMonitoringSnapshot = {
     processedLast10Min: number
     lastActivityAt: string | null
   }
+  chatRecovery: ChatRecoveryMonitoringSnapshot
   alerts: WorkerMonitoringAlert[]
+}
+
+export type ChatRecoveryMonitoringSnapshot = {
+  windowHours: number
+  totalTurns: number
+  heartbeatTimeouts: number
+  heartbeatTimeoutRate: number
+  recoveryExhaustions: number
+  recoveryExhaustionRate: number
+  byDeployment: Record<
+    string,
+    {
+      heartbeatTimeouts: number
+      recoveryExhaustions: number
+    }
+  >
+}
+
+export function summarizeChatRecoveryEvents(
+  totalTurns: number,
+  events: Array<{ data: unknown }>,
+  windowHours = 24
+): ChatRecoveryMonitoringSnapshot {
+  let heartbeatTimeouts = 0
+  let recoveryExhaustions = 0
+  const byDeployment: ChatRecoveryMonitoringSnapshot['byDeployment'] = {}
+
+  for (const event of events) {
+    const data =
+      event.data && typeof event.data === 'object' && !Array.isArray(event.data)
+        ? (event.data as Record<string, any>)
+        : {}
+    const isHeartbeatTimeout =
+      data.recoveryReason === 'heartbeat_timeout' || data.reason === 'heartbeat_timeout'
+    if (!isHeartbeatTimeout) continue
+
+    heartbeatTimeouts += 1
+    const deploymentId = String(data.deploymentId || 'unknown')
+    const deployment = (byDeployment[deploymentId] ||= {
+      heartbeatTimeouts: 0,
+      recoveryExhaustions: 0
+    })
+    deployment.heartbeatTimeouts += 1
+
+    if (data.reason === 'recovery_attempts_exhausted') {
+      recoveryExhaustions += 1
+      deployment.recoveryExhaustions += 1
+    }
+  }
+
+  const rate = (count: number) =>
+    totalTurns > 0 ? Math.round((count / totalTurns) * 10_000) / 100 : 0
+
+  return {
+    windowHours,
+    totalTurns,
+    heartbeatTimeouts,
+    heartbeatTimeoutRate: rate(heartbeatTimeouts),
+    recoveryExhaustions,
+    recoveryExhaustionRate: rate(recoveryExhaustions),
+    byDeployment
+  }
 }
 
 function parseInfoValue(info: string, key: string): string | null {
@@ -271,25 +334,45 @@ function evaluateWorkerHealth(input: {
 }
 
 export async function collectWorkerMonitoringSnapshot(): Promise<WorkerMonitoringSnapshot> {
-  const [redis, webhook, ping, streams, pending, processedLast10Min, lastActivity] =
-    await Promise.all([
-      getRedisMemoryStats(),
-      getQueueSnapshot(webhookQueue, 'webhook'),
-      getQueueSnapshot(pingQueue, 'ping'),
-      getQueueSnapshot(streamsQueue, 'streams'),
-      prisma.webhookLog.count({ where: { status: 'PENDING' } }),
-      prisma.webhookLog.count({
-        where: {
-          processedAt: {
-            gt: new Date(Date.now() - 10 * 60_000)
-          }
+  const monitoringWindowStart = new Date(Date.now() - 24 * 60 * 60_000)
+  const [
+    redis,
+    webhook,
+    ping,
+    streams,
+    pending,
+    processedLast10Min,
+    lastActivity,
+    totalChatTurns,
+    chatRecoveryEvents
+  ] = await Promise.all([
+    getRedisMemoryStats(),
+    getQueueSnapshot(webhookQueue, 'webhook'),
+    getQueueSnapshot(pingQueue, 'ping'),
+    getQueueSnapshot(streamsQueue, 'streams'),
+    prisma.webhookLog.count({ where: { status: 'PENDING' } }),
+    prisma.webhookLog.count({
+      where: {
+        processedAt: {
+          gt: new Date(Date.now() - 10 * 60_000)
         }
-      }),
-      prisma.webhookLog.findFirst({
-        orderBy: [{ processedAt: 'desc' }, { createdAt: 'desc' }],
-        select: { processedAt: true, createdAt: true }
-      })
-    ])
+      }
+    }),
+    prisma.webhookLog.findFirst({
+      orderBy: [{ processedAt: 'desc' }, { createdAt: 'desc' }],
+      select: { processedAt: true, createdAt: true }
+    }),
+    prisma.chatTurn.count({ where: { createdAt: { gte: monitoringWindowStart } } }),
+    prisma.chatTurnEvent.findMany({
+      where: {
+        createdAt: { gte: monitoringWindowStart },
+        type: {
+          in: ['slow_response', 'turn_interrupted', 'turn_completed']
+        }
+      },
+      select: { data: true }
+    })
+  ])
 
   const lastActivityAt = lastActivity?.processedAt || lastActivity?.createdAt || null
   const webhooks = {
@@ -303,6 +386,7 @@ export async function collectWorkerMonitoringSnapshot(): Promise<WorkerMonitorin
     webhook,
     webhooks
   })
+  const chatRecovery = summarizeChatRecoveryEvents(totalChatTurns, chatRecoveryEvents)
 
   return {
     status: evaluation.status,
@@ -327,6 +411,7 @@ export async function collectWorkerMonitoringSnapshot(): Promise<WorkerMonitorin
       }
     },
     webhooks,
+    chatRecovery,
     alerts: evaluation.alerts
   }
 }

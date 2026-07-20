@@ -14,7 +14,8 @@ const mocks = vi.hoisted(() => ({
 vi.mock('../../../../../server/utils/db', () => ({
   prisma: {
     chatTurn: {
-      findMany: mocks.findMany
+      findMany: mocks.findMany,
+      updateMany: mocks.updateMany
     },
     $transaction: mocks.transaction
   }
@@ -22,7 +23,7 @@ vi.mock('../../../../../server/utils/db', () => ({
 
 const now = new Date('2026-07-12T12:00:00.000Z')
 
-function buildTurn(recoveryAttempts = 0) {
+function buildTurn(recoveryAttempts = 0): any {
   return {
     id: 'turn-1',
     roomId: 'room-1',
@@ -101,7 +102,47 @@ describe('chat turn restart recovery', () => {
       expect.objectContaining({
         data: expect.objectContaining({
           status: 'INTERRUPTED',
+          runId: null,
           failureReason: 'Turn interrupted after recovery attempts were exhausted.'
+        })
+      })
+    )
+    expect(mocks.messageUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          content: 'partial response',
+          metadata: expect.objectContaining({
+            isDraft: false,
+            hiddenBecauseEmptyFailure: false
+          })
+        })
+      })
+    )
+  })
+
+  it('shows an explicit terminal message when exhausted without partial text', async () => {
+    const turn = buildTurn(2)
+    turn.messages[0].content = ' '
+    mocks.findMany.mockResolvedValue([turn])
+
+    await expect(chatTurnService.recoverStaleTurns(now, 'worker-new')).resolves.toBe(1)
+
+    expect(mocks.messageUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          content: expect.stringContaining("couldn't finish this response"),
+          metadata: expect.objectContaining({ isDraft: false, hideUntilContent: false })
+        })
+      })
+    )
+    expect(mocks.eventCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          data: expect.objectContaining({
+            previousRunId: 'app-worker:old-worker:turn-1:1',
+            recoveryClaimant: 'worker-new',
+            deploymentId: expect.any(String)
+          })
         })
       })
     )
@@ -128,10 +169,60 @@ describe('chat turn restart recovery', () => {
       expect.objectContaining({
         data: expect.objectContaining({
           status: 'INTERRUPTED',
+          runId: null,
           failureReason:
             'Turn interrupted because a mutating tool may have completed during worker restart.'
         })
       })
     )
+  })
+
+  it('completes from a persisted successful mutation instead of replaying the turn', async () => {
+    const turn = buildTurn()
+    turn.messages[0].content = ' '
+    turn.toolExecutions = [
+      {
+        status: 'COMPLETED',
+        toolName: 'record_wellness_event',
+        result: { message: 'Successfully logged fatigue event.' }
+      }
+    ]
+    mocks.findMany.mockResolvedValue([turn])
+
+    await expect(chatTurnService.recoverStaleTurns(now, 'worker-new')).resolves.toBe(1)
+
+    expect(mocks.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          status: 'COMPLETED',
+          runId: null,
+          failureReason: null,
+          metadata: expect.objectContaining({
+            executionPhase: 'recovered_from_completed_mutation'
+          })
+        })
+      })
+    )
+    expect(mocks.messageUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          content: 'Successfully logged fatigue event.',
+          metadata: expect.objectContaining({ turnStatus: 'COMPLETED', isDraft: false })
+        })
+      })
+    )
+  })
+
+  it('heartbeats only the run that currently owns the turn', async () => {
+    mocks.updateMany.mockResolvedValue({ count: 0 })
+
+    await expect(
+      chatTurnService.heartbeat('turn-1', 'RUNNING' as any, 'run-current')
+    ).resolves.toEqual({ count: 0 })
+
+    expect(mocks.updateMany).toHaveBeenCalledWith({
+      where: { id: 'turn-1', runId: 'run-current' },
+      data: { lastHeartbeatAt: expect.any(Date), status: 'RUNNING' }
+    })
   })
 })

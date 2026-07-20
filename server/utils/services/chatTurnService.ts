@@ -1,10 +1,7 @@
 import type { Prisma } from '@prisma/client'
 import { prisma } from '../db'
 import { expandStoredChatMessages, truncateMessages } from '../chat/history'
-import {
-  hasVisibleAssistantMetadataArtifacts,
-  shouldExcludeAssistantMessageFromHistory
-} from '../chat/message-state'
+import { shouldExcludeAssistantMessageFromHistory } from '../chat/message-state'
 import { getJsonObject } from '../prisma-json'
 import {
   CHAT_TURN_EVENT_TYPE,
@@ -27,6 +24,25 @@ type PersistedRequestSnapshot = {
     actorUserId?: string
     isCoaching?: boolean
   }
+}
+
+function getDeploymentIdentity() {
+  return (
+    process.env.VERCEL_DEPLOYMENT_ID ||
+    process.env.RAILWAY_DEPLOYMENT_ID ||
+    process.env.RENDER_INSTANCE_ID ||
+    process.env.VERCEL_GIT_COMMIT_SHA ||
+    process.env.HOSTNAME ||
+    'unknown'
+  )
+}
+
+function buildRecoveredMutationConfirmation(execution: any) {
+  const result = execution?.result
+  if (typeof result?.message === 'string' && result.message.trim()) {
+    return result.message.trim()
+  }
+  return `Completed ${String(execution?.toolName || 'the requested action').replaceAll('_', ' ')}.`
 }
 
 class ChatTurnService {
@@ -284,9 +300,44 @@ class ChatTurnService {
     })
   }
 
-  async heartbeat(turnId: string, status?: ChatTurnStatus) {
-    return await prisma.chatTurn.update({
-      where: { id: turnId },
+  async updateStatusIfOwned(
+    turnId: string,
+    runId: string,
+    status: ChatTurnStatus,
+    data: Partial<{
+      startedAt: Date | null
+      finishedAt: Date | null
+      failureReason: string | null
+      assistantMessageId: string | null
+      providerRequestId: string | null
+      metadata: Prisma.InputJsonValue
+    }> = {}
+  ) {
+    return await prisma.chatTurn.updateMany({
+      where: { id: turnId, runId },
+      data: {
+        status,
+        lastHeartbeatAt: new Date(),
+        ...(data.startedAt !== undefined ? { startedAt: data.startedAt } : {}),
+        ...(data.finishedAt !== undefined ? { finishedAt: data.finishedAt } : {}),
+        ...(data.failureReason !== undefined ? { failureReason: data.failureReason } : {}),
+        ...(data.assistantMessageId !== undefined
+          ? { assistantMessageId: data.assistantMessageId }
+          : {}),
+        ...(data.providerRequestId !== undefined
+          ? { providerRequestId: data.providerRequestId }
+          : {}),
+        ...(data.metadata !== undefined ? { metadata: data.metadata } : {})
+      }
+    })
+  }
+
+  async heartbeat(turnId: string, status?: ChatTurnStatus, runId?: string | null) {
+    return await prisma.chatTurn.updateMany({
+      where: {
+        id: turnId,
+        ...(runId ? { runId } : {})
+      },
       data: {
         lastHeartbeatAt: new Date(),
         ...(status ? { status } : {})
@@ -502,7 +553,8 @@ class ChatTurnService {
     },
     now: Date,
     reason: 'heartbeat_timeout',
-    requireStaleHeartbeat = false
+    requireStaleHeartbeat = false,
+    recoveryClaimant = 'unknown'
   ) {
     if (!turn) return 'skipped' as const
 
@@ -511,7 +563,17 @@ class ChatTurnService {
     const hasUncertainMutation = (turn.toolExecutions || []).some(
       (execution: any) => execution.status === 'STARTED' && isMutatingChatTool(execution.toolName)
     )
-    const shouldRequeue = !hasUncertainMutation && recoveryAttempts < this.maxRecoveryAttempts
+    const completedMutation = [...(turn.toolExecutions || [])]
+      .reverse()
+      .find(
+        (execution: any) =>
+          execution.status === 'COMPLETED' && isMutatingChatTool(execution.toolName)
+      )
+    const shouldCompleteFromMutation = !!completedMutation && !hasUncertainMutation
+    const shouldRequeue =
+      !shouldCompleteFromMutation &&
+      !hasUncertainMutation &&
+      recoveryAttempts < this.maxRecoveryAttempts
     const interruptionReason = hasUncertainMutation
       ? 'Turn interrupted because a mutating tool may have completed during worker restart.'
       : 'Turn interrupted after recovery attempts were exhausted.'
@@ -548,22 +610,33 @@ class ChatTurnService {
               metadata: this.mergeTurnMetadata(turn, {
                 recoveryAttempts: recoveryAttempts + 1,
                 recoveryReason: reason,
+                previousRunId: turn.runId,
+                recoveryClaimant,
+                deploymentId: getDeploymentIdentity(),
                 executionPhase: 'queued_for_recovery',
                 timeoutReason: null,
                 finishedAt: null
               })
             }
           : {
-              status: CHAT_TURN_STATUS.INTERRUPTED,
+              status: shouldCompleteFromMutation
+                ? CHAT_TURN_STATUS.COMPLETED
+                : CHAT_TURN_STATUS.INTERRUPTED,
+              runId: null,
               finishedAt: now,
-              failureReason: interruptionReason,
+              failureReason: shouldCompleteFromMutation ? null : interruptionReason,
               lastHeartbeatAt: now,
               metadata: this.mergeTurnMetadata(turn, {
                 recoveryAttempts,
                 recoveryReason: reason,
-                executionPhase: hasUncertainMutation
-                  ? 'recovery_blocked_by_started_mutation'
-                  : 'recovery_exhausted',
+                previousRunId: turn.runId,
+                recoveryClaimant,
+                deploymentId: getDeploymentIdentity(),
+                executionPhase: shouldCompleteFromMutation
+                  ? 'recovered_from_completed_mutation'
+                  : hasUncertainMutation
+                    ? 'recovery_blocked_by_started_mutation'
+                    : 'recovery_exhausted',
                 timeoutReason: CHAT_TURN_TIMEOUT_REASON.HEARTBEAT_TIMEOUT,
                 finishedAt: now.toISOString()
               })
@@ -575,23 +648,29 @@ class ChatTurnService {
       const draft = turn.messages?.[0]
       if (draft) {
         const draftMetadata = ((draft.metadata as any) || {}) as Record<string, any>
+        const terminalMessage = shouldCompleteFromMutation
+          ? buildRecoveredMutationConfirmation(completedMutation)
+          : typeof draft.content === 'string' && draft.content.trim()
+            ? draft.content
+            : "I couldn't finish this response after reconnecting. No completed changes were retried; please try the request again."
         await tx.chatMessage.update({
           where: { id: draft.id },
           data: {
-            content: shouldRequeue ? ' ' : draft.content || ' ',
+            content: shouldRequeue ? ' ' : terminalMessage,
             metadata: {
               ...draftMetadata,
-              isDraft: true,
-              turnStatus: shouldRequeue ? CHAT_TURN_STATUS.QUEUED : CHAT_TURN_STATUS.INTERRUPTED,
-              interrupted: !shouldRequeue,
-              failureReason: shouldRequeue ? null : interruptionReason,
+              isDraft: shouldRequeue,
+              turnStatus: shouldRequeue
+                ? CHAT_TURN_STATUS.QUEUED
+                : shouldCompleteFromMutation
+                  ? CHAT_TURN_STATUS.COMPLETED
+                  : CHAT_TURN_STATUS.INTERRUPTED,
+              interrupted: !shouldRequeue && !shouldCompleteFromMutation,
+              failureReason:
+                shouldRequeue || shouldCompleteFromMutation ? null : interruptionReason,
               timeoutReason: shouldRequeue ? null : CHAT_TURN_TIMEOUT_REASON.HEARTBEAT_TIMEOUT,
               hideUntilContent: shouldRequeue,
-              hiddenBecauseEmptyFailure: !shouldRequeue
-                ? typeof draft.content === 'string' &&
-                  draft.content.trim().length === 0 &&
-                  !hasVisibleAssistantMetadataArtifacts(draftMetadata)
-                : false,
+              hiddenBecauseEmptyFailure: false,
               recoveryAttempts: shouldRequeue ? recoveryAttempts + 1 : recoveryAttempts
             } as any
           }
@@ -603,19 +682,29 @@ class ChatTurnService {
           turnId: turn.id,
           type: shouldRequeue
             ? CHAT_TURN_EVENT_TYPE.SLOW_RESPONSE
-            : CHAT_TURN_EVENT_TYPE.TURN_INTERRUPTED,
+            : shouldCompleteFromMutation
+              ? CHAT_TURN_EVENT_TYPE.TURN_COMPLETED
+              : CHAT_TURN_EVENT_TYPE.TURN_INTERRUPTED,
           data: shouldRequeue
             ? {
                 reason: 'turn_requeued_for_recovery',
                 recoveryReason: reason,
-                recoveryAttempt: recoveryAttempts + 1
+                recoveryAttempt: recoveryAttempts + 1,
+                previousRunId: turn.runId,
+                recoveryClaimant,
+                deploymentId: getDeploymentIdentity()
               }
             : {
-                reason: hasUncertainMutation
-                  ? 'recovery_blocked_by_started_mutation'
-                  : 'recovery_attempts_exhausted',
+                reason: shouldCompleteFromMutation
+                  ? 'recovered_from_completed_mutation'
+                  : hasUncertainMutation
+                    ? 'recovery_blocked_by_started_mutation'
+                    : 'recovery_attempts_exhausted',
                 recoveryReason: reason,
-                recoveryAttempts
+                recoveryAttempts,
+                previousRunId: turn.runId,
+                recoveryClaimant,
+                deploymentId: getDeploymentIdentity()
               }
         }
       })
@@ -627,9 +716,17 @@ class ChatTurnService {
           errorType: 'IN_PROGRESS'
         },
         data: {
-          success: false,
-          errorType: shouldRequeue ? 'RECOVERED' : 'INTERRUPTED',
-          errorMessage: shouldRequeue ? `Chat turn requeued after ${reason}.` : interruptionReason,
+          success: shouldCompleteFromMutation,
+          errorType: shouldRequeue
+            ? 'RECOVERED'
+            : shouldCompleteFromMutation
+              ? 'RECOVERED_COMPLETED_MUTATION'
+              : 'INTERRUPTED',
+          errorMessage: shouldRequeue
+            ? `Chat turn requeued after ${reason}.`
+            : shouldCompleteFromMutation
+              ? 'Recovered from a persisted completed mutation.'
+              : interruptionReason,
           durationMs:
             turn.startedAt instanceof Date
               ? Math.max(0, now.getTime() - turn.startedAt.getTime())
@@ -637,11 +734,15 @@ class ChatTurnService {
         }
       })
 
-      return shouldRequeue ? ('requeued' as const) : ('interrupted' as const)
+      return shouldRequeue
+        ? ('requeued' as const)
+        : shouldCompleteFromMutation
+          ? ('completed' as const)
+          : ('interrupted' as const)
     })
   }
 
-  async recoverStaleTurns(now = new Date()) {
+  async recoverStaleTurns(now = new Date(), recoveryClaimant = 'unknown') {
     const cutoff = new Date(now.getTime() - CHAT_TURN_HEARTBEAT_TIMEOUT_MS)
     const turns = await prisma.chatTurn.findMany({
       where: {
@@ -665,15 +766,16 @@ class ChatTurnService {
           take: 1
         },
         toolExecutions: {
-          where: { status: 'STARTED' },
-          select: { status: true, toolName: true }
+          where: { status: { in: ['STARTED', 'COMPLETED'] } },
+          orderBy: { createdAt: 'asc' },
+          select: { status: true, toolName: true, result: true }
         }
       }
     })
 
     let recoveredCount = 0
     for (const turn of turns) {
-      const result = await this.recoverTurn(turn, now, 'heartbeat_timeout', true)
+      const result = await this.recoverTurn(turn, now, 'heartbeat_timeout', true, recoveryClaimant)
       if (result !== 'skipped') recoveredCount += 1
     }
 

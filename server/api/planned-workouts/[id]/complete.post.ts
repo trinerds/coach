@@ -1,4 +1,4 @@
-import { getServerSession } from '../../../utils/session'
+import { requireAuth } from '../../../utils/auth-guard'
 import { plannedWorkoutRepository } from '../../../utils/repositories/plannedWorkoutRepository'
 import { workoutRepository } from '../../../utils/repositories/workoutRepository'
 import { metabolicService } from '../../../utils/services/metabolicService'
@@ -8,7 +8,9 @@ defineRouteMeta({
   openAPI: {
     tags: ['Planned Workouts'],
     summary: 'Complete planned workout',
-    description: 'Marks a planned workout as completed by linking it to an actual workout.',
+    description:
+      'Marks a planned workout as completed, optionally linking it to an actual workout. Bearer `workout:write`.',
+    security: [{ bearerAuth: [] }],
     inputSchema: [
       {
         name: 'id',
@@ -53,18 +55,18 @@ defineRouteMeta({
 })
 
 export default defineEventHandler(async (event) => {
-  const session = await getServerSession(event)
-
-  if (!session?.user) {
+  const user = await requireAuth(event, ['workout:write'])
+  const userId = user.id
+  const plannedWorkoutId = event.context.params?.id
+  let body: Record<string, any>
+  try {
+    body = (await readBody(event)) || {}
+  } catch {
     throw createError({
-      statusCode: 401,
-      message: 'Unauthorized'
+      statusCode: 400,
+      message: 'Invalid request body'
     })
   }
-
-  const userId = (session.user as any).id
-  const plannedWorkoutId = event.context.params?.id
-  const body = await readBody(event)
 
   if (!plannedWorkoutId) {
     throw createError({
@@ -73,10 +75,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  // workoutId is now optional
-
   try {
-    // Check if planned workout exists and belongs to user
     const plannedWorkout = await plannedWorkoutRepository.getById(plannedWorkoutId, userId)
 
     if (!plannedWorkout) {
@@ -89,7 +88,6 @@ export default defineEventHandler(async (event) => {
     let updatedWorkout = null
 
     if (body.workoutId) {
-      // Check if workout exists and belongs to user
       const workout = await workoutRepository.getById(body.workoutId, userId)
 
       if (!workout) {
@@ -99,19 +97,16 @@ export default defineEventHandler(async (event) => {
         })
       }
 
-      // Update workout to link to planned workout
       updatedWorkout = await workoutRepository.update(body.workoutId, {
         plannedWorkout: { connect: { id: plannedWorkoutId } }
       })
     }
 
-    // Update planned workout to mark as completed
     const updatedPlannedWorkout = await plannedWorkoutRepository.update(plannedWorkoutId, userId, {
       completed: true,
       completionStatus: 'COMPLETED'
     })
 
-    // REACTIVE: Regenerate fueling plan so completed workouts replace predictions immediately.
     try {
       if (await isNutritionTrackingEnabled(userId)) {
         const targetDate = new Date(updatedWorkout?.date || plannedWorkout.date)

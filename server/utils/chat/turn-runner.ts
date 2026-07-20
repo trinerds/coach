@@ -89,7 +89,7 @@ class ChatTurnRunner {
     this.recovering = true
 
     try {
-      const recoveredCount = await chatTurnService.recoverStaleTurns()
+      const recoveredCount = await chatTurnService.recoverStaleTurns(new Date(), this.workerId)
       if (recoveredCount > 0) {
         void this.pump()
       }

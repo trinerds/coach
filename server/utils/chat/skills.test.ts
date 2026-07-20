@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   classifyChatSkills,
   composeSkillInstructions,
+  expandSkillSelectionForRequest,
   getContinuationSkillSelection,
   getFalseMissingReplySkillSelection,
   getPendingApprovalSkillSelection,
@@ -120,6 +121,40 @@ describe('selectToolsForSkills', () => {
       'update_workout_tags'
     ])
     expect(tools).not.toHaveProperty('analyze_activity')
+  })
+})
+
+describe('expandSkillSelectionForRequest', () => {
+  it('adds workout reads to a support request that also references a workout', () => {
+    const result = expandSkillSelectionForRequest(
+      {
+        skillIds: ['support'],
+        confidence: 0.9,
+        useTools: true,
+        reason: 'Report a bug.'
+      },
+      'Report this bug and inspect workout 5835e6e9 for me.'
+    )
+
+    expect(result.skillIds).toEqual(['support', 'workout_read'])
+  })
+
+  it('adds read-only workout and planning companions to analysis', () => {
+    const result = expandSkillSelectionForRequest(
+      { skillIds: ['analysis'], confidence: 0.8, useTools: true },
+      'Analyze my training load and recent ride.'
+    )
+
+    expect(result.skillIds).toEqual(['planning_read', 'workout_read', 'analysis'])
+    expect(result.skillIds).not.toContain('planning_write')
+    expect(result.skillIds).not.toContain('workout_update')
+  })
+
+  it('does not expose tools when routing selected tool-free general chat', () => {
+    const selection = { skillIds: ['general_chat'], confidence: 0.4, useTools: false } as const
+    expect(expandSkillSelectionForRequest(selection as any, 'Tell me about workouts')).toBe(
+      selection
+    )
   })
 })
 

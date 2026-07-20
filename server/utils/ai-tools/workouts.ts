@@ -265,8 +265,15 @@ export const workoutTools = (userId: string, timezone: string, aiSettings: AiSet
 
       if (!workout) return { error: 'Workout not found' }
 
+      const { aiAnalysis, ...analysisResult } = workout
+      const hasStructuredAnalysis =
+        workout.aiAnalysisJson !== null &&
+        typeof workout.aiAnalysisJson === 'object' &&
+        !Array.isArray(workout.aiAnalysisJson)
+
       return {
-        ...workout,
+        ...analysisResult,
+        ...(hasStructuredAnalysis ? {} : { aiAnalysis }),
         date: formatUserDate(workout.date, timezone)
       }
     }

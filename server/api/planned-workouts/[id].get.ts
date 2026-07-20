@@ -55,7 +55,21 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    const workout = await plannedWorkoutRepository.getById(workoutId, userId)
+    const workout = await plannedWorkoutRepository.getById(workoutId, userId, {
+      include: {
+        completedWorkouts: {
+          where: { isDuplicate: false },
+          select: {
+            id: true,
+            title: true,
+            date: true,
+            type: true
+          },
+          orderBy: { date: 'desc' },
+          take: 5
+        }
+      }
+    })
 
     if (!workout) {
       throw createError({

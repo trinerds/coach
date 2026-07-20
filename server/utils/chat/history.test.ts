@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { buildPersistedToolCalls, expandStoredChatMessages, truncateMessages } from './history'
+import {
+  boundMessagesForModel,
+  buildPersistedToolCalls,
+  estimateTokenCount,
+  expandStoredChatMessages,
+  truncateMessages
+} from './history'
 
 describe('chat history helpers', () => {
   it('reconstructs assistant tool parts from stored toolCalls and toolResults', () => {
@@ -210,5 +216,43 @@ describe('chat history helpers', () => {
       })
     ])
     expect(expanded!.metadata.updatedAt).toEqual(new Date('2026-03-10T20:15:10.000Z'))
+  })
+})
+
+describe('boundMessagesForModel', () => {
+  it('drops complete oldest turns when serialized tool payloads exceed the budget', () => {
+    const messages = [
+      { role: 'user', content: 'old question' },
+      {
+        role: 'assistant',
+        content: [
+          {
+            type: 'tool-result',
+            toolCallId: 'old-call',
+            result: { samples: Array.from({ length: 2_000 }, (_, index) => index) }
+          }
+        ]
+      },
+      { role: 'user', content: 'new question' },
+      { role: 'assistant', content: 'recent answer' },
+      { role: 'user', content: 'latest request' }
+    ]
+
+    const bounded = boundMessagesForModel(messages, {
+      maxMessages: 20,
+      maxEstimatedTokens: 1_000
+    })
+
+    expect(bounded[0]).toEqual({ role: 'user', content: 'new question' })
+    expect(bounded.at(-1)).toEqual({ role: 'user', content: 'latest request' })
+    expect(estimateTokenCount(bounded)).toBeLessThan(1_000)
+  })
+
+  it('preserves small histories unchanged', () => {
+    const messages = [
+      { role: 'user', content: 'How was my ride?' },
+      { role: 'assistant', content: 'It was steady.' }
+    ]
+    expect(boundMessagesForModel(messages)).toEqual(messages)
   })
 })

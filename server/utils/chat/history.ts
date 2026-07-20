@@ -38,21 +38,37 @@ export function truncateMessages(messages: any[], limit: number = 20): any[] {
  * (Simplified estimation: 1 token ~= 4 characters for English)
  */
 export function estimateTokenCount(messages: any[]): number {
-  let count = 0
-  for (const msg of messages) {
-    if (typeof msg.content === 'string') {
-      count += Math.ceil(msg.content.length / 4)
-    } else if (Array.isArray(msg.content)) {
-      msg.content.forEach((part: any) => {
-        if (part.type === 'text') {
-          count += Math.ceil(part.text.length / 4)
-        } else if (part.type === 'tool-call') {
-          count += JSON.stringify(part.args || {}).length / 4
-        }
-      })
+  return messages.reduce((count, message) => {
+    try {
+      return count + Math.ceil(JSON.stringify(message).length / 4)
+    } catch {
+      return count + 1_000
     }
+  }, 0)
+}
+
+/**
+ * Bounds persisted model history by both turn count and serialized size. It drops
+ * complete oldest turns, preserving the latest user request and never slicing a
+ * tool payload into invalid JSON.
+ */
+export function boundMessagesForModel(
+  messages: any[],
+  options: { maxMessages?: number; maxEstimatedTokens?: number } = {}
+) {
+  const maxMessages = Math.max(2, options.maxMessages || 20)
+  const maxEstimatedTokens = Math.max(1_000, options.maxEstimatedTokens || 30_000)
+  let bounded = truncateMessages(messages, maxMessages)
+
+  while (bounded.length > 2 && estimateTokenCount(bounded) > maxEstimatedTokens) {
+    const nextUserIndex = bounded.findIndex(
+      (message, index) => index > 0 && message?.role === 'user'
+    )
+    if (nextUserIndex <= 0) break
+    bounded = bounded.slice(nextUserIndex)
   }
-  return count
+
+  return bounded
 }
 
 function normalizeStoredToolCalls(metadata: any, messageId?: string) {

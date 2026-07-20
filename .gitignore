@@ -55,6 +55,7 @@ gha-creds-*.json
 application_default_credentials.json
 
 # AI Tool Skills & Configs
+graphify-out/
 !.gemini/
 !.gemini/settings.json
 .gemini/telemetry.log

@@ -118,6 +118,7 @@ export function isMutatingChatTool(toolName: string) {
     toolName === 'generate_planned_workout_structure' ||
     toolName === 'adjust_planned_workout' ||
     toolName.startsWith('create_') ||
+    toolName.startsWith('record_') ||
     toolName.startsWith('update_') ||
     toolName.startsWith('delete_') ||
     toolName.startsWith('reschedule_') ||

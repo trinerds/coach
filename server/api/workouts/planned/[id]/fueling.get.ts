@@ -1,22 +1,28 @@
 import { prisma } from '../../../../utils/db'
-import { getServerSession } from '../../../../utils/session'
+import { requireAuth } from '../../../../utils/auth-guard'
 import { getUserNutritionSettings } from '../../../../utils/nutrition/settings'
 import { calculateFuelingStrategy } from '../../../../utils/nutrition-domain'
 import { buildZonedDateTimeFromUtcDate, getUserTimezone } from '../../../../utils/date'
 import { bodyMetricResolver } from '../../../../utils/services/bodyMetricResolver'
 
-export default defineEventHandler(async (event) => {
-  const session = await getServerSession(event)
-  if (!session?.user) {
-    throw createError({ statusCode: 401, message: 'Unauthorized' })
+defineRouteMeta({
+  openAPI: {
+    tags: ['Planned Workouts'],
+    summary: 'Get planned workout fueling prep',
+    description: 'Returns a fueling plan for a planned workout. Bearer `nutrition:read`.',
+    security: [{ bearerAuth: [] }]
   }
+})
+
+export default defineEventHandler(async (event) => {
+  const user = await requireAuth(event, ['nutrition:read'])
 
   const workoutId = getRouterParam(event, 'id')
   if (!workoutId) {
     throw createError({ statusCode: 400, message: 'Workout ID is required' })
   }
 
-  const userId = (session.user as any).id
+  const userId = user.id
   const workout = await prisma.plannedWorkout.findFirst({
     where: {
       id: workoutId,
@@ -28,7 +34,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, message: 'Planned workout not found' })
   }
 
-  const [user, timezone] = await Promise.all([
+  const [dbUser, timezone] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
       select: { weight: true, weightSourceMode: true, ftp: true, nutritionTrackingEnabled: true }
@@ -36,7 +42,7 @@ export default defineEventHandler(async (event) => {
     getUserTimezone(userId)
   ])
 
-  if ((user?.nutritionTrackingEnabled ?? true) === false) {
+  if ((dbUser?.nutritionTrackingEnabled ?? true) === false) {
     return {
       workoutId,
       fuelingPlan: null
@@ -44,13 +50,13 @@ export default defineEventHandler(async (event) => {
   }
   const settings = await getUserNutritionSettings(userId)
   const effectiveWeight = await bodyMetricResolver.resolveEffectiveWeight(userId, {
-    weight: user?.weight,
-    weightSourceMode: user?.weightSourceMode
+    weight: dbUser?.weight,
+    weightSourceMode: dbUser?.weightSourceMode
   })
 
   const profile = {
     weight: effectiveWeight.value || 75,
-    ftp: user?.ftp || 250,
+    ftp: dbUser?.ftp || 250,
     currentCarbMax: settings.currentCarbMax,
     sodiumTarget: settings.sodiumTarget,
     sweatRate: settings.sweatRate ?? undefined,

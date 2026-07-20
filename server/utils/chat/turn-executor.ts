@@ -7,7 +7,12 @@ import { getUserAiSettings } from '../ai-user-settings'
 import { prisma } from '../db'
 import { getUserTimezone } from '../date'
 import { buildGoogleProviderOptions } from '../gemini'
-import { buildPersistedToolCalls, expandStoredChatMessage } from './history'
+import {
+  boundMessagesForModel,
+  buildPersistedToolCalls,
+  estimateTokenCount,
+  expandStoredChatMessage
+} from './history'
 import {
   CHAT_TURN_EVENT_TYPE,
   CHAT_TURN_EXECUTION_TIMEOUT_MS,
@@ -29,6 +34,7 @@ import { findToolNameRepair } from './tool-call-repair'
 import {
   classifyChatSkills,
   composeSkillInstructions,
+  expandSkillSelectionForRequest,
   resolveApprovalToolNamesForSelection,
   selectToolsForSkills,
   type ChatSkillSelection
@@ -386,6 +392,213 @@ function getToolResultPayload(toolResult: any) {
   return toolResult?.result ?? toolResult?.output ?? toolResult?.response ?? null
 }
 
+function isSuccessfulToolResult(toolResult: any) {
+  const payload = getToolResultPayload(toolResult)
+  return !!payload && !payload.error && payload.success !== false
+}
+
+export function hasSuccessfulMutatingToolResult(toolResults: any[]) {
+  return (toolResults || []).some(
+    (toolResult) =>
+      isMutatingChatTool(toolResult?.toolName || toolResult?.name || '') &&
+      isSuccessfulToolResult(toolResult)
+  )
+}
+
+export function shouldRetryEmptyToolResponse(attemptIndex: number, toolResults: any[]) {
+  return attemptIndex === 0 && !hasSuccessfulMutatingToolResult(toolResults)
+}
+
+function formatDurationSeconds(value: unknown) {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return null
+  return `${Math.round(value / 60)} min`
+}
+
+function buildWorkoutDetailsFallback(details: any): string | null {
+  if (!details || typeof details !== 'object') return null
+
+  const title = details.title || details.name
+  if (!title) return null
+
+  const lines = [`## ${title}`]
+  const metadata = [
+    details.date ? `Date: ${details.date}` : null,
+    details.type ? `Type: ${details.type}` : null,
+    formatDurationSeconds(details.durationSec),
+    typeof details.tss === 'number' ? `TSS: ${Math.round(details.tss)}` : null,
+    typeof details.intensity === 'number'
+      ? `Intensity: ${Math.round(details.intensity * (details.intensity <= 2 ? 100 : 1))}%`
+      : null,
+    typeof details.rpe === 'number' ? `RPE: ${details.rpe}/10` : null
+  ].filter(Boolean)
+  if (metadata.length > 0) lines.push('', metadata.join(' · '))
+
+  const description = details.notes || details.description
+  if (typeof description === 'string' && description.trim()) {
+    lines.push('', truncateFallbackText(description, 1_500))
+  }
+
+  return lines.join('\n')
+}
+
+function buildAvailabilityFallback(payload: any): string | null {
+  if (typeof payload?.message === 'string' && !Array.isArray(payload?.availability)) {
+    return payload.message.trim()
+  }
+  if (!Array.isArray(payload?.availability)) return null
+
+  const lines = ['## Training availability']
+  for (const day of payload.availability.slice(0, 7)) {
+    const slots = Array.isArray(day?.slots)
+      ? day.slots
+          .slice(0, 4)
+          .map((slot: any) => {
+            const time = slot?.startTime ? `${slot.startTime}` : ''
+            const duration = typeof slot?.duration === 'number' ? `${slot.duration} min` : ''
+            return [slot?.name, time, duration].filter(Boolean).join(' · ')
+          })
+          .filter(Boolean)
+      : []
+    lines.push(`- **${day?.day || 'Day'}:** ${slots.length > 0 ? slots.join('; ') : 'No slots'}`)
+  }
+  return lines.join('\n')
+}
+
+function buildWorkoutListFallback(toolName: string, payload: any): string | null {
+  const workouts = Array.isArray(payload) ? payload : payload?.workouts
+  if (!Array.isArray(workouts)) return null
+
+  const heading = toolName.includes('planned') ? '## Planned workouts' : '## Workouts'
+  if (workouts.length === 0) return `${heading}\n\nNo matching workouts found.`
+
+  const lines = [heading]
+  for (const workout of workouts.slice(0, 8)) {
+    const metadata = [
+      workout?.date,
+      workout?.time,
+      workout?.sport || workout?.type,
+      typeof workout?.duration === 'number'
+        ? formatDurationSeconds(workout.duration)
+        : workout?.duration,
+      typeof workout?.tss === 'number' ? `TSS ${Math.round(workout.tss)}` : null
+    ].filter(Boolean)
+    lines.push(
+      `- **${workout?.title || 'Workout'}**${metadata.length ? ` — ${metadata.join(' · ')}` : ''}`
+    )
+  }
+  return lines.join('\n')
+}
+
+function buildWellnessMetricsFallback(payload: any): string | null {
+  if (!Array.isArray(payload?.metrics)) return null
+  if (payload.metrics.length === 0) return 'No wellness metrics were found for that period.'
+
+  const lines = ['## Wellness metrics']
+  for (const metric of payload.metrics.slice(0, 7)) {
+    const values = [
+      typeof metric?.recovery?.recovery_score === 'number'
+        ? `recovery ${metric.recovery.recovery_score}`
+        : null,
+      typeof metric?.recovery?.hrv === 'number' ? `HRV ${metric.recovery.hrv}` : null,
+      typeof metric?.sleep?.hours === 'number' ? `sleep ${metric.sleep.hours}h` : null,
+      typeof metric?.subjective?.fatigue === 'number'
+        ? `fatigue ${metric.subjective.fatigue}`
+        : null
+    ].filter(Boolean)
+    lines.push(
+      `- **${metric?.date || 'Date'}:** ${values.length ? values.join(' · ') : 'No values'}`
+    )
+  }
+  return lines.join('\n')
+}
+
+function buildMutationConfirmation(toolResults: any[]): string | null {
+  for (let index = toolResults.length - 1; index >= 0; index -= 1) {
+    const toolResult = toolResults[index]
+    const toolName = toolResult?.toolName || toolResult?.name || ''
+    const payload = getToolResultPayload(toolResult)
+    if (!isMutatingChatTool(toolName) || !isSuccessfulToolResult(toolResult)) continue
+
+    return buildApprovedContinuationConfirmation(toolName, payload)
+  }
+  return null
+}
+
+function buildWorkoutAnalysisFallback(analysis: any): string | null {
+  const structured =
+    analysis?.aiAnalysisJson &&
+    typeof analysis.aiAnalysisJson === 'object' &&
+    !Array.isArray(analysis.aiAnalysisJson)
+      ? analysis.aiAnalysisJson
+      : null
+  const summary =
+    typeof structured?.executive_summary === 'string'
+      ? structured.executive_summary.trim()
+      : typeof analysis?.overallQualityExplanation === 'string'
+        ? analysis.overallQualityExplanation.trim()
+        : ''
+  const markdown = typeof analysis?.aiAnalysis === 'string' ? analysis.aiAnalysis.trim() : ''
+
+  if (!summary && !markdown && !structured) return null
+
+  const title = analysis?.title || structured?.title || 'Workout analysis'
+  const lines = [`## ${title}`]
+  if (analysis?.date) lines.push('', `Date: ${analysis.date}`)
+  if (summary) lines.push('', summary)
+
+  const scores = structured?.scores || {}
+  const scoreEntries = [
+    ['Overall', analysis?.overallScore ?? scores.overall],
+    ['Technical', analysis?.technicalScore ?? scores.technical],
+    ['Effort', analysis?.effortScore ?? scores.effort],
+    ['Pacing', analysis?.pacingScore ?? scores.pacing],
+    ['Execution', analysis?.executionScore ?? scores.execution]
+  ].filter((entry) => typeof entry[1] === 'number')
+  if (scoreEntries.length > 0) {
+    lines.push('', scoreEntries.map(([label, value]) => `${label}: ${value}/10`).join(' · '))
+  }
+
+  const strengths = Array.isArray(structured?.strengths) ? structured.strengths.slice(0, 3) : []
+  if (strengths.length > 0) {
+    lines.push('', '**Strengths**', ...strengths.map((item: unknown) => `- ${String(item)}`))
+  }
+
+  const weaknesses = Array.isArray(structured?.weaknesses) ? structured.weaknesses.slice(0, 3) : []
+  if (weaknesses.length > 0) {
+    lines.push(
+      '',
+      '**Areas to improve**',
+      ...weaknesses.map((item: unknown) => `- ${String(item)}`)
+    )
+  }
+
+  const recommendations = Array.isArray(structured?.recommendations)
+    ? structured.recommendations.slice(0, 3)
+    : []
+  if (recommendations.length > 0) {
+    lines.push('', '**Recommendations**')
+    for (const recommendation of recommendations) {
+      if (typeof recommendation === 'string') {
+        lines.push(`- ${truncateFallbackText(recommendation, 320)}`)
+        continue
+      }
+
+      const recommendationTitle = recommendation?.title || 'Recommendation'
+      const description =
+        typeof recommendation?.description === 'string'
+          ? truncateFallbackText(recommendation.description, 320)
+          : ''
+      lines.push(`- **${recommendationTitle}:**${description ? ` ${description}` : ''}`)
+    }
+  }
+
+  if (!summary && markdown) {
+    lines.push('', truncateFallbackText(markdown, 6_000))
+  }
+
+  return lines.join('\n')
+}
+
 export function buildEmptyResponseFallbackFromToolResults(toolResults: any[]): string | null {
   const latestByName = new Map<string, any>()
 
@@ -394,6 +607,43 @@ export function buildEmptyResponseFallbackFromToolResults(toolResults: any[]): s
     const payload = getToolResultPayload(toolResult)
     if (!toolName || !payload || payload.error || payload.success === false) continue
     latestByName.set(toolName, payload)
+  }
+
+  const workoutAnalysisFallback = buildWorkoutAnalysisFallback(
+    latestByName.get('get_workout_analysis')
+  )
+  if (workoutAnalysisFallback) return workoutAnalysisFallback
+
+  const mutationConfirmation = buildMutationConfirmation(toolResults || [])
+  if (mutationConfirmation) return mutationConfirmation
+
+  const workoutDetailsFallback = buildWorkoutDetailsFallback(
+    latestByName.get('get_workout_details')
+  )
+  if (workoutDetailsFallback) return workoutDetailsFallback
+
+  const availabilityFallback = buildAvailabilityFallback(
+    latestByName.get('get_training_availability')
+  )
+  if (availabilityFallback) return availabilityFallback
+
+  for (const toolName of [
+    'get_planned_workouts',
+    'search_planned_workouts',
+    'get_recent_workouts',
+    'search_workouts'
+  ]) {
+    const workoutListFallback = buildWorkoutListFallback(toolName, latestByName.get(toolName))
+    if (workoutListFallback) return workoutListFallback
+  }
+
+  const wellnessFallback = buildWellnessMetricsFallback(latestByName.get('get_wellness_metrics'))
+  if (wellnessFallback) return wellnessFallback
+
+  for (const payload of [...latestByName.values()].reverse()) {
+    if (typeof payload?.message === 'string' && payload.message.trim()) {
+      return truncateFallbackText(payload.message, 1_500)
+    }
   }
 
   const details = latestByName.get('get_planned_workout_details')
@@ -587,22 +837,19 @@ export async function executeChatTurn(turnId: string, expectedRunId?: string | n
     throw error
   }
 
-  const startedTurn = await chatTurnService.tryStartExecution(
-    turn.id,
-    expectedRunId || turn.runId,
-    {
-      startedAt,
-      finishedAt: null,
-      failureReason: null,
-      metadata: chatTurnService.mergeTurnMetadata(turn, {
-        timeoutReason: null,
-        slowResponse: false,
-        firstOutputLatencyMs: null,
-        executionDurationMs: null,
-        executionPhase: currentPhase
-      })
-    }
-  )
+  const executionRunId = expectedRunId || turn.runId
+  const startedTurn = await chatTurnService.tryStartExecution(turn.id, executionRunId, {
+    startedAt,
+    finishedAt: null,
+    failureReason: null,
+    metadata: chatTurnService.mergeTurnMetadata(turn, {
+      timeoutReason: null,
+      slowResponse: false,
+      firstOutputLatencyMs: null,
+      executionDurationMs: null,
+      executionPhase: currentPhase
+    })
+  })
   if (!startedTurn) {
     console.warn(
       '[ChatTurn] Execution start skipped because another runner already owns the turn.',
@@ -617,18 +864,28 @@ export async function executeChatTurn(turnId: string, expectedRunId?: string | n
       reason: 'execution_already_started'
     }
   }
+  const ownedRunId = executionRunId!
   await chatTurnService.recordEvent(turn.id, CHAT_TURN_EVENT_TYPE.TURN_STARTED, {
     roomId: turn.roomId,
     userMessageId: turn.userMessageId
   } as any)
 
   const heartbeatTimer = setInterval(() => {
-    void chatTurnService.heartbeat(turn.id).catch((error) => {
-      console.error('[ChatTurn] Heartbeat keepalive failed:', {
-        turnId: activeTurn.id,
-        error
+    void chatTurnService
+      .heartbeat(turn.id, undefined, ownedRunId)
+      .then((result) => {
+        if (result.count === 0 && !executionAbortController.signal.aborted) {
+          terminalFailureReason = 'Turn ownership changed during execution.'
+          executionAbortController.abort(terminalFailureReason)
+        }
       })
-    })
+      .catch((error) => {
+        console.error('[ChatTurn] Heartbeat keepalive failed:', {
+          turnId: activeTurn.id,
+          runId: ownedRunId,
+          error
+        })
+      })
   }, CHAT_TURN_HEARTBEAT_INTERVAL_MS)
 
   const executionTimeoutTimer = setTimeout(() => {
@@ -699,7 +956,7 @@ export async function executeChatTurn(turnId: string, expectedRunId?: string | n
         userId: turn.userId,
         actorUserId
       })
-      const skillSelection = await classifyChatSkills({
+      const routedSkillSelection = await classifyChatSkills({
         userId: turn.userId,
         turnId: turn.id,
         messages: submittedMessages,
@@ -707,6 +964,7 @@ export async function executeChatTurn(turnId: string, expectedRunId?: string | n
         requireToolApproval: !!aiSettings?.aiRequireToolApproval,
         nutritionTrackingEnabled: aiSettings?.nutritionTrackingEnabled !== false
       })
+      const skillSelection = expandSkillSelectionForRequest(routedSkillSelection, content || '')
       ensureTurnNotAborted()
       const { tools, selectedToolNames, systemInstruction } = await buildTurnExecutionSkillConfig({
         allTools,
@@ -727,19 +985,29 @@ export async function executeChatTurn(turnId: string, expectedRunId?: string | n
         usedFallback: !!skillSelection.usedFallback,
         source: skillSelection.source || 'router',
         reason: skillSelection.reason || null,
-        selectedToolNames
+        selectedToolNames,
+        requestHistoryMessageCount: submittedMessages.length,
+        requestHistoryEstimatedTokens: estimateTokenCount(submittedMessages)
       }
 
-      await chatTurnService.updateStatus(turn.id, CHAT_TURN_STATUS.RUNNING, {
-        metadata: chatTurnService.mergeTurnMetadata(turn, {
-          timeoutReason: null,
-          slowResponse: false,
-          firstOutputLatencyMs: null,
-          executionDurationMs: null,
-          executionPhase: currentPhase,
-          skillSelection: skillSelectionMetadata
-        })
-      })
+      const runningUpdate = await chatTurnService.updateStatusIfOwned(
+        turn.id,
+        ownedRunId,
+        CHAT_TURN_STATUS.RUNNING,
+        {
+          metadata: chatTurnService.mergeTurnMetadata(turn, {
+            timeoutReason: null,
+            slowResponse: false,
+            firstOutputLatencyMs: null,
+            executionDurationMs: null,
+            executionPhase: currentPhase,
+            skillSelection: skillSelectionMetadata
+          })
+        }
+      )
+      if (runningUpdate.count === 0) {
+        throw createAbortError('Turn ownership changed before model execution.')
+      }
 
       const historyToolCalls = new Map<string, any>()
       const currentTurnToolCalls = new Map<string, any>()
@@ -848,20 +1116,28 @@ export async function executeChatTurn(turnId: string, expectedRunId?: string | n
             executionDurationMs
           })
 
-          await chatTurnService.updateStatus(turn.id, CHAT_TURN_STATUS.COMPLETED, {
-            finishedAt,
-            assistantMessageId: draft.id,
-            metadata: chatTurnService.mergeTurnMetadata(turn, {
-              timeoutReason: null,
-              slowResponse: slowResponseRecorded,
-              firstOutputLatencyMs,
-              executionDurationMs,
-              executionPhase: currentPhase,
-              finishedAt: finishedAt.toISOString(),
-              skillSelection: skillSelectionMetadata,
-              completedLocallyAfterApprovedTool: true
-            })
-          })
+          const completedUpdate = await chatTurnService.updateStatusIfOwned(
+            turn.id,
+            ownedRunId,
+            CHAT_TURN_STATUS.COMPLETED,
+            {
+              finishedAt,
+              assistantMessageId: draft.id,
+              metadata: chatTurnService.mergeTurnMetadata(turn, {
+                timeoutReason: null,
+                slowResponse: slowResponseRecorded,
+                firstOutputLatencyMs,
+                executionDurationMs,
+                executionPhase: currentPhase,
+                finishedAt: finishedAt.toISOString(),
+                skillSelection: skillSelectionMetadata,
+                completedLocallyAfterApprovedTool: true
+              })
+            }
+          )
+          if (completedUpdate.count === 0) {
+            throw createAbortError('Turn ownership changed before local completion.')
+          }
 
           await broadcastAssistantMessage(
             {
@@ -918,6 +1194,12 @@ export async function executeChatTurn(turnId: string, expectedRunId?: string | n
           }
         }
       }
+
+      historyMessages = boundMessagesForModel(historyMessages)
+      Object.assign(skillSelectionMetadata, {
+        boundedHistoryMessageCount: historyMessages.length,
+        boundedHistoryEstimatedTokens: estimateTokenCount(historyMessages)
+      })
 
       const coreMessages = await transformHistoryToCoreMessages(historyMessages)
       ensureTurnNotAborted()
@@ -1074,6 +1356,11 @@ export async function executeChatTurn(turnId: string, expectedRunId?: string | n
         persistedText = assistantText || ' '
         lastPersistAt = now
 
+        const lease = await chatTurnService.heartbeat(activeTurn.id, undefined, ownedRunId)
+        if (lease.count === 0) {
+          throw createAbortError('Turn ownership changed while persisting the response.')
+        }
+
         const updatedDraft = await chatTurnService.updateAssistantDraft({
           messageId: draft.id,
           content: persistedText,
@@ -1098,7 +1385,14 @@ export async function executeChatTurn(turnId: string, expectedRunId?: string | n
           } as any
         })
 
-        await chatTurnService.heartbeat(activeTurn.id, status as any)
+        const statusHeartbeat = await chatTurnService.heartbeat(
+          activeTurn.id,
+          status as any,
+          ownedRunId
+        )
+        if (statusHeartbeat.count === 0) {
+          throw createAbortError('Turn ownership changed while updating response status.')
+        }
         await broadcastAssistantMessage(updatedDraft, status, {
           failureReason:
             typeof extraMetadata.failureReason === 'string' ? extraMetadata.failureReason : null
@@ -1304,7 +1598,10 @@ export async function executeChatTurn(turnId: string, expectedRunId?: string | n
             const shouldFallbackForEmptyResponse =
               !hasMeaningfulText && pendingApprovals.length === 0
 
-            if (shouldFallbackForEmptyResponse && attemptIndex === 0) {
+            if (
+              shouldFallbackForEmptyResponse &&
+              shouldRetryEmptyToolResponse(attemptIndex, allToolResults)
+            ) {
               shouldRetryEmptyResponse = true
               currentPhase = 'retrying_empty_response'
               await logAttemptUsage({
@@ -1329,6 +1626,9 @@ export async function executeChatTurn(turnId: string, expectedRunId?: string | n
               assistantText =
                 buildEmptyResponseFallbackFromToolResults(allToolResults) || EMPTY_RESPONSE_FALLBACK
             }
+
+            const recoveredEmptyResponse =
+              shouldFallbackForEmptyResponse && assistantText !== EMPTY_RESPONSE_FALLBACK
 
             if (finalStepResults?.length) {
               const finalDetailedResults = finalStepResults.map((tr: any) => {
@@ -1375,21 +1675,29 @@ export async function executeChatTurn(turnId: string, expectedRunId?: string | n
               ...(pendingApprovals.length > 0 ? { pendingApprovals } : {})
             })
 
-            await chatTurnService.updateStatus(turn.id, CHAT_TURN_STATUS.COMPLETED, {
-              finishedAt,
-              assistantMessageId: draft.id,
-              metadata: chatTurnService.mergeTurnMetadata(turn, {
-                timeoutReason:
-                  terminalTimeoutReason ||
-                  (slowResponseRecorded ? CHAT_TURN_TIMEOUT_REASON.SLOW_RESPONSE : null),
-                slowResponse: slowResponseRecorded,
-                firstOutputLatencyMs,
-                executionDurationMs,
-                executionPhase: currentPhase,
-                finishedAt: finishedAt.toISOString(),
-                skillSelection: skillSelectionMetadata
-              })
-            })
+            const completedUpdate = await chatTurnService.updateStatusIfOwned(
+              turn.id,
+              ownedRunId,
+              CHAT_TURN_STATUS.COMPLETED,
+              {
+                finishedAt,
+                assistantMessageId: draft.id,
+                metadata: chatTurnService.mergeTurnMetadata(turn, {
+                  timeoutReason:
+                    terminalTimeoutReason ||
+                    (slowResponseRecorded ? CHAT_TURN_TIMEOUT_REASON.SLOW_RESPONSE : null),
+                  slowResponse: slowResponseRecorded,
+                  firstOutputLatencyMs,
+                  executionDurationMs,
+                  executionPhase: currentPhase,
+                  finishedAt: finishedAt.toISOString(),
+                  skillSelection: skillSelectionMetadata
+                })
+              }
+            )
+            if (completedUpdate.count === 0) {
+              throw createAbortError('Turn ownership changed before completion.')
+            }
             await broadcastAssistantMessage(
               {
                 id: draft.id,
@@ -1421,8 +1729,12 @@ export async function executeChatTurn(turnId: string, expectedRunId?: string | n
                 where: { id: earlyUsage.id },
                 data: {
                   model: modelName,
-                  success: !shouldFallbackForEmptyResponse,
-                  errorType: shouldFallbackForEmptyResponse ? 'EMPTY_RESPONSE' : null,
+                  success: !shouldFallbackForEmptyResponse || recoveredEmptyResponse,
+                  errorType: shouldFallbackForEmptyResponse
+                    ? recoveredEmptyResponse
+                      ? 'EMPTY_RESPONSE_RECOVERED'
+                      : 'EMPTY_RESPONSE'
+                    : null,
                   errorMessage: shouldFallbackForEmptyResponse
                     ? 'LLM response finished with empty text.'
                     : null,
@@ -1437,8 +1749,12 @@ export async function executeChatTurn(turnId: string, expectedRunId?: string | n
             await logAttemptUsage({
               attemptIndex,
               usage,
-              success: !shouldFallbackForEmptyResponse,
-              errorType: shouldFallbackForEmptyResponse ? 'EMPTY_RESPONSE' : null,
+              success: !shouldFallbackForEmptyResponse || recoveredEmptyResponse,
+              errorType: shouldFallbackForEmptyResponse
+                ? recoveredEmptyResponse
+                  ? 'EMPTY_RESPONSE_RECOVERED'
+                  : 'EMPTY_RESPONSE'
+                : null,
               errorMessage: shouldFallbackForEmptyResponse
                 ? 'LLM response finished with empty text.'
                 : null,
@@ -1478,8 +1794,12 @@ export async function executeChatTurn(turnId: string, expectedRunId?: string | n
                   durationMs: executionDurationMs,
                   ttft: firstOutputLatencyMs,
                   retryCount: 0,
-                  success: !shouldFallbackForEmptyResponse,
-                  errorType: shouldFallbackForEmptyResponse ? 'EMPTY_RESPONSE' : null,
+                  success: !shouldFallbackForEmptyResponse || recoveredEmptyResponse,
+                  errorType: shouldFallbackForEmptyResponse
+                    ? recoveredEmptyResponse
+                      ? 'EMPTY_RESPONSE_RECOVERED'
+                      : 'EMPTY_RESPONSE'
+                    : null,
                   errorMessage: shouldFallbackForEmptyResponse
                     ? 'LLM response finished with empty text.'
                     : null,
@@ -1624,22 +1944,30 @@ export async function executeChatTurn(turnId: string, expectedRunId?: string | n
           executionPhase: currentPhase,
           executionDurationMs
         }).catch(() => null)
-        await chatTurnService.updateStatus(turn.id, terminalStatus, {
-          finishedAt,
-          failureReason: reason,
-          assistantMessageId: draft.id,
-          metadata: chatTurnService.mergeTurnMetadata(turn, {
-            timeoutReason:
-              terminalTimeoutReason ||
-              (slowResponseRecorded ? CHAT_TURN_TIMEOUT_REASON.SLOW_RESPONSE : null),
-            slowResponse: slowResponseRecorded,
-            firstOutputLatencyMs,
-            executionDurationMs,
-            executionPhase: currentPhase,
-            finishedAt: finishedAt.toISOString(),
-            skillSelection: skillSelectionMetadata
-          })
-        })
+        const terminalUpdate = await chatTurnService.updateStatusIfOwned(
+          turn.id,
+          ownedRunId,
+          terminalStatus,
+          {
+            finishedAt,
+            failureReason: reason,
+            assistantMessageId: draft.id,
+            metadata: chatTurnService.mergeTurnMetadata(turn, {
+              timeoutReason:
+                terminalTimeoutReason ||
+                (slowResponseRecorded ? CHAT_TURN_TIMEOUT_REASON.SLOW_RESPONSE : null),
+              slowResponse: slowResponseRecorded,
+              firstOutputLatencyMs,
+              executionDurationMs,
+              executionPhase: currentPhase,
+              finishedAt: finishedAt.toISOString(),
+              skillSelection: skillSelectionMetadata
+            })
+          }
+        )
+        if (terminalUpdate.count === 0) {
+          throw error
+        }
         await broadcastAssistantMessage(
           {
             id: draft.id,
@@ -1711,10 +2039,11 @@ export async function executeChatTurn(turnId: string, expectedRunId?: string | n
             ? error.message
             : 'Chat turn failed during execution.'
 
-      await prisma.chatTurn
+      const failedUpdate = await prisma.chatTurn
         .updateMany({
           where: {
             id: turn.id,
+            runId: ownedRunId,
             status: { in: activeStatuses }
           },
           data: {
@@ -1724,17 +2053,19 @@ export async function executeChatTurn(turnId: string, expectedRunId?: string | n
             lastHeartbeatAt: new Date()
           }
         })
-        .catch(() => null)
+        .catch(() => ({ count: 0 }))
 
-      await sendToUser(turn.userId, {
-        type: 'chat_turn_status',
-        roomId: turn.roomId,
-        turnId: turn.id,
-        status: CHAT_TURN_STATUS.FAILED,
-        reason: 'turn_failed',
-        failureReason: reason,
-        quotaExceeded: error?.statusCode === 429
-      }).catch(() => null)
+      if (failedUpdate.count > 0) {
+        await sendToUser(turn.userId, {
+          type: 'chat_turn_status',
+          roomId: turn.roomId,
+          turnId: turn.id,
+          status: CHAT_TURN_STATUS.FAILED,
+          reason: 'turn_failed',
+          failureReason: reason,
+          quotaExceeded: error?.statusCode === 429
+        }).catch(() => null)
+      }
 
       throw error
     } finally {

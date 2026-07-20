@@ -1,8 +1,8 @@
 # App Review — Issue Tracker
 
-Last reviewed: 2026-07-19 (issues 327–348 — coaching invites, relationships, team UX)
+Last reviewed: 2026-07-20 (issues 349–352 — chat production reliability)
 
-Documents app-wide issues **039–348** from systematic codebase and live UI review. Complements structure-generation tracker [issues.md](./issues.md) (001–038, **37 / 38 fixed**).
+Documents app-wide issues **039–352** from systematic codebase, live UI, and production telemetry review. Complements structure-generation tracker [issues.md](./issues.md) (001–038, **37 / 38 fixed**).
 
 **Progress:** [REVIEW-PROGRESS.md](./REVIEW-PROGRESS.md) (~96% complete)
 
@@ -10,51 +10,57 @@ Documents app-wide issues **039–348** from systematic codebase and live UI rev
 
 ## Summary by priority
 
-| Priority | Count (039–348) | Notes |
-| -------- | --------------- | ----- |
-| Critical | incl. **327–328** coaching invite bugs | Plus Garmin 312–313 |
-| High     | incl. **329–335** | Act As, remove athlete, team IA, privacy |
-| Medium   | incl. **336–347** | Adherence, notifications, nav, nutrition |
-| Low      | incl. **348** | Coaching i18n remainder |
+| Priority | Count (039–352)               | Notes                                      |
+| -------- | ----------------------------- | ------------------------------------------ |
+| Critical | incl. **349** mutation replay | Plus Garmin 312–313                        |
+| High     | incl. **350–352**             | Chat fallback, routing, heartbeat recovery |
+| Medium   | incl. **336–347**             | Adherence, notifications, nav, nutrition   |
+| Low      | incl. **348**                 | Coaching i18n remainder                    |
 
-Exact open/fixed tallies: see section tables below (263–274 mostly Fixed; 327–348 Open).
+Newest production reliability batch: ~~**349 Critical**, **350–352 High**~~ **Fixed**.
+
+Exact open/fixed tallies: see the section tables below.
 
 ## Top clusters (fix these first)
 
 ### P0 — Critical runtime & security (active)
 
-| ID                                                               | Title                                                         |
-| ---------------------------------------------------------------- | ------------------------------------------------------------- |
-| [062](./062-chat-planned-workout-pollstartedat-crash.md)         | ~~Chat planned-workout card `pollStartedAt` crash~~ **Fixed** |
-| [263](./263-public-share-invite-single-use.md)                   | ~~Public coaching-share invite single-use~~ **Fixed**         |
-| [327](./327-connect-by-code-maxlength-six.md)                    | ~~Connect-by-code truncates to 6 chars~~ **Fixed**            |
-| [328](./328-share-invite-link-points-to-start.md)                | ~~Share InviteLink copies Start URL~~ **Fixed**               |
-| [312](./312-garmin-activity-file-callback-token-exfiltration.md) | Garmin callback can exfiltrate access tokens                  |
-| [313](./313-garmin-webhook-multi-user-batch-misrouting.md)       | Garmin multi-user webhook batches are misrouted               |
-| ~~[069](./069-garmin-webhook-unauthenticated.md)~~               | Garmin webhook — **Postponed**                                |
-| ~~[058](./058-oauth-refresh-weak-client-binding.md)~~            | OAuth refresh — **Postponed**                                 |
+| ID                                                               | Title                                                           |
+| ---------------------------------------------------------------- | --------------------------------------------------------------- |
+| [062](./062-chat-planned-workout-pollstartedat-crash.md)         | ~~Chat planned-workout card `pollStartedAt` crash~~ **Fixed**   |
+| [263](./263-public-share-invite-single-use.md)                   | ~~Public coaching-share invite single-use~~ **Fixed**           |
+| [327](./327-connect-by-code-maxlength-six.md)                    | ~~Connect-by-code truncates to 6 chars~~ **Fixed**              |
+| [328](./328-share-invite-link-points-to-start.md)                | ~~Share InviteLink copies Start URL~~ **Fixed**                 |
+| [349](./349-empty-response-retry-replays-mutations.md)           | ~~Empty-response retry replays successful mutations~~ **Fixed** |
+| [312](./312-garmin-activity-file-callback-token-exfiltration.md) | Garmin callback can exfiltrate access tokens                    |
+| [313](./313-garmin-webhook-multi-user-batch-misrouting.md)       | Garmin multi-user webhook batches are misrouted                 |
+| ~~[069](./069-garmin-webhook-unauthenticated.md)~~               | Garmin webhook — **Postponed**                                  |
+| ~~[058](./058-oauth-refresh-weak-client-binding.md)~~            | OAuth refresh — **Postponed**                                   |
 
 ### P1 — High-impact user flows
 
-| ID                                                                                                             | Title                                                      |
-| -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| [064](./064-workout-detail-stale-on-nav.md) / [065](./065-planned-workout-stale-on-nav.md)                     | ~~Workout pages stale on neighbor navigation~~ **Fixed**   |
-| [067](./067-nutrition-estimate-missing-id.md)                                                                  | ~~Nutrition estimate days break mutations~~ **Fixed**      |
-| [068](./068-coaching-overview-wrong-workout-links.md)                                                          | ~~Coaching feed links wrong workout route~~ **Fixed**      |
-| [076](./076-analytics-dashboard-autosave-silent-fail.md)                                                       | ~~Analytics dashboard save fails silently~~ **Fixed**      |
-| [131](./131-feed-load-more-never-refetches.md)                                                                 | ~~Feed pagination broken~~ **Fixed**                       |
-| [134](./134-activities-sync-spinner-stuck.md)                                                                  | ~~Activities sync spinner stuck~~ **Fixed**                |
-| [145](./145-logout-no-pinia-store-reset.md)                                                                    | ~~Logout doesn't reset stores~~ **Fixed**                  |
-| [147](./147-user-store-cache-blocks-refetch.md)                                                                | ~~User store cache blocks refetch after switch~~ **Fixed** |
-| [152](./152-onboarding-blocks-join-callback.md)                                                                | ~~Onboarding blocks post-signup join~~ **Fixed**           |
-| [171](./171-ingest-hevy-no-date-window.md) / [172](./172-garmin-ingest-clamps-24h-window.md)                   | ~~Ingest date window bugs~~ **Fixed**                      |
-| [174](./174-garmin-ingest-silent-noop-missing-integration.md)                                                  | ~~Garmin silent noop missing integration~~ **Fixed**       |
-| [175](./175-wellness-analysis-no-quota-check.md) / [177](./177-recommend-today-processing-stuck-on-failure.md) | ~~AI quota / stuck PROCESSING~~ **Fixed**                  |
-| [187](./187-profile-tab-unmount-popper-crash.md)                                                               | ~~Profile settings popper crash (Sentry 18A)~~ **Fixed**   |
-| [190](./190-autodetect-drops-ftp-hr-thresholds.md)                                                             | ~~Autodetect drops FTP/HR thresholds~~ **Fixed**           |
-| [197](./197-connected-apps-hides-failed-status.md)                                                             | ~~Connected apps hides FAILED integrations~~ **Fixed**     |
-| [314](./314-garmin-refresh-token-rotation-races.md)                                                            | Garmin refresh token rotation is race-prone                |
-| [315](./315-garmin-disabled-fetches-hide-requested-failure.md)                                                 | Disabled Garmin fetches hide requested-data failure        |
+| ID                                                                                                             | Title                                                               |
+| -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| [064](./064-workout-detail-stale-on-nav.md) / [065](./065-planned-workout-stale-on-nav.md)                     | ~~Workout pages stale on neighbor navigation~~ **Fixed**            |
+| [067](./067-nutrition-estimate-missing-id.md)                                                                  | ~~Nutrition estimate days break mutations~~ **Fixed**               |
+| [068](./068-coaching-overview-wrong-workout-links.md)                                                          | ~~Coaching feed links wrong workout route~~ **Fixed**               |
+| [076](./076-analytics-dashboard-autosave-silent-fail.md)                                                       | ~~Analytics dashboard save fails silently~~ **Fixed**               |
+| [131](./131-feed-load-more-never-refetches.md)                                                                 | ~~Feed pagination broken~~ **Fixed**                                |
+| [134](./134-activities-sync-spinner-stuck.md)                                                                  | ~~Activities sync spinner stuck~~ **Fixed**                         |
+| [145](./145-logout-no-pinia-store-reset.md)                                                                    | ~~Logout doesn't reset stores~~ **Fixed**                           |
+| [147](./147-user-store-cache-blocks-refetch.md)                                                                | ~~User store cache blocks refetch after switch~~ **Fixed**          |
+| [152](./152-onboarding-blocks-join-callback.md)                                                                | ~~Onboarding blocks post-signup join~~ **Fixed**                    |
+| [171](./171-ingest-hevy-no-date-window.md) / [172](./172-garmin-ingest-clamps-24h-window.md)                   | ~~Ingest date window bugs~~ **Fixed**                               |
+| [174](./174-garmin-ingest-silent-noop-missing-integration.md)                                                  | ~~Garmin silent noop missing integration~~ **Fixed**                |
+| [175](./175-wellness-analysis-no-quota-check.md) / [177](./177-recommend-today-processing-stuck-on-failure.md) | ~~AI quota / stuck PROCESSING~~ **Fixed**                           |
+| [187](./187-profile-tab-unmount-popper-crash.md)                                                               | ~~Profile settings popper crash (Sentry 18A)~~ **Fixed**            |
+| [190](./190-autodetect-drops-ftp-hr-thresholds.md)                                                             | ~~Autodetect drops FTP/HR thresholds~~ **Fixed**                    |
+| [197](./197-connected-apps-hides-failed-status.md)                                                             | ~~Connected apps hides FAILED integrations~~ **Fixed**              |
+| [314](./314-garmin-refresh-token-rotation-races.md)                                                            | Garmin refresh token rotation is race-prone                         |
+| [315](./315-garmin-disabled-fetches-hide-requested-failure.md)                                                 | Disabled Garmin fetches hide requested-data failure                 |
+| [350](./350-successful-tools-generic-response-fallback.md)                                                     | ~~Successful tools end in generic response fallback~~ **Fixed**     |
+| [351](./351-skill-router-excludes-needed-tools.md)                                                             | ~~Skill router excludes tools needed by selected intent~~ **Fixed** |
+| [352](./352-chat-heartbeat-recovery-exhaustion.md)                                                             | ~~Chat turns exhaust heartbeat recovery~~ **Fixed**                 |
 
 **Earlier active high issues (039–218):** [040](./040-billing-success-without-activation.md), [056](./056-orchestrate-progress-key-mismatch.md), [139](./139-fitness-index-90-day-api-cap.md), [144](./144-admin-issue-reactions-no-admin-check.md), [161](./161-connect-yazio-no-auth-middleware.md), [162](./162-fit-ingest-no-file-ownership-check.md)
 
@@ -421,7 +427,7 @@ Systematic pass over `/coaching` pages, components, `coachingRepository`, `teamR
 | [269](./269-coaching-legacy-endpoints-skip-requireauth.md) | Older coaching endpoints skip `requireAuth` guards     | Medium   | Security         | Fixed  |
 | [270](./270-coach-calendar-panel-fetch-race.md)            | Coach calendar panel fetch race on fast navigation     | Medium   | Bug              | Fixed  |
 | [271](./271-overview-compliance-server-timezone.md)        | Overview compliance grid uses server timezone          | Medium   | Bug              | Fixed  |
-| [272](./272-adherence-100-with-zero-planned.md)            | Adherence shows 100% with zero planned workouts        | Medium   | Bug/UX           | Fixed |
+| [272](./272-adherence-100-with-zero-planned.md)            | Adherence shows 100% with zero planned workouts        | Medium   | Bug/UX           | Fixed  |
 | [273](./273-team-invite-email-case-sensitive.md)           | Team invite email restriction is case-sensitive        | Medium   | Bug              | Fixed  |
 | [274](./274-coaching-calendar-unbounded-range.md)          | Coaching athlete calendar accepts unbounded date range | Medium   | Bug/Performance  | Fixed  |
 | [275](./275-coaching-polish-bundle.md)                     | Coaching pages low-priority polish (275a–275e)         | Low      | Maintenance      | Open   |
@@ -632,31 +638,31 @@ User-facing `/documentation/` coverage review. Foundation pages first; support-d
 
 Second coaching pass after verifying 263–275. Focus: invite redemption bugs, athlete↔coach management, team staff workflows, coach data-browse gaps, and IA/nav friction. Prior related: 068, 085, 115–116, 152–154, 201, 263–275, 293.
 
-| ID                                                                  | Title                                                              | Priority | Type             | Status  |
-| ------------------------------------------------------------------- | ------------------------------------------------------------------ | -------- | ---------------- | ------- |
-| [327](./327-connect-by-code-maxlength-six.md)                       | Connect-by-code input truncates to 6 chars (codes are 10)          | Critical | Bug              | Fixed   |
-| [328](./328-share-invite-link-points-to-start.md)                   | Public share InviteLink copies Start URL instead of join           | Critical | Bug              | Fixed   |
-| [329](./329-act-as-ui-missing.md)                                   | Coaching Act As has no UI entry point                              | High     | Gap / UX         | Fixed   |
-| [330](./330-coach-cannot-remove-athlete.md)                         | Coach cannot remove / end relationship with an athlete             | High     | Gap / UX         | Fixed   |
-| [331](./331-coaching-team-page-ia-confusion.md)                     | Team page mixes My Coaches, invite-a-coach, and pro teams          | High     | UX / IA          | Fixed   |
-| [332](./332-branded-coach-join-page-missing.md)                     | Branded `/coach/[slug]/join` page missing                         | High     | Gap              | Fixed   |
-| [333](./333-team-invites-never-send-email.md)                       | Team email-restricted invites never send email                     | High     | Gap / UX         | Fixed   |
-| [334](./334-team-member-remove-role-change-missing.md)              | No team member remove or role-change UI/API                        | High     | Gap              | Fixed   |
-| [335](./335-group-details-email-leak.md)                            | Team group details API leaks member emails                         | High     | Security/Privacy | Fixed   |
-| [336](./336-athlete-detail-adherence-null-display.md)               | Athlete detail still shows `null%` for 7d adherence                | Medium   | Bug              | Fixed   |
-| [337](./337-athlete-invite-code-no-regenerate.md)                   | Athlete personal invite code cannot regenerate while active        | Medium   | UX               | Fixed   |
-| [338](./338-coaching-lifecycle-notifications-missing.md)            | No notifications for connect / request lifecycle                   | Medium   | Gap              | Fixed   |
-| [339](./339-already-connected-start-requests-allowed.md)            | Already-connected athletes can still submit Start requests         | Medium   | UX / Edge case   | Fixed   |
-| [340](./340-overview-empty-hides-pending-requests.md)               | Overview empty state hides pending Start-page requests             | Medium   | UX               | Fixed   |
-| [341](./341-join-success-messaging-wrong-type.md)                   | Join success toast/redirect ignores invite type                    | Medium   | UX / Onboarding  | Fixed   |
-| [342](./342-team-roster-empty-ctas-ignore-role.md)                  | Team roster empty-state CTAs ignore member role                    | Medium   | UX               | Fixed   |
-| [343](./343-my-coaches-list-too-thin.md)                            | My Coaches list too thin for athlete management                    | Medium   | UX               | Fixed   |
-| [344](./344-athletes-see-coach-centric-nav.md)                      | Pure athletes see coach-centric Coaching navigation                | Medium   | UX / IA          | Partial |
-| [345](./345-coach-nutrition-views-missing.md)                       | Coaches lack nutrition / fueling views for athletes                | Medium   | Enhancement      | Open    |
-| [346](./346-suspended-relationship-status-unused.md)                | `SUSPENDED` coaching relationship status is unused                 | Medium   | Gap              | Open    |
-| [347](./347-multi-coach-team-data-access-friction.md)               | Multi-coach team staff still cannot share athlete data             | Medium   | Product / UX     | Fixed   |
-| [348](./348-coaching-i18n-incomplete-teams-join.md)                 | Coaching teams/groups/join/public pages still largely untranslated | Low      | i18n             | Partial |
-| [116](./116-coaching-message-athlete-no-context.md)                 | Message Athlete opens AI chat without athlete context              | Medium   | UI               | Fixed   |
+| ID                                                       | Title                                                              | Priority | Type             | Status  |
+| -------------------------------------------------------- | ------------------------------------------------------------------ | -------- | ---------------- | ------- |
+| [327](./327-connect-by-code-maxlength-six.md)            | Connect-by-code input truncates to 6 chars (codes are 10)          | Critical | Bug              | Fixed   |
+| [328](./328-share-invite-link-points-to-start.md)        | Public share InviteLink copies Start URL instead of join           | Critical | Bug              | Fixed   |
+| [329](./329-act-as-ui-missing.md)                        | Coaching Act As has no UI entry point                              | High     | Gap / UX         | Fixed   |
+| [330](./330-coach-cannot-remove-athlete.md)              | Coach cannot remove / end relationship with an athlete             | High     | Gap / UX         | Fixed   |
+| [331](./331-coaching-team-page-ia-confusion.md)          | Team page mixes My Coaches, invite-a-coach, and pro teams          | High     | UX / IA          | Fixed   |
+| [332](./332-branded-coach-join-page-missing.md)          | Branded `/coach/[slug]/join` page missing                          | High     | Gap              | Fixed   |
+| [333](./333-team-invites-never-send-email.md)            | Team email-restricted invites never send email                     | High     | Gap / UX         | Fixed   |
+| [334](./334-team-member-remove-role-change-missing.md)   | No team member remove or role-change UI/API                        | High     | Gap              | Fixed   |
+| [335](./335-group-details-email-leak.md)                 | Team group details API leaks member emails                         | High     | Security/Privacy | Fixed   |
+| [336](./336-athlete-detail-adherence-null-display.md)    | Athlete detail still shows `null%` for 7d adherence                | Medium   | Bug              | Fixed   |
+| [337](./337-athlete-invite-code-no-regenerate.md)        | Athlete personal invite code cannot regenerate while active        | Medium   | UX               | Fixed   |
+| [338](./338-coaching-lifecycle-notifications-missing.md) | No notifications for connect / request lifecycle                   | Medium   | Gap              | Fixed   |
+| [339](./339-already-connected-start-requests-allowed.md) | Already-connected athletes can still submit Start requests         | Medium   | UX / Edge case   | Fixed   |
+| [340](./340-overview-empty-hides-pending-requests.md)    | Overview empty state hides pending Start-page requests             | Medium   | UX               | Fixed   |
+| [341](./341-join-success-messaging-wrong-type.md)        | Join success toast/redirect ignores invite type                    | Medium   | UX / Onboarding  | Fixed   |
+| [342](./342-team-roster-empty-ctas-ignore-role.md)       | Team roster empty-state CTAs ignore member role                    | Medium   | UX               | Fixed   |
+| [343](./343-my-coaches-list-too-thin.md)                 | My Coaches list too thin for athlete management                    | Medium   | UX               | Fixed   |
+| [344](./344-athletes-see-coach-centric-nav.md)           | Pure athletes see coach-centric Coaching navigation                | Medium   | UX / IA          | Partial |
+| [345](./345-coach-nutrition-views-missing.md)            | Coaches lack nutrition / fueling views for athletes                | Medium   | Enhancement      | Open    |
+| [346](./346-suspended-relationship-status-unused.md)     | `SUSPENDED` coaching relationship status is unused                 | Medium   | Gap              | Open    |
+| [347](./347-multi-coach-team-data-access-friction.md)    | Multi-coach team staff still cannot share athlete data             | Medium   | Product / UX     | Fixed   |
+| [348](./348-coaching-i18n-incomplete-teams-join.md)      | Coaching teams/groups/join/public pages still largely untranslated | Low      | i18n             | Partial |
+| [116](./116-coaching-message-athlete-no-context.md)      | Message Athlete opens AI chat without athlete context              | Medium   | UI               | Fixed   |
 
 ### Implementation note (327–348 — 2026-07-19)
 
@@ -667,6 +673,27 @@ Most items patched on `cursor/coaching-issues-review-7f31`. Remaining open: **34
 1. **345 / 346** — product decisions if still desired
 2. **344** — optional athlete-only coaching nav
 3. **348 + 275** — i18n / polish leftovers
+
+## Issues 349–352 (chat production reliability — 2026-07-20)
+
+Read-only production audit over 72 hours: 263 turns in 66 rooms. It found 40 generic response
+fallbacks, 13 heartbeat-recovery interruptions, 14 messages with invalid/no-such-tool calls, and 7
+probable duplicate wellness records created by mutation retries. Prior investigation:
+`docs/06-plans/chat-workout-analysis-investigation-2026-07-12.md`.
+
+| ID                                                         | Title                                                 | Priority | Type | Status |
+| ---------------------------------------------------------- | ----------------------------------------------------- | -------- | ---- | ------ |
+| [349](./349-empty-response-retry-replays-mutations.md)     | Empty-response retry replays successful mutations     | Critical | Bug  | Fixed  |
+| [350](./350-successful-tools-generic-response-fallback.md) | Successful tools end in generic response fallback     | High     | Bug  | Fixed  |
+| [351](./351-skill-router-excludes-needed-tools.md)         | Skill router excludes tools needed by selected intent | High     | Bug  | Fixed  |
+| [352](./352-chat-heartbeat-recovery-exhaustion.md)         | Chat turns exhaust heartbeat recovery                 | High     | Bug  | Fixed  |
+
+### Recommended order (349–352)
+
+1. **349** — stop mutation replay before any broader retry/fallback changes
+2. **350** — make successful reads/writes produce deterministic visible responses
+3. **352 + 222** — instrument ownership and fix recovery liveness/races together
+4. **351** — improve mixed-intent routing and canonical tool aliases
 
 ## Recommended fix order (app review)
 

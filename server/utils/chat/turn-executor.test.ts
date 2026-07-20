@@ -18,11 +18,13 @@ const {
   buildWriteRepairSystemInstruction,
   buildTurnExecutionSkillConfig,
   findApprovedToolContinuation,
+  hasSuccessfulMutatingToolResult,
   normalizeMessagesForSdk,
   scheduleChatRoomSummaryIfNeeded,
   shouldScheduleChatRoomSummary,
   shouldUseReadRepairPrompt,
-  shouldUseWriteRepairPrompt
+  shouldUseWriteRepairPrompt,
+  shouldRetryEmptyToolResponse
 } = await import('./turn-executor')
 
 beforeEach(() => {
@@ -322,6 +324,156 @@ describe('write repair prompt helpers', () => {
     expect(result).toContain('Duration: 60 min')
     expect(result).toContain('Échauffement progressif (10 min)')
     expect(result).toContain('Hold Z2 endurance.')
+  })
+
+  it('synthesizes a workout-analysis fallback from successful structured results', () => {
+    const result = buildEmptyResponseFallbackFromToolResults([
+      {
+        toolName: 'get_workout_analysis',
+        result: {
+          id: '5835e6e9-39b0-48da-a33d-ae7206408c63',
+          title: 'Afternoon Ride',
+          date: '2026-07-18',
+          overallScore: 6,
+          effortScore: 9,
+          pacingScore: 5,
+          aiAnalysisJson: {
+            executive_summary: 'A strong effort with a significant late-session fade.',
+            strengths: ['High peak power'],
+            weaknesses: ['Power declined late in the ride'],
+            recommendations: [
+              {
+                title: 'Start more conservatively',
+                description: 'Reduce the opening interval targets by 5-7%.'
+              }
+            ]
+          }
+        }
+      }
+    ])
+
+    expect(result).toContain('## Afternoon Ride')
+    expect(result).toContain('A strong effort with a significant late-session fade.')
+    expect(result).toContain('Overall: 6/10')
+    expect(result).toContain('Effort: 9/10')
+    expect(result).toContain('High peak power')
+    expect(result).toContain('Start more conservatively')
+    expect(result).not.toContain('response issue')
+  })
+
+  it('uses legacy workout-analysis markdown when structured analysis is unavailable', () => {
+    const result = buildEmptyResponseFallbackFromToolResults([
+      {
+        toolName: 'get_workout_analysis',
+        result: {
+          title: 'Morning Run',
+          date: '2026-07-19',
+          aiAnalysis: '# Analysis\n\nWell-paced aerobic session.'
+        }
+      }
+    ])
+
+    expect(result).toContain('## Morning Run')
+    expect(result).toContain('Well-paced aerobic session.')
+  })
+
+  it('builds a concise fallback for completed workout details', () => {
+    const result = buildEmptyResponseFallbackFromToolResults([
+      {
+        toolName: 'get_workout_details',
+        result: {
+          title: 'Evening Ride',
+          date: '2026-07-19',
+          type: 'Ride',
+          durationSec: 5400,
+          tss: 82,
+          intensity: 0.78,
+          rpe: 7,
+          notes: 'Steady endurance work with a strong finish.'
+        }
+      }
+    ])
+
+    expect(result).toContain('## Evening Ride')
+    expect(result).toContain('90 min')
+    expect(result).toContain('TSS: 82')
+    expect(result).toContain('Steady endurance work')
+  })
+
+  it('confirms a successful mutation and prevents an empty-response model retry', () => {
+    const completedWrite = [
+      {
+        toolName: 'record_wellness_event',
+        args: { category: 'FATIGUE', severity: 7, description: 'Very tired today' },
+        result: {
+          message: 'Successfully logged fatigue event.',
+          event: { id: 'event-1', category: 'FATIGUE', severity: 7 }
+        }
+      }
+    ]
+
+    expect(hasSuccessfulMutatingToolResult(completedWrite)).toBe(true)
+    expect(shouldRetryEmptyToolResponse(0, completedWrite)).toBe(false)
+    expect(buildEmptyResponseFallbackFromToolResults(completedWrite)).toBe(
+      'Successfully logged fatigue event.'
+    )
+
+    // A model retry could paraphrase these arguments, so it must never be entered.
+    expect(
+      shouldRetryEmptyToolResponse(0, [
+        {
+          ...completedWrite[0],
+          args: { category: 'FATIGUE', severity: 6, description: 'Feeling exhausted today' }
+        }
+      ])
+    ).toBe(false)
+  })
+
+  it('retries a successful read once but returns no fallback when every tool failed', () => {
+    expect(
+      shouldRetryEmptyToolResponse(0, [
+        { toolName: 'get_workout_details', result: { title: 'Morning Run' } }
+      ])
+    ).toBe(true)
+    expect(
+      buildEmptyResponseFallbackFromToolResults([
+        { toolName: 'get_workout_details', result: { error: 'Workout not found' } },
+        { toolName: 'record_wellness_event', result: { success: false, error: 'Failed' } }
+      ])
+    ).toBeNull()
+  })
+
+  it('summarizes workout collections and bounded read-tool messages', () => {
+    expect(
+      buildEmptyResponseFallbackFromToolResults([
+        {
+          toolName: 'get_recent_workouts',
+          result: {
+            count: 1,
+            workouts: [
+              {
+                title: 'Lunch Run',
+                date: '2026-07-20',
+                sport: 'Run',
+                duration: 3600,
+                tss: 55
+              }
+            ]
+          }
+        }
+      ])
+    ).toContain('**Lunch Run** — 2026-07-20 · Run · 60 min · TSS 55')
+
+    expect(
+      buildEmptyResponseFallbackFromToolResults([
+        {
+          toolName: 'get_workout_streams',
+          result: {
+            message: 'Stream access restricted for performance. Use workout details instead.'
+          }
+        }
+      ])
+    ).toContain('Stream access restricted')
   })
 })
 

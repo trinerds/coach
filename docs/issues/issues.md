@@ -23,7 +23,8 @@ This tracker documents bugs, UX gaps, and architectural concerns found during a 
 **Out of scope (related but separate)**
 
 - Completed workout AI analysis (`analyze-workout`)
-- Read-only chat tools (`get_workout_details`, `get_planned_workout_details`)
+- Read-only chat tools (`get_workout_details`, `get_planned_workout_details`) — current reliability
+  follow-up is tracked in app-review issues [349–352](./app-review-issues.md#issues-349352-chat-production-reliability--2026-07-20)
 - Intervals.icu publish/sync failures (deferred in support tracker)
 
 ## Architecture Summary

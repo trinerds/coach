@@ -23,6 +23,25 @@ describe('findToolNameRepair', () => {
     })
   })
 
+  it('repairs supported deprecated and namespaced aliases', () => {
+    expect(findToolNameRepair('get_workout_stream', ['get_workout_streams'])).toEqual({
+      repairedName: 'get_workout_streams',
+      strategy: 'alias'
+    })
+    expect(findToolNameRepair('intervals_icu.get_current_time', ['get_current_time'])).toEqual({
+      repairedName: 'get_current_time',
+      strategy: 'alias'
+    })
+    expect(findToolNameRepair('forecast_training_date_range', ['forecast_training_load'])).toEqual({
+      repairedName: 'forecast_training_load',
+      strategy: 'alias'
+    })
+  })
+
+  it('does not repair an alias when its canonical tool is outside policy scope', () => {
+    expect(findToolNameRepair('sync_planned_workouts', ['get_planned_workouts'])).toBeNull()
+  })
+
   it('does not repair ambiguous candidates', () => {
     expect(findToolNameRepair('planned_workout', availableToolNames)).toBeNull()
   })

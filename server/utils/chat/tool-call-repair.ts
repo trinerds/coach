@@ -1,7 +1,14 @@
 type ToolNameRepair = {
   repairedName: string
-  strategy: 'normalized' | 'edit-distance'
+  strategy: 'alias' | 'normalized' | 'edit-distance'
   distance?: number
+}
+
+const TOOL_NAME_ALIASES: Record<string, string> = {
+  get_workout_stream: 'get_workout_streams',
+  forecast_training_date_range: 'forecast_training_load',
+  sync_planned_workouts: 'sync_data',
+  intervals_icu_get_current_time: 'get_current_time'
 }
 
 function normalizeToolName(name: string) {
@@ -52,6 +59,13 @@ export function findToolNameRepair(
   }
 
   const normalizedTarget = normalizeToolName(toolName)
+  const aliasedName = TOOL_NAME_ALIASES[normalizedTarget]
+  if (aliasedName && availableToolNames.includes(aliasedName)) {
+    return {
+      repairedName: aliasedName,
+      strategy: 'alias'
+    }
+  }
   const normalizedMatches = availableToolNames.filter(
     (candidate) => normalizeToolName(candidate) === normalizedTarget
   )

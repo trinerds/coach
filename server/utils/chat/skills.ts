@@ -58,6 +58,64 @@ export type ChatSkillSelection = {
   source?: 'router' | 'continuation' | 'retry_continuation' | 'pending_approval' | 'fallback'
 }
 
+const READ_ONLY_COMPANION_SKILLS: Partial<Record<ChatSkillId, ChatSkillId[]>> = {
+  analysis: ['workout_read', 'planning_read'],
+  availability: ['planning_read']
+}
+
+function hasWorkoutDomainIntent(text: string) {
+  return /\b(workout|activity|ride|run|swim|session|training)\b/i.test(text)
+}
+
+function hasPlanningDomainIntent(text: string) {
+  return /\b(planned|upcoming|schedule|scheduled|plan|tomorrow|next week)\b/i.test(text)
+}
+
+/**
+ * Adds bounded, read-only companion domains for mixed-intent requests. The router
+ * remains the policy boundary for mutating tools; deterministic expansion can only
+ * make user-owned reads available to a selected write/support/analysis flow.
+ */
+export function expandSkillSelectionForRequest(
+  selection: ChatSkillSelection,
+  latestUserText: string
+): ChatSkillSelection {
+  if (!selection.useTools) return selection
+
+  const expanded = [...selection.skillIds]
+  for (const skillId of selection.skillIds) {
+    expanded.push(...(READ_ONLY_COMPANION_SKILLS[skillId] || []))
+  }
+
+  if (selection.skillIds.includes('support')) {
+    if (hasWorkoutDomainIntent(latestUserText)) expanded.push('workout_read')
+    if (hasPlanningDomainIntent(latestUserText)) expanded.push('planning_read')
+  }
+
+  if (
+    selection.skillIds.includes('workout_update') ||
+    (selection.skillIds.includes('analysis') && hasWorkoutDomainIntent(latestUserText))
+  ) {
+    expanded.push('workout_read')
+  }
+
+  const skillIds = sortSkillIds(uniq(expanded)).filter((skillId) => skillId !== 'general_chat')
+  if (
+    skillIds.length === selection.skillIds.length &&
+    skillIds.every((id) => selection.skillIds.includes(id))
+  ) {
+    return selection
+  }
+
+  return {
+    ...selection,
+    skillIds,
+    reason: [selection.reason, 'Added policy-safe read tools for a mixed-domain request.']
+      .filter(Boolean)
+      .join(' ')
+  }
+}
+
 type ChatSkillRouterParams = {
   userId: string
   turnId: string
