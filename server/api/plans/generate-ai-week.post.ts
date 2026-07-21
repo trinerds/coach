@@ -63,7 +63,7 @@ export default defineEventHandler(async (event) => {
       anchorWorkoutIds // Pass anchors
     },
     {
-      tags: [`user:${(session.user as any).id}`]
+      tags: [`user:${userId}`]
     }
   )
 
