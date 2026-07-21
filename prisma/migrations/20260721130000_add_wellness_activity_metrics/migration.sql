@@ -1,0 +1,5 @@
+ALTER TABLE "Wellness"
+ADD COLUMN "steps" INTEGER,
+ADD COLUMN "distanceMeters" DOUBLE PRECISION,
+ADD COLUMN "exerciseMinutes" INTEGER,
+ADD COLUMN "floors" INTEGER;

@@ -3,6 +3,7 @@ import { requireAuth } from '../../utils/auth-guard'
 import { wellnessRepository } from '../../utils/repositories/wellnessRepository'
 import { bodyMeasurementService } from '../../utils/services/bodyMeasurementService'
 import { normalizeWellnessFields } from '../../utils/wellnessNormalization'
+import { prisma } from '../../utils/db'
 
 const wellnessUploadSchema = z.object({
   date: z.string(), // ISO date or YYYY-MM-DD
@@ -31,6 +32,10 @@ const wellnessUploadSchema = z.object({
   restingCaloriesBurned: z.number().int().optional(),
   activeCaloriesBurned: z.number().int().optional(),
   totalCaloriesBurned: z.number().int().optional(),
+  steps: z.number().int().nonnegative().optional(),
+  distanceMeters: z.number().nonnegative().optional(),
+  exerciseMinutes: z.number().int().nonnegative().optional(),
+  floors: z.number().int().nonnegative().optional(),
   systolic: z.number().int().optional(),
   diastolic: z.number().int().optional(),
   lactate: z.number().optional(),
@@ -126,6 +131,10 @@ defineRouteMeta({
                 type: 'integer',
                 description: 'Total calories burned for the day (kcal)'
               },
+              steps: { type: 'integer', description: 'Daily step count' },
+              distanceMeters: { type: 'number', description: 'Daily activity distance in meters' },
+              exerciseMinutes: { type: 'integer', description: 'Daily exercise minutes' },
+              floors: { type: 'integer', description: 'Daily floors climbed' },
               systolic: { type: 'integer', description: 'Systolic blood pressure' },
               diastolic: { type: 'integer', description: 'Diastolic blood pressure' },
               ctl: { type: 'number', description: 'Chronic Training Load (Fitness)' },
@@ -165,6 +174,20 @@ export default defineEventHandler(async (event) => {
 
   const { date, rawJson, ...data } = normalizeWellnessFields(result.data)
 
+  let writeSource =
+    event.context.authType === 'oauth' ? `oauth:${event.context.oauthAppId}` : 'manual'
+  const platformSource =
+    rawJson?.source === 'healthkit' || rawJson?.source === 'health_connect'
+      ? rawJson.source
+      : undefined
+  if (platformSource && event.context.authType === 'oauth' && event.context.oauthAppId) {
+    const app = await prisma.oAuthApp.findUnique({
+      where: { id: event.context.oauthAppId },
+      select: { isOfficial: true }
+    })
+    if (app?.isOfficial) writeSource = platformSource
+  }
+
   // Ensure date is UTC midnight for wellness
   const parsedDate = new Date(date)
   const targetDate = new Date(
@@ -176,7 +199,7 @@ export default defineEventHandler(async (event) => {
     targetDate,
     { ...data, userId: user.id, date: targetDate, rawJson: rawJson || null },
     { ...data, rawJson: rawJson || null },
-    event.context.authType === 'oauth' ? `oauth:${event.context.oauthAppId}` : 'manual'
+    writeSource
   )
 
   await bodyMeasurementService.recordWellnessMetrics(
@@ -188,7 +211,7 @@ export default defineEventHandler(async (event) => {
       bodyFat: record.bodyFat,
       rawJson: record.rawJson
     },
-    event.context.authType === 'oauth' ? `oauth:${event.context.oauthAppId}` : 'manual'
+    writeSource
   )
 
   return {

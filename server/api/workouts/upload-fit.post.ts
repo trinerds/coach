@@ -52,7 +52,19 @@ defineRouteMeta({
                     processed: { type: 'integer' },
                     duplicates: { type: 'integer' },
                     failed: { type: 'integer' },
-                    errors: { type: 'array', items: { type: 'string' } }
+                    errors: { type: 'array', items: { type: 'string' } },
+                    items: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          filename: { type: 'string' },
+                          state: { type: 'string', enum: ['queued', 'stored', 'failed'] },
+                          fitFileId: { type: 'string' },
+                          workoutId: { type: 'string' }
+                        }
+                      }
+                    }
                   }
                 }
               }
@@ -94,7 +106,13 @@ export default defineEventHandler(async (event) => {
     processed: 0,
     duplicates: 0,
     failed: 0,
-    errors: [] as string[]
+    errors: [] as string[],
+    items: [] as Array<{
+      filename: string
+      state: 'queued' | 'stored' | 'failed'
+      fitFileId?: string
+      workoutId?: string
+    }>
   }
 
   // Extract metadata if present
@@ -114,11 +132,42 @@ export default defineEventHandler(async (event) => {
   }
 
   const oauthAppId = event.context.authType === 'oauth' ? event.context.oauthAppId : undefined
+  const healthSource =
+    rawJson?.source === 'healthkit' || rawJson?.source === 'health_connect'
+      ? rawJson.source
+      : undefined
+  const platformSessionId =
+    typeof rawJson?.platformSessionId === 'string' && rawJson.platformSessionId.trim()
+      ? rawJson.platformSessionId.trim()
+      : undefined
+  const stableExternalId =
+    healthSource && platformSessionId
+      ? `health_${healthSource}_${platformSessionId}`.slice(0, 500)
+      : undefined
 
   // Process each file
   for (const [index, filePart] of fileParts.entries()) {
     try {
       const activityName = nameParts[index] || nameParts[0] || undefined
+      const filename = filePart.filename || 'upload.fit'
+
+      if (stableExternalId) {
+        const existingWorkout = await prisma.workout.findUnique({
+          where: {
+            userId_source_externalId: {
+              userId: user.id,
+              source: 'fit_file',
+              externalId: stableExternalId
+            }
+          },
+          select: { id: true }
+        })
+        if (existingWorkout) {
+          results.duplicates++
+          results.items.push({ filename, state: 'stored', workoutId: existingWorkout.id })
+          continue
+        }
+      }
 
       // Calculate hash to detect duplicates
       const hash = crypto.createHash('sha256').update(filePart.data).digest('hex')
@@ -132,7 +181,34 @@ export default defineEventHandler(async (event) => {
       })
 
       if (existing) {
+        if (existing.workoutId && stableExternalId) {
+          // Backfill durable platform identity for a hash duplicate created by
+          // an older client/server version that used a filename-derived id.
+          await prisma.workout.updateMany({
+            where: { id: existing.workoutId, userId: user.id, source: 'fit_file' },
+            data: { externalId: stableExternalId }
+          })
+        } else if (!existing.workoutId) {
+          await tasks.trigger(
+            'ingest-fit-file',
+            {
+              userId: user.id,
+              fitFileId: existing.id,
+              activityName,
+              rawJson,
+              oauthAppId,
+              externalId: stableExternalId
+            },
+            { concurrencyKey: user.id, tags: [`user:${user.id}`] }
+          )
+        }
         results.duplicates++
+        results.items.push({
+          filename,
+          state: existing.workoutId ? 'stored' : 'queued',
+          fitFileId: existing.id,
+          workoutId: existing.workoutId || undefined
+        })
         continue
       }
 
@@ -140,7 +216,7 @@ export default defineEventHandler(async (event) => {
       const fitFile = await prisma.fitFile.create({
         data: {
           userId: user.id,
-          filename: filePart.filename || 'upload.fit',
+          filename,
           fileData: Buffer.from(filePart.data),
           hash: hash
         }
@@ -156,7 +232,8 @@ export default defineEventHandler(async (event) => {
           fitFileId: fitFileId,
           activityName,
           rawJson,
-          oauthAppId
+          oauthAppId,
+          externalId: stableExternalId
         },
         {
           concurrencyKey: user.id,
@@ -165,9 +242,14 @@ export default defineEventHandler(async (event) => {
       )
 
       results.processed++
+      results.items.push({ filename, state: 'queued', fitFileId })
     } catch (error: any) {
       results.failed++
       results.errors.push(`${filePart.filename}: ${error.message}`)
+      results.items.push({
+        filename: filePart.filename || 'upload.fit',
+        state: 'failed'
+      })
     }
   }
 

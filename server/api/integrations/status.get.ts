@@ -1,4 +1,4 @@
-import { getServerSession } from '../../utils/session'
+import { requireAuth } from '../../utils/auth-guard'
 
 defineRouteMeta({
   openAPI: {
@@ -33,23 +33,17 @@ defineRouteMeta({
           }
         }
       },
-      401: { description: 'Unauthorized' }
+      401: { description: 'Unauthorized' },
+      403: { description: 'Insufficient permissions' }
     }
   }
 })
 
 export default defineEventHandler(async (event) => {
-  const session = await getServerSession(event)
-
-  if (!session?.user?.email) {
-    throw createError({
-      statusCode: 401,
-      message: 'Unauthorized'
-    })
-  }
+  const authUser = await requireAuth(event, ['profile:read'])
 
   const user = await prisma.user.findUnique({
-    where: { email: session.user.email },
+    where: { id: authUser.id },
     include: {
       integrations: {
         select: {

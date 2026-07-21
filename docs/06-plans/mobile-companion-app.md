@@ -1,23 +1,25 @@
-# Mobile Companion App — Baseline Spec
+# Mobile Activation Companion — Baseline Spec
 
 Status: Draft (living document)  
 Owner: Product + Engineering  
-Last Updated: 2026-07-14
+Last Updated: 2026-07-21
 
 ## 1. Purpose
 
-Define the product and technical baseline for a native iOS / Android **companion app** for Coach Watts.
+Define the product and technical baseline for a native iOS / Android **activation companion** for Coach Watts.
 
 This document is the source of truth for:
 
-- product positioning (companion vs full mobile port)
+- product positioning (activation companion vs full mobile port)
 - recommended technology stack
-- v1 scope and explicit non-goals
+- shipped daily loop + activation onboarding chapter + explicit non-goals
 - information architecture and UI structure
 - backend/API prerequisites
 - phased delivery order
 
-It should be updated as implementation decisions land. It does **not** replace feature specs for recommendations, chat, wellness, or OAuth — those remain in their own docs.
+It should be updated as implementation decisions land. It does **not** replace feature specs for recommendations, chat, wellness, goals, plans, or OAuth — those remain in their own docs.
+
+**Implementation checklist** for the Expo app lives in the `watts-mobile` repo (`docs/product-baseline.md`, `docs/implementation-plan.md`). Keep this file as the product/API narrative; sync positioning when either side changes.
 
 ### Related reading
 
@@ -30,20 +32,43 @@ It should be updated as implementation decisions land. It does **not** replace f
 | Scopes                   | [Scopes](../developer/scopes.md)                                                       |
 | Notifications / realtime | [Realtime Message Bus](../01-architecture/realtime-message-bus.md)                     |
 | Web mobile UX review     | [Mobile Review Report](./mobile_review_report.md)                                      |
+| New-user conversion      | [Onboarding conversion plan](./new-user-onboarding-conversion-plan.md)                 |
+| watts-mobile baseline    | `watts-mobile` repo `docs/product-baseline.md` (implementation mirror)                 |
 
 ---
 
 ## 2. Product positioning
 
-**Coach Watts web** remains the control room: planning, analytics, integrations, coaching teams, nutrition depth, library editing, billing, admin.
+**Coach Watts web** remains the control room: deep plan adapt/replan, analytics/explorer, coaching teams, nutrition planning depth, library editing, billing, admin.
 
-**The mobile app** is a field companion. It answers:
+**The mobile app** is an **activation companion**. It answers:
 
-> What should I do today, and can I check in / ask the coach without opening the full web app?
+1. Day one: Can I become a coached athlete without opening the web app?
+2. Every morning after: What should I do today, and can I check in / ask the coach on my phone?
 
-### Design constraint
+Accounts may be created and activated entirely on device. Web is not a required setup step.
 
-If a screen exists mainly to configure, explore, or architect training, it belongs on web. Mobile ships the daily athlete loop only.
+### Design constraints
+
+1. **Activate, then accompany** — goal + plan lite + insight on device; then the daily loop.
+2. **Lite over architect** — plan _kickoff_ in-app; PlanDashboard, adaptation wizards, analytics stay on web.
+3. **Connect last, clean** — data is required for _full_ activation but sits late in the wizard and is skippable. Prefer Health Sync over OAuth apps (Strava login confusion must not block the door).
+4. **Shared server truth** — `onboarding-status` (extended for goal/plan) is the source of truth for both web and mobile.
+5. **Do not clone `/dashboard`**.
+
+### Activation model
+
+**Fully activated** = `data → goal → plan → insight` (all four).
+
+**Soft-activated** = goal + plan + first insight (may enter companion tabs; Finish-setup until data).
+
+**Wizard UX order** (friction-aware, not the same as dependency order):
+
+```
+consent → goal lite → plan lite → first insight → connect data (last; Skip OK)
+```
+
+See also [new-user onboarding conversion plan](./new-user-onboarding-conversion-plan.md) — definitions should converge so web and mobile share soft vs full activation.
 
 ---
 
@@ -86,39 +111,51 @@ Keep the Nuxt server as the API host. Do not embed business logic in the mobile 
 
 ## 4. Scope
 
-### 4.1 In scope — v1
+### 4.1 Shipped companion loop (store-candidate base)
 
-Jobs, in priority order:
+Daily athlete loop (implemented in `watts-mobile`; detail there):
 
-1. **Today** — planned workout + AI recommendation (proceed / modify / rest), accept/skip, short rationale
-2. **Check-in / Log** — sleep, readiness/feel, free-text notes (weight if already part of wellness flows)
-3. **Session detail** — today’s planned structure (intervals summary); link out to web for deep analysis
-4. **Recent activity** — last few workouts with status (synced / analysis ready), not the full calendar explorer
-5. **Coach chat** — short Q&A seeded with today’s plan + recovery context
-6. **Notifications** — push + in-app inbox for analysis ready, new recommendation, sync finished
-7. **Account glue** — instance URL (self-hosted), sign-in, notification prefs, “Open on web”
+1. **Today** — recommendation + planned hero, Analyze Readiness, Daily Coach Check-In, wellness/load/progress glances, Accept / Discuss
+2. **Log** — wellness + recovery events + nutrition quick-log
+3. **Session detail** — planned complete/skip; activity AI + charts + lite map
+4. **Recent + Upcoming** — More lists (not calendar heatmaps)
+5. **Coach chat** — seeded Q&A, sessions, media, tool feedback lite
+6. **Notifications** — push + inbox
+7. **Account glue** — instance URL, sign-in, Settings hub, Open web session handoff
+8. **Athlete metrics** + Health Sync foundations
 
-### 4.2 Explicit non-goals — v1
+### 4.2 Next — Activation onboarding
+
+Mobile-first path (accounts that never touch web):
+
+1. Sign-**up** + native **consent** (terms + health/biometric)
+2. **Goal lite** — primary goal capture; optional AI suggest
+3. **Plan lite wizard** — availability → generate → preview → activate (not PlanDashboard)
+4. **First insight** — week reveal and/or today’s recommendation
+5. **Connect data last** — Health Sync primary; Connected Apps lite secondary; Skip → soft-activated + Finish-setup card
+6. Server-driven resume via extended `onboarding-status`
+
+Fully activated = data → goal → plan → insight. Soft-activated may use the companion before data lands.
+
+### 4.3 Explicit non-goals
 
 Do **not** ship native equivalents of:
 
-- Plan architect / training plan builder
-- Analytics builder, performance curves, workout explorer/comparison
+- Full **plan architect** (PlanDashboard, block/week editor, adaptation wizard, drag-reschedule)
+- Analytics builder, performance explorer, workout comparison, calendar heatmaps
 - Multi-athlete coaching / teams
-- Integration OAuth connect flows (Strava, Whoop, etc.)
 - Nutrition planning / grocery lists
 - Workout library editing
 - Billing, admin, developer portal
+- Full Profile Settings / sport zone editors
 
-Use a single **Open in browser** escape hatch instead of half-porting these surfaces.
+**Narrowed:** goal capture, plan _kickoff_, Health Sync, and Connected Apps **lite** are **in scope**. Use Open web for depth.
 
-### 4.3 Later (v1.5+)
+### 4.4 Later
 
-- HealthKit / Health Connect ingest (sleep, RHR)
 - Structured workout push to Garmin / Wahoo / Intervals.icu
-- Offline-first “today’s workout” when connectivity is poor
-- Weekly glance (load / form summary — not full CTL charts)
-- Optional nutrition quick-log (macros only)
+- Stronger offline-first Today
+- Plan adapt via Coach tools (confirm-gated) without full native architect
 
 ---
 
@@ -139,14 +176,17 @@ Unread badge belongs on **More** (or a bell in the Today header) — not a fifth
 
 ### 5.2 Push / stack screens (not tabs)
 
-| Screen                     | Purpose                                         |
-| -------------------------- | ----------------------------------------------- |
-| Recommendation detail      | Full reasoning + modifications                  |
-| Planned workout detail     | Intervals / zones / duration                    |
-| Activity summary           | Lightweight completed-session view              |
-| Notification detail / list | Inbox when opened from More or push             |
-| Sign-in / instance setup   | First launch and re-auth                        |
-| Settings                   | Notification prefs, account, open web, sign out |
+| Screen                       | Purpose                                          |
+| ---------------------------- | ------------------------------------------------ |
+| Activation wizard            | Consent → goal → plan lite → insight → connect   |
+| Goal lite                    | Create/edit primary goal                         |
+| Plan lite                    | Availability → generate → preview → activate     |
+| Recommendation detail        | Full reasoning + modifications                   |
+| Planned workout detail       | Intervals / zones / duration                     |
+| Activity summary             | Lightweight completed-session view               |
+| Notification detail / list   | Inbox when opened from More or push              |
+| Sign-up / sign-in / instance | First launch, new accounts, re-auth              |
+| Settings                     | Push, Health Sync, Connected Apps lite, open web |
 
 ### 5.3 Today screen composition (top → bottom)
 
@@ -192,14 +232,16 @@ Simple list rows:
 
 ## 6. Interaction principles
 
-1. **Morning path &lt; 30 seconds** — open → see recommendation → accept or rest.
+1. **Morning path &lt; 30 seconds once activated** — open → see recommendation → accept or rest.
 2. **Thumb-first CTAs** — primary actions near the bottom of Today.
 3. **Read vs write split** — Today/Coach decide; Log writes.
 4. **Push deep-links** — land on Today or the relevant detail; never a dead inbox.
-5. **Honest empty/loading states** — e.g. “Waiting for Whoop / Intervals sync…” instead of blank cards.
+5. **Honest empty/loading states** — e.g. “Waiting for Whoop / Intervals sync…”; provisional plan copy before data.
 6. **Self-hosted first-class** — collect instance base URL + login on first launch.
 7. **Web escape hatch** — every deep feature deep-links to the authenticated web surface when out of scope.
 8. **Do not clone the web dashboard** — mobile is not a responsive port of `/dashboard`.
+9. **Wizard resumable** — kill app mid-activation → return to current server step.
+10. **Connect never blocks soft activation** — Skip is first-class.
 
 ---
 
@@ -216,20 +258,21 @@ Coach Watts already exposes OAuth 2.0 + PKCE as an identity provider. The compan
 5. Refresh on 401; force re-auth when refresh fails.
 6. Always persist the latest refresh token (rotation may be enforced later).
 
-### Suggested scopes (v1)
+### Suggested scopes (activation companion)
 
-| Scope                   | Why                                                 |
-| ----------------------- | --------------------------------------------------- |
-| `profile:read`          | Name, basics, FTP display                           |
-| `workout:read`          | Recent activities + planned workout surface         |
-| `health:read`           | Recovery strip                                      |
-| `health:write`          | Check-in / wellness log                             |
-| `recommendations:read`  | Today’s recommendation                              |
-| `recommendations:write` | Accept / dismiss                                    |
-| `planning:read`         | Today’s planned workout                             |
-| `chat:read`             | Room list, messages, turn state, WS-backed catch-up |
-| `chat:write`            | Send messages; resume/retry turns                   |
-| `offline_access`        | Refresh tokens                                      |
+Use **REST** OAuth scope names from `REST_OAUTH_SCOPES` (e.g. `recommendation:read`, `plan:read`, `goal:read` — not MCP `recommendations:*` / `planning:*`).
+
+| Scope                                          | Why                                              |
+| ---------------------------------------------- | ------------------------------------------------ |
+| `profile:read` / `profile:write`               | Name, basics, athlete metrics                    |
+| `workout:read` / `workout:write`               | Recent/planned; analyze; complete/skip           |
+| `health:read` / `health:write`                 | Recovery, check-in                               |
+| `recommendation:read` / `recommendation:write` | Today + accept/dismiss / generate                |
+| `plan:read` / `plan:write`                     | Planned workouts + plan lite initialize/activate |
+| `goal:read` / `goal:write`                     | Events + goal lite capture                       |
+| `nutrition:read` / `nutrition:write`           | Nutrition quick-log                              |
+| `chat:read` / `chat:write`                     | Coach tab                                        |
+| `offline_access`                               | Refresh tokens                                   |
 
 Public docs today: [developer/authentication.md](../developer/authentication.md), [developer/scopes.md](../developer/scopes.md).
 
@@ -248,7 +291,10 @@ Prefer a thin **companion-oriented** BFF or curated existing endpoints. Do not f
 | Capability                | Suggested contract                                                            | Notes                                                                                                           |
 | ------------------------- | ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
 | Bootstrap / home          | `GET /api/mobile/today` (new) **or** compose dashboard + today-recommendation | Single payload: recommendation, planned workout, recovery strip, unread count                                   |
-| Recommendation actions    | existing accept / dismiss recommendation APIs                                 | Map to `recommendations:write`                                                                                  |
+| Onboarding / consent      | `GET /api/user/onboarding-status` + consent write (Bearer)                    | Extend steps for goal/plan; shared soft vs full activation with web                                             |
+| Goal lite                 | `GET/POST/PATCH /api/goals` (+ optional suggest/review)                       | `goal:read` / `goal:write`                                                                                      |
+| Plan lite                 | `plans/initialize` + activate (Bearer)                                        | Preview first week; not full PlanDashboard                                                                      |
+| Recommendation actions    | existing accept / dismiss / today generate                                    | REST `recommendation:write`                                                                                     |
 | Wellness check-in         | existing wellness POST/PATCH                                                  | Map to `health:write`                                                                                           |
 | Recent activities         | workouts list (limited, recent)                                               | Cap page size for mobile                                                                                        |
 | Chat                      | existing chat room / messages + WebSocket                                     | Bearer on chat REST + `GET /api/websocket-token`; poll is fallback only                                         |

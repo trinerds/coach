@@ -1125,6 +1125,10 @@ model Wellness {
   restingCaloriesBurned Int?
   activeCaloriesBurned  Int?
   totalCaloriesBurned   Int?
+  steps                 Int?
+  distanceMeters        Float?
+  exerciseMinutes       Int?
+  floors                Int?
   aiAnalysis       String?
   aiAnalysisJson   Json?
   aiAnalysisStatus String?   @default("NOT_STARTED")

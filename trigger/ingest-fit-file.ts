@@ -152,11 +152,22 @@ export const ingestFitFile = task({
 
       logger.log(`Upserted workout: ${upsertedWorkout.id}`)
 
-      // Link workout to file
-      await prisma.fitFile.update({
-        where: { id: fitFileId },
-        data: { workoutId: upsertedWorkout.id }
+      // Link the canonical workout to one file. Concurrent/retried uploads may
+      // create a second FitFile before either task finishes; keep the first
+      // linked file and remove the now-redundant copy instead of failing the
+      // ingestion on FitFile.workoutId's unique constraint.
+      const linkedFitFile = await prisma.fitFile.findUnique({
+        where: { workoutId: upsertedWorkout.id },
+        select: { id: true }
       })
+      if (linkedFitFile && linkedFitFile.id !== fitFileId) {
+        await prisma.fitFile.delete({ where: { id: fitFileId } })
+      } else {
+        await prisma.fitFile.update({
+          where: { id: fitFileId },
+          data: { workoutId: upsertedWorkout.id }
+        })
+      }
 
       // Save streams
       await workoutStreamRepository.upsert(upsertedWorkout.id, {
