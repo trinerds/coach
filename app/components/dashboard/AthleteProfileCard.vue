@@ -493,6 +493,15 @@
                   <template v-if="userStore.profile.recentSleep">
                     {{ userStore.profile.recentSleep.toFixed(1) }}
                     <span class="text-[9px] opacity-70">h</span>
+                    <span
+                      v-if="
+                        userStore.profile.recentSleepDate &&
+                        formatWellnessDate(userStore.profile.recentSleepDate) !== 'today'
+                      "
+                      class="text-[9px] font-medium text-gray-500 dark:text-gray-400 normal-case"
+                    >
+                      · {{ formatWellnessDate(userStore.profile.recentSleepDate) }}
+                    </span>
                   </template>
                   <template v-else>N/A</template>
                 </template>

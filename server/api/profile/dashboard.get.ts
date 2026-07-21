@@ -18,7 +18,14 @@ export default defineEventHandler(async (event) => {
     const timezone = await getUserTimezone(user.id)
     const latestAllowedDate = getEndOfDayUTC(timezone, new Date())
 
-    const [wellness, dailyMetric, latestWeightWellness, latestBodyFatWellness] = await Promise.all([
+    const [
+      wellness,
+      dailyMetric,
+      latestSleepWellness,
+      latestSleepDailyMetric,
+      latestWeightWellness,
+      latestBodyFatWellness
+    ] = await Promise.all([
       // Query most recent wellness record with any meaningful values (not only resting HR)
       prisma.wellness.findFirst({
         where: {
@@ -109,6 +116,46 @@ export default defineEventHandler(async (event) => {
           sleepLightSecs: true,
           sleepAwakeSecs: true,
           source: true
+        }
+      }),
+
+      // Sleep can arrive later than readiness/recovery. Resolve duration independently so a
+      // newer, sparse wellness row does not hide the latest valid sleep record and its stages.
+      prisma.wellness.findFirst({
+        where: {
+          userId: user.id,
+          date: {
+            lte: latestAllowedDate
+          },
+          OR: [{ sleepHours: { not: null } }, { sleepSecs: { not: null } }]
+        },
+        orderBy: { date: 'desc' },
+        select: {
+          date: true,
+          sleepHours: true,
+          sleepSecs: true,
+          sleepDeepSecs: true,
+          sleepRemSecs: true,
+          sleepLightSecs: true,
+          sleepAwakeSecs: true
+        }
+      }),
+      prisma.dailyMetric.findFirst({
+        where: {
+          userId: user.id,
+          date: {
+            lte: latestAllowedDate
+          },
+          hoursSlept: { not: null }
+        },
+        orderBy: { date: 'desc' },
+        select: {
+          date: true,
+          hoursSlept: true,
+          sleepDeepSecs: true,
+          sleepRemSecs: true,
+          sleepLightSecs: true,
+          sleepAwakeSecs: true
         }
       }),
 
@@ -233,11 +280,34 @@ export default defineEventHandler(async (event) => {
     const recentHRV = wellnessData?.hrv ?? null
     const recentWeight = effectiveWeight.value
     const recentBodyFat = latestBodyFatWellness?.bodyFat ?? null
+
+    const dailyMetricSleepData = latestSleepDailyMetric
+      ? {
+          date: latestSleepDailyMetric.date,
+          sleepHours: latestSleepDailyMetric.hoursSlept,
+          sleepSecs: null,
+          sleepDeepSecs: latestSleepDailyMetric.sleepDeepSecs,
+          sleepRemSecs: latestSleepDailyMetric.sleepRemSecs,
+          sleepLightSecs: latestSleepDailyMetric.sleepLightSecs,
+          sleepAwakeSecs: latestSleepDailyMetric.sleepAwakeSecs
+        }
+      : null
+
+    let latestSleepData = latestSleepWellness ?? dailyMetricSleepData
+    if (
+      latestSleepWellness &&
+      dailyMetricSleepData &&
+      new Date(dailyMetricSleepData.date).getTime() > new Date(latestSleepWellness.date).getTime()
+    ) {
+      latestSleepData = dailyMetricSleepData
+    }
+
     const recentSleep =
-      wellnessData?.sleepHours ??
-      (wellnessData?.sleepSecs != null
-        ? Math.round((wellnessData.sleepSecs / 3600) * 10) / 10
+      latestSleepData?.sleepHours ??
+      (latestSleepData?.sleepSecs != null
+        ? Math.round((latestSleepData.sleepSecs / 3600) * 10) / 10
         : null)
+    const recentSleepDate = latestSleepData?.date ?? null
     const recentRecoveryScore = wellnessData?.recoveryScore ?? null
     const wellnessSource = wellnessData?.lastSource || wellnessData?.source || null
     const latestWellnessDate = wellnessDate
@@ -247,10 +317,10 @@ export default defineEventHandler(async (event) => {
     const recentRespiration = wellnessData?.respiration ?? null
     const recentSkinTemp = wellnessData?.skinTemp ?? null
     const recentVo2max = wellnessData?.vo2max ?? null
-    const recentSleepDeep = wellnessData?.sleepDeepSecs ?? null
-    const recentSleepRem = wellnessData?.sleepRemSecs ?? null
-    const recentSleepLight = wellnessData?.sleepLightSecs ?? null
-    const recentSleepAwake = wellnessData?.sleepAwakeSecs ?? null
+    const recentSleepDeep = latestSleepData?.sleepDeepSecs ?? null
+    const recentSleepRem = latestSleepData?.sleepRemSecs ?? null
+    const recentSleepLight = latestSleepData?.sleepLightSecs ?? null
+    const recentSleepAwake = latestSleepData?.sleepAwakeSecs ?? null
     const recentSystolic = wellnessData?.systolic ?? null
     const recentDiastolic = wellnessData?.diastolic ?? null
     const recentReadiness = wellnessData?.readiness ?? null
@@ -423,6 +493,7 @@ export default defineEventHandler(async (event) => {
         lthr: defaultProfile?.lthr || user.lthr,
         avgRecentHRV: avgRecentHRV ? Math.round(avgRecentHRV * 10) / 10 : null,
         recentSleep,
+        recentSleepDate: recentSleepDate?.toISOString() ?? null,
         recentBodyFat,
         recentRecoveryScore,
         recentSpO2,
