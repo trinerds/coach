@@ -34,11 +34,11 @@ type RevenueCatRequestOptions = {
   body?: Record<string, string>
 }
 
-// Bypass Nitro internal-route inference for dynamic external RevenueCat URLs.
-const revenueCatFetch = $fetch as unknown as <T = unknown>(
-  url: string,
-  options: RevenueCatRequestOptions
-) => Promise<T>
+// Lazy $fetch access (top-level $fetch breaks Nitro prerender) + cast to bypass
+// Nitro internal-route inference for dynamic external RevenueCat URLs.
+function revenueCatFetch<T = unknown>(url: string, options: RevenueCatRequestOptions): Promise<T> {
+  return ($fetch as any)(url, options)
+}
 
 function requiredRevenueCatKey(): string {
   const key = useRuntimeConfig().revenueCatSecretApiKey
