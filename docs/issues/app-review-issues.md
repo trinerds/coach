@@ -1,8 +1,8 @@
 # App Review — Issue Tracker
 
-Last reviewed: 2026-07-20 (issues 349–352 — chat production reliability)
+Last reviewed: 2026-07-22 (issues 364–368 — Expo push gaps)
 
-Documents app-wide issues **039–352** from systematic codebase, live UI, and production telemetry review. Complements structure-generation tracker [issues.md](./issues.md) (001–038, **37 / 38 fixed**).
+Documents app-wide issues **039–368** from systematic codebase, live UI, and production telemetry review. Complements structure-generation tracker [issues.md](./issues.md) (001–038, **37 / 38 fixed**).
 
 **Progress:** [REVIEW-PROGRESS.md](./REVIEW-PROGRESS.md) (~96% complete)
 
@@ -10,7 +10,7 @@ Documents app-wide issues **039–352** from systematic codebase, live UI, and p
 
 ## Summary by priority
 
-| Priority | Count (039–352)               | Notes                                      |
+| Priority | Count (039–368)               | Notes                                      |
 | -------- | ----------------------------- | ------------------------------------------ |
 | Critical | incl. **349** mutation replay | Plus Garmin 312–313                        |
 | High     | incl. **350–352**             | Chat fallback, routing, heartbeat recovery |
@@ -694,6 +694,56 @@ probable duplicate wellness records created by mutation retries. Prior investiga
 2. **350** — make successful reads/writes produce deterministic visible responses
 3. **352 + 222** — instrument ownership and fix recovery liveness/races together
 4. **351** — improve mixed-intent routing and canonical tool aliases
+
+## Issues 353–363 (email platform gaps — 2026-07-22)
+
+Product email inventory/assessment from watts-marketing `knowledge/email/` (catalog only).
+Engineering work is tracked here. Related open issues already in this tracker: [047](./047-support-email-html-injection.md), [183](./183-send-email-dispatch-failure-no-retry.md), [184](./184-send-email-no-max-duration.md).
+
+| ID                                                           | Title                                                                    | Priority | Type                   | Status |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------ | -------- | ---------------------- | ------ |
+| [353](./353-welcome-email-engagement-suppressible.md)        | Welcome email is ENGAGEMENT and can be suppressed by global unsubscribe  | High     | Gap / Product decision | Open   |
+| [354](./354-invite-emails-bypass-registry.md)                | Team and coach invite emails bypass registry and send-email orchestrator | High     | Gap / Tech debt        | Open   |
+| [355](./355-onboarding-drip-day2-day7-missing.md)            | Onboarding Day 2 / Day 7 drip emails not implemented                     | Medium   | Feature / Gap          | Open   |
+| [356](./356-billing-lifecycle-emails-incomplete.md)          | Billing lifecycle emails incomplete beyond SubscriptionStarted           | High     | Feature / Gap          | Open   |
+| [357](./357-product-emails-english-only.md)                  | Product emails ignore uiLanguage (English-only templates)                | Medium   | Gap / i18n             | Open   |
+| [358](./358-unused-email-preference-keys.md)                 | Email preference keys exist without senders (settings overpromise)       | Medium   | Gap / UX trust         | Open   |
+| [359](./359-account-deletion-email-bypasses-orchestrator.md) | AccountDeletionScheduled bypasses full send-email orchestrator           | Low      | Tech debt              | Open   |
+| [360](./360-postmark-env-stub-unused.md)                     | POSTMARK_API_KEY env stub unused (Resend-only email)                     | Low      | Maintenance            | Open   |
+| [361](./361-email-templates-hardcoded-site-url.md)           | Vue email templates hardcode https://coachwatts.com                      | Low      | Tech debt              | Open   |
+| [362](./362-marketing-broadcast-send-path-missing.md)        | No product send path for marketing / broadcast audience                  | Medium   | Feature / Gap          | Open   |
+| [363](./363-email-docs-plan-vs-reality-drift.md)             | Email feature doc vs platform plan drift                                 | Low      | Maintenance / Docs     | Open   |
+
+### Suggested fix order (353–363)
+
+1. **353** — product decision on Welcome vs required signup receipt (unblocks marketing overlap policy)
+2. **354** — unify invite send path with registry
+3. **356** — critical billing notices
+4. **362 + 358** — broadcast path and honest Communication settings together
+5. **355** — onboarding drip (coordinate with founder follow-up cadence)
+6. **357** — email i18n
+7. **359–361, 363** — consistency / cleanup / docs
+
+## Issues 364–368 (Expo push gaps — 2026-07-22)
+
+Push inventory/policy from watts-marketing `knowledge/push/`. Device register +
+`RECOMMENDATION_READY` Expo send are live; prefs and other event types are not.
+
+| ID                                                  | Title                                             | Priority | Type                   | Status |
+| --------------------------------------------------- | ------------------------------------------------- | -------- | ---------------------- | ------ |
+| [364](./364-push-preferences-api-missing.md)        | Server push preferences API missing               | High     | Gap / UX trust         | Fixed  |
+| [365](./365-expo-push-ignores-preferences.md)       | Expo push send ignores preference gates           | High     | Gap / Privacy          | Fixed  |
+| [366](./366-expo-high-value-event-types-unwired.md) | High-value Expo types unused (analysis, coaching) | Medium   | Feature / Gap          | Open   |
+| [367](./367-sync-completed-push-no-policy.md)       | SYNC_COMPLETED Expo type has no send policy       | Low      | Product decision / Gap | Open   |
+| [368](./368-expo-push-reliability-observability.md) | Expo push reliability and observability gaps      | Low      | Tech debt / Ops        | Open   |
+
+### Suggested fix order (364–368)
+
+1. ~~**364** — server prefs contract~~ **Fixed**
+2. ~~**365** — honor prefs in send path~~ **Fixed** (+ inbox `/today`, `/activities/:id`)
+3. **366** — wire analysis + coaching Expo
+4. **367** — decide SYNC_COMPLETED (default: no OS spam) — policy decided; cleanup remains
+5. **368** — receipts / ops hardening
 
 ## Recommended fix order (app review)
 

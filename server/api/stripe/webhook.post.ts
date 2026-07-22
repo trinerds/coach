@@ -5,6 +5,8 @@ import { stripe } from '../../utils/stripe'
 import { auditLogRepository } from '../../utils/repositories/auditLogRepository'
 import { tasks } from '@trigger.dev/sdk/v3'
 import { getPriceProductId, resolveSubscriptionTier } from '../../utils/subscription-tier'
+import { upsertProviderSubscription } from '../../utils/provider-subscriptions'
+import { trackStripeInRevenueCat } from '../../utils/revenuecat'
 
 /**
  * Map Stripe subscription status to internal status
@@ -32,7 +34,7 @@ function mapStripeStatus(subscription: Stripe.Subscription): SubscriptionStatus 
 /**
  * Handle subscription created or updated
  */
-async function handleSubscriptionChange(subscription: Stripe.Subscription) {
+async function handleSubscriptionChange(subscription: Stripe.Subscription, eventAt: Date) {
   const config = useRuntimeConfig()
   const customerId = subscription.customer as string
   const subscriptionId = subscription.id
@@ -53,53 +55,69 @@ async function handleSubscriptionChange(subscription: Stripe.Subscription) {
     ? new Date((subscription as any).current_period_end * 1000)
     : null
   const startedAt = new Date(subscription.created * 1000)
+  const matchingUsers = await prisma.user.findMany({ where: { stripeCustomerId: customerId } })
+  const providerStatus =
+    status === 'ACTIVE' ? 'ACTIVE' : status === 'CANCELED' ? 'CANCELED' : 'PAST_DUE'
 
-  // Update user in database (Skip if user is a CONTRIBUTOR)
-  // We use updateMany but usually there is only one user per customerId
-  // We want to set subscriptionStartedAt ONLY if it's currently null and they are moving to a premium tier
-  if (tier !== 'FREE' && status === 'ACTIVE') {
-    const users = await prisma.user.findMany({
-      where: { stripeCustomerId: customerId }
+  for (const user of matchingUsers) {
+    const result = await upsertProviderSubscription({
+      userId: user.id,
+      provider: 'STRIPE',
+      externalId: subscriptionId,
+      productId,
+      tier,
+      status: providerStatus,
+      rawStatus: subscription.status,
+      entitlementEnd: periodEnd,
+      autoRenew: !subscription.cancel_at_period_end,
+      environment: subscription.livemode ? 'PRODUCTION' : 'SANDBOX',
+      lastEventAt: eventAt
     })
-    for (const user of users) {
-      if (!user.subscriptionStartedAt) {
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { subscriptionStartedAt: startedAt }
-        })
+    if (result.stale) {
+      console.log(`Skipping stale Stripe subscription event for user ${user.id}`)
+      continue
+    }
 
-        try {
-          await tasks.trigger('send-email', {
-            userId: user.id,
-            templateKey: 'SubscriptionStarted',
-            eventKey: `SUBSCRIPTION_STARTED_${tier}`,
-            audience: 'TRANSACTIONAL',
-            subject: `Welcome to Coach Watts ${tier}!`,
-            props: {
-              name: user.name || 'Athlete',
-              tier,
-              unsubscribeUrl: `${process.env.NUXT_PUBLIC_SITE_URL || 'https://coachwatts.com'}/profile/settings?tab=communication`
-            }
-          })
-        } catch (error) {
-          console.error('Failed to trigger subscription email', error)
+    const shouldSetStartedAt = tier !== 'FREE' && status === 'ACTIVE' && !user.subscriptionStartedAt
+    if (user.subscriptionStatus !== 'CONTRIBUTOR') {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          stripeSubscriptionId: subscriptionId,
+          subscriptionTier: tier,
+          subscriptionStatus: status,
+          subscriptionPeriodEnd: periodEnd,
+          ...(shouldSetStartedAt ? { subscriptionStartedAt: startedAt } : {})
         }
+      })
+    } else if (shouldSetStartedAt) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { subscriptionStartedAt: startedAt }
+      })
+    }
+
+    if (shouldSetStartedAt) {
+      try {
+        await tasks.trigger('send-email', {
+          userId: user.id,
+          templateKey: 'SubscriptionStarted',
+          eventKey: `SUBSCRIPTION_STARTED_${tier}`,
+          audience: 'TRANSACTIONAL',
+          subject: `Welcome to Coach Watts ${tier}!`,
+          props: {
+            name: user.name || 'Athlete',
+            tier,
+            unsubscribeUrl: `${process.env.NUXT_PUBLIC_SITE_URL || 'https://coachwatts.com'}/profile/settings?tab=communication`
+          }
+        })
+      } catch (error) {
+        console.error('Failed to trigger subscription email', error)
       }
     }
-  }
 
-  await prisma.user.updateMany({
-    where: {
-      stripeCustomerId: customerId,
-      NOT: { subscriptionStatus: 'CONTRIBUTOR' }
-    },
-    data: {
-      stripeSubscriptionId: subscriptionId,
-      subscriptionTier: tier,
-      subscriptionStatus: status,
-      subscriptionPeriodEnd: periodEnd
-    }
-  })
+    await trackStripeInRevenueCat(user.id, subscriptionId)
+  }
 
   console.log(`Updated subscription for customer ${customerId}: ${tier} (${status})`)
 }
@@ -107,22 +125,43 @@ async function handleSubscriptionChange(subscription: Stripe.Subscription) {
 /**
  * Handle subscription deleted (complete cancellation)
  */
-async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
+async function handleSubscriptionDeleted(subscription: Stripe.Subscription, eventAt: Date) {
   const customerId = subscription.customer as string
+  const users = await prisma.user.findMany({ where: { stripeCustomerId: customerId } })
 
-  // Downgrade to FREE tier (Skip if user is a CONTRIBUTOR)
-  await prisma.user.updateMany({
-    where: {
-      stripeCustomerId: customerId,
-      NOT: { subscriptionStatus: 'CONTRIBUTOR' }
-    },
-    data: {
-      stripeSubscriptionId: null,
-      subscriptionTier: 'FREE',
-      subscriptionStatus: 'NONE',
-      subscriptionPeriodEnd: null
+  for (const user of users) {
+    const result = await upsertProviderSubscription({
+      userId: user.id,
+      provider: 'STRIPE',
+      externalId: subscription.id,
+      productId:
+        getPriceProductId((subscription.items.data[0]?.price.product as any) ?? null) ||
+        '(unknown-product)',
+      tier: user.subscriptionTier,
+      status: 'EXPIRED',
+      rawStatus: subscription.status,
+      entitlementEnd: eventAt,
+      autoRenew: false,
+      environment: subscription.livemode ? 'PRODUCTION' : 'SANDBOX',
+      lastEventAt: eventAt
+    })
+    if (result.stale) {
+      console.log(`Skipping stale Stripe deletion event for user ${user.id}`)
+      continue
     }
-  })
+
+    if (user.subscriptionStatus === 'CONTRIBUTOR') continue
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        stripeSubscriptionId: null,
+        subscriptionTier: 'FREE',
+        subscriptionStatus: 'NONE',
+        subscriptionPeriodEnd: null
+      }
+    })
+  }
 
   console.log(`Subscription deleted for customer ${customerId}, downgraded to FREE`)
 }
@@ -130,7 +169,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
 /**
  * Handle checkout session completed (initial subscription)
  */
-async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
+async function handleCheckoutCompleted(session: Stripe.Checkout.Session, eventAt: Date) {
   const customerId = session.customer as string
   const subscriptionId = session.subscription as string
 
@@ -141,7 +180,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
   // Retrieve the full subscription object
   const subscription = await stripe.subscriptions.retrieve(subscriptionId)
-  await handleSubscriptionChange(subscription)
+  await handleSubscriptionChange(subscription, eventAt)
 
   console.log(`Checkout completed for customer ${customerId}, subscription ${subscriptionId}`)
 }
@@ -190,6 +229,7 @@ export default defineEventHandler(async (event) => {
 
   // Log the event for debugging
   console.log(`Received Stripe webhook: ${stripeEvent.type}`)
+  const eventAt = new Date(stripeEvent.created * 1000)
 
   // Handle the event
   try {
@@ -213,22 +253,23 @@ export default defineEventHandler(async (event) => {
       resourceId: (stripeEvent.data.object as any).id,
       metadata: {
         stripeEventType: stripeEvent.type,
-        stripeEventId: stripeEvent.id
+        stripeEventId: stripeEvent.id,
+        stripeEventCreated: stripeEvent.created
       }
     })
 
     switch (stripeEvent.type) {
       case 'checkout.session.completed':
-        await handleCheckoutCompleted(stripeEvent.data.object as Stripe.Checkout.Session)
+        await handleCheckoutCompleted(stripeEvent.data.object as Stripe.Checkout.Session, eventAt)
         break
 
       case 'customer.subscription.created':
       case 'customer.subscription.updated':
-        await handleSubscriptionChange(stripeEvent.data.object as Stripe.Subscription)
+        await handleSubscriptionChange(stripeEvent.data.object as Stripe.Subscription, eventAt)
         break
 
       case 'customer.subscription.deleted':
-        await handleSubscriptionDeleted(stripeEvent.data.object as Stripe.Subscription)
+        await handleSubscriptionDeleted(stripeEvent.data.object as Stripe.Subscription, eventAt)
         break
 
       case 'invoice.payment_failed': {

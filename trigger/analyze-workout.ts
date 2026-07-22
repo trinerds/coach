@@ -545,7 +545,7 @@ export const analyzeWorkoutTask = task({
             title: 'Workout Analysis Ready',
             message: `Your workout "${workout.title || 'Untitled workout'}" has a new AI analysis.`,
             icon: 'i-heroicons-chart-bar-square',
-            link: `/workouts/${workoutId}`
+            link: `/activities/${workoutId}`
           })
         } catch (notificationError) {
           logger.warn('Failed to create workout analysis notification', {

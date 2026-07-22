@@ -1,15 +1,77 @@
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   buildGarminTrainingPayload,
   countGarminWorkoutSteps,
   countStepsInGarminWorkoutResponse,
+  createGarminWorkout,
+  createGarminWorkoutSchedule,
   extractGarminScheduleId,
   toGarminOwnerId,
   toGarminWorkoutId,
   toGarminWorkoutSourceId
 } from '../../../../server/utils/garmin-push'
 
+const { ensureValidGarminToken } = vi.hoisted(() => ({
+  ensureValidGarminToken: vi.fn()
+}))
+
+vi.mock('../../../../server/utils/garmin', () => ({
+  ensureValidGarminToken
+}))
+
+beforeEach(() => {
+  ensureValidGarminToken.mockReset()
+  vi.restoreAllMocks()
+})
+
 describe('garmin push helpers', () => {
+  it('uses the latest token for workout and schedule calls made with the same expired object', async () => {
+    const expiredIntegration = {
+      id: 'integration-training-expired',
+      accessToken: 'expired-token',
+      refreshToken: 'old-refresh-token',
+      expiresAt: new Date(Date.now() - 1000)
+    } as any
+    const refreshedIntegration = {
+      ...expiredIntegration,
+      accessToken: 'fresh-token',
+      refreshToken: 'fresh-refresh-token',
+      expiresAt: new Date(Date.now() + 86_400_000)
+    }
+    ensureValidGarminToken.mockResolvedValue(refreshedIntegration)
+
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          workoutId: 123,
+          segments: [{ steps: [{ type: 'WorkoutStep' }] }]
+        })
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ scheduleId: 456 })
+      })
+    vi.stubGlobal('fetch', fetchMock as any)
+
+    await createGarminWorkout(expiredIntegration, { workoutName: 'Intervals' })
+    await createGarminWorkoutSchedule(expiredIntegration, {
+      workoutId: 123,
+      date: '2026-07-23'
+    })
+
+    expect(ensureValidGarminToken).toHaveBeenCalledTimes(2)
+    expect(ensureValidGarminToken).toHaveBeenNthCalledWith(1, expiredIntegration)
+    expect(ensureValidGarminToken).toHaveBeenNthCalledWith(2, expiredIntegration)
+    expect(fetchMock.mock.calls[0]?.[1]?.headers).toMatchObject({
+      Authorization: 'Bearer fresh-token'
+    })
+    expect(fetchMock.mock.calls[1]?.[1]?.headers).toMatchObject({
+      Authorization: 'Bearer fresh-token'
+    })
+  })
+
   it('builds a V2 segmented payload with absolute power as primary target', () => {
     const payload = buildGarminTrainingPayload(
       {

@@ -1,21 +1,21 @@
 # Systematic App Review — Progress Tracker
 
 **Started:** 2026-07-08  
-**Last updated:** 2026-07-20 (production chat reliability audit filed issues 349–352)
+**Last updated:** 2026-07-22 (364–365 push prefs + send gates fixed; inbox path hygiene)
 
 **Goal:** Comprehensive bug/UI/security audit across the full Coach Watts codebase. Documentation only — no refactors.
 
 ## Summary
 
-| Metric                                             | Value                                                                   |
-| -------------------------------------------------- | ----------------------------------------------------------------------- |
-| Structure-generation issues                        | 001–038 ([issues.md](./issues.md)) — **37 / 38 fixed** (only 012 open)  |
-| App-review issues filed                            | 039–352                                                                 |
-| **Postponed** (auth / third-party / OAuth / Yazio) | **21** — see [Postponed cluster](#postponed-auth--third-party-deferred) |
-| **Active (Open)**                                  | See [app-review-issues.md](./app-review-issues.md); **349–352 fixed**   |
-| **Total documented issues**                        | **352** (+ 323 Sentry noise)                                            |
-| Review phases complete                             | 5 / 5 (core) + coaching and chat follow-ups                             |
-| **Overall review progress**                        | **~96%** (chat reliability follow-up active)                            |
+| Metric                                             | Value                                                                                                |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Structure-generation issues                        | 001–038 ([issues.md](./issues.md)) — **37 / 38 fixed** (only 012 open)                               |
+| App-review issues filed                            | 039–368                                                                                              |
+| **Postponed** (auth / third-party / OAuth / Yazio) | **21** — see [Postponed cluster](#postponed-auth--third-party-deferred)                              |
+| **Active (Open)**                                  | See [app-review-issues.md](./app-review-issues.md); **353–363** email + **366–368** push remain open |
+| **Total documented issues**                        | **368** (+ 323 Sentry noise)                                                                         |
+| Review phases complete                             | 5 / 5 (core) + coaching, chat, email, and push follow-ups                                            |
+| **Overall review progress**                        | **~96%** (push platform follow-up filed)                                                             |
 
 ## Methodology
 
@@ -128,6 +128,9 @@
 | 2026-07-16 | 25      | Garmin follow-up: webhook routing/callback security, refresh races, sync status, permissions, backfill, mappings, OAuth ownership, course mapping       | 312–322      |
 | 2026-07-19 | 26      | Coaching deep pass: verify 263–274 fixed in code; file invite bugs (327–328), relationship/team gaps, athlete↔coach UX, privacy leak 335                | 327–348      |
 | 2026-07-20 | 27      | Read-only production chat audit: empty-response fallbacks, mutation replay, tool scoping, heartbeat recovery exhaustion                                 | 349–352      |
+| 2026-07-22 | 28      | Email platform gaps from watts-marketing catalog: Welcome audience, invites bypass, drip, billing, i18n, prefs, broadcast path, docs drift              | 353–363      |
+| 2026-07-22 | 29      | Expo push gaps from watts-marketing catalog: server prefs, send gates, unwired types, SYNC policy, reliability                                          | 364–368      |
+| 2026-07-22 | 30      | Implement 364–365: MobilePushPreference API, sendExpoPushToUser gates, mobile-safe inbox paths                                                          | 364–365      |
 
 ## Postponed: auth & third-party (deferred 2026-07-08)
 

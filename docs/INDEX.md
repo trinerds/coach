@@ -101,6 +101,13 @@ External service connections and data sources.
 
 - [**Overview**](./03-integrations/yazio/overview.md) - Nutrition data synchronization.
 
+### Pending (credentials → implement)
+
+- [**Pending index**](./03-integrations/pending/README.md) — how to run browser credential sessions
+- [**Suunto**](./03-integrations/pending/suunto/README.md) — partner programme + Cloud API
+- [**COROS**](./03-integrations/pending/coros/README.md) — application-reviewed API
+- [**Hammerhead / Karoo**](./03-integrations/pending/hammerhead/README.md) — public OAuth API
+
 ## 📘 04. Guides
 
 Instructional documents for developers.

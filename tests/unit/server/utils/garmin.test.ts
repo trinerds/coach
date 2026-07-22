@@ -4,18 +4,24 @@ import {
   fetchGarminActivityFile,
   fetchGarminData,
   buildGarminTimeSlices,
+  ensureValidGarminToken,
   hasGarminPermission,
   mergeGarminScopes,
-  parseGarminScope
+  parseGarminScope,
+  refreshGarminToken
 } from '../../../../server/utils/garmin'
 
-const { prismaIntegrationFindUnique, prismaIntegrationUpdate } = vi.hoisted(() => ({
-  prismaIntegrationFindUnique: vi.fn(),
-  prismaIntegrationUpdate: vi.fn()
-}))
+const { prismaIntegrationFindUnique, prismaIntegrationUpdate, prismaQueryRaw, prismaTransaction } =
+  vi.hoisted(() => ({
+    prismaIntegrationFindUnique: vi.fn(),
+    prismaIntegrationUpdate: vi.fn(),
+    prismaQueryRaw: vi.fn(),
+    prismaTransaction: vi.fn()
+  }))
 
 vi.mock('../../../../server/utils/db', () => ({
   prisma: {
+    $transaction: prismaTransaction,
     integration: {
       findUnique: prismaIntegrationFindUnique,
       update: prismaIntegrationUpdate
@@ -26,6 +32,18 @@ vi.mock('../../../../server/utils/db', () => ({
 beforeEach(() => {
   prismaIntegrationFindUnique.mockReset()
   prismaIntegrationUpdate.mockReset()
+  prismaQueryRaw.mockReset()
+  prismaTransaction.mockReset()
+  prismaQueryRaw.mockResolvedValue([])
+  prismaTransaction.mockImplementation(async (callback: (transaction: unknown) => unknown) =>
+    callback({
+      $queryRaw: prismaQueryRaw,
+      integration: {
+        findUnique: prismaIntegrationFindUnique,
+        update: prismaIntegrationUpdate
+      }
+    })
+  )
   vi.restoreAllMocks()
   process.env.GARMIN_CLIENT_ID = 'test-client-id'
   process.env.GARMIN_CLIENT_SECRET = 'test-client-secret'
@@ -133,6 +151,100 @@ describe('Garmin permission helpers', () => {
 })
 
 describe('Garmin auth retry', () => {
+  it('serializes concurrent refreshes and reuses the rotated credentials', async () => {
+    const expiredIntegration = {
+      id: 'integration-concurrent-refresh',
+      accessToken: 'expired-token',
+      refreshToken: 'old-refresh-token',
+      expiresAt: new Date(Date.now() - 1000)
+    } as any
+    let storedIntegration = expiredIntegration
+    let transactionQueue = Promise.resolve()
+
+    prismaIntegrationFindUnique.mockImplementation(async () => storedIntegration)
+    prismaIntegrationUpdate.mockImplementation(async ({ data }) => {
+      storedIntegration = { ...storedIntegration, ...data }
+      return storedIntegration
+    })
+    prismaTransaction.mockImplementation((callback: (transaction: unknown) => Promise<unknown>) => {
+      const result = transactionQueue.then(() =>
+        callback({
+          $queryRaw: prismaQueryRaw,
+          integration: {
+            findUnique: prismaIntegrationFindUnique,
+            update: prismaIntegrationUpdate
+          }
+        })
+      )
+      transactionQueue = result.then(
+        () => undefined,
+        () => undefined
+      )
+      return result
+    })
+
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        access_token: 'fresh-token',
+        refresh_token: 'fresh-refresh-token',
+        expires_in: 86_400
+      })
+    })
+    vi.stubGlobal('fetch', fetchMock as any)
+
+    const [first, second] = await Promise.all([
+      refreshGarminToken(expiredIntegration),
+      refreshGarminToken(expiredIntegration)
+    ])
+
+    expect(first.accessToken).toBe('fresh-token')
+    expect(second.accessToken).toBe('fresh-token')
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(prismaIntegrationUpdate).toHaveBeenCalledTimes(1)
+  })
+
+  it('uses credentials refreshed by another caller without marking the integration failed', async () => {
+    const staleIntegration = {
+      id: 'integration-stale-refresh',
+      accessToken: 'expired-token',
+      refreshToken: 'old-refresh-token',
+      expiresAt: new Date(Date.now() - 1000)
+    } as any
+    const refreshedIntegration = {
+      ...staleIntegration,
+      accessToken: 'fresh-token',
+      refreshToken: 'fresh-refresh-token',
+      expiresAt: new Date(Date.now() + 86_400_000)
+    }
+    prismaIntegrationFindUnique.mockResolvedValue(refreshedIntegration)
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock as any)
+
+    await expect(refreshGarminToken(staleIntegration)).resolves.toBe(refreshedIntegration)
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(prismaIntegrationUpdate).not.toHaveBeenCalled()
+  })
+
+  it('re-reads fresh credentials for callers holding a stale Training API integration object', async () => {
+    const staleIntegration = {
+      id: 'integration-training-stale',
+      accessToken: 'expired-token',
+      refreshToken: 'old-refresh-token',
+      expiresAt: new Date(Date.now() - 1000)
+    } as any
+    const refreshedIntegration = {
+      ...staleIntegration,
+      accessToken: 'fresh-token',
+      refreshToken: 'fresh-refresh-token',
+      expiresAt: new Date(Date.now() + 86_400_000)
+    }
+    prismaIntegrationFindUnique.mockResolvedValue(refreshedIntegration)
+
+    await expect(ensureValidGarminToken(staleIntegration)).resolves.toBe(refreshedIntegration)
+    expect(prismaTransaction).not.toHaveBeenCalled()
+  })
+
   it('refreshes and retries summary requests when Garmin reports an inactive token', async () => {
     const integration = {
       id: 'integration-1',

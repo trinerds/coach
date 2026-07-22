@@ -1,4 +1,5 @@
 import { prisma } from './db'
+import { isMobilePushTypeEnabled } from './mobile-push-preferences'
 
 export type ExpoPushEventType =
   'RECOMMENDATION_READY' | 'WORKOUT_ANALYSIS_READY' | 'SYNC_COMPLETED' | 'COACH_MESSAGE'
@@ -23,10 +24,20 @@ const EXPO_PUSH_URL = 'https://exp.host/--/api/v2/push/send'
 
 /**
  * Send an Expo push to all registered devices for a user.
- * Best-effort: never throws to callers; logs and prunes DeviceNotRegistered tokens.
+ * Honors server push preferences (issue 365). Best-effort: never throws to
+ * callers; logs skips / failures and prunes DeviceNotRegistered tokens.
  */
 export async function sendExpoPushToUser(userId: string, payload: ExpoPushPayload): Promise<void> {
   try {
+    const enabled = await isMobilePushTypeEnabled(userId, payload.type)
+    if (!enabled) {
+      console.info(`Expo push skipped for user ${userId}: preference disabled`, {
+        type: payload.type,
+        reason: 'preference_disabled'
+      })
+      return
+    }
+
     const devices = await prisma.mobilePushDevice.findMany({
       where: { userId },
       select: { id: true, token: true }

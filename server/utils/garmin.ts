@@ -17,6 +17,9 @@ interface GarminApiErrorPayload {
 
 const GARMIN_WRITE_SCOPE = 'PARTNER_WRITE'
 const GARMIN_IMPORT_PERMISSIONS = new Set(['WORKOUT_IMPORT', 'COURSE_IMPORT'])
+const GARMIN_TOKEN_REFRESH_BUFFER_MS = 10 * 60 * 1000
+const GARMIN_TOKEN_REQUEST_TIMEOUT_MS = 10_000
+const GARMIN_TOKEN_TRANSACTION_TIMEOUT_MS = 20_000
 
 export function parseGarminScope(scope: string | null | undefined): Set<string> {
   if (!scope) return new Set()
@@ -88,10 +91,6 @@ export function hasGarminPermission(
  * Refreshes an expired Garmin access token
  */
 export async function refreshGarminToken(integration: Integration): Promise<Integration> {
-  if (!integration.refreshToken) {
-    throw new Error('No refresh token available for Garmin integration')
-  }
-
   const clientId = process.env.GARMIN_CLIENT_ID
   const clientSecret = process.env.GARMIN_CLIENT_SECRET
 
@@ -99,66 +98,108 @@ export async function refreshGarminToken(integration: Integration): Promise<Inte
     throw new Error('Garmin credentials not configured')
   }
 
-  const response = await fetch('https://diauth.garmin.com/di-oauth2-service/oauth/token', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
-    },
-    body: new URLSearchParams({
-      grant_type: 'refresh_token',
-      refresh_token: integration.refreshToken,
-      client_id: clientId,
-      client_secret: clientSecret
-    }).toString()
-  })
+  const result = await prisma.$transaction(
+    async (transaction) => {
+      // Garmin rotates the refresh token on every refresh. Lock the integration row so refreshes
+      // are serialized across Trigger workers and web processes, not only within this process.
+      await transaction.$queryRaw`SELECT "id" FROM "Integration" WHERE "id" = ${integration.id} FOR UPDATE`
 
-  if (!response.ok) {
-    const errorBody = await response.json().catch(() => ({}))
-    const errorMessage = extractGarminErrorMessage(response, errorBody)
-
-    if (response.status === 400 || response.status === 401) {
-      try {
-        await prisma.integration.update({
-          where: { id: integration.id },
-          data: {
-            syncStatus: 'FAILED',
-            errorMessage: 'Garmin authorization expired or was revoked. Please reconnect Garmin.'
-          }
-        })
-      } catch (updateError) {
-        console.error('[Garmin] Failed to mark integration as reconnect required', {
-          integrationId: integration.id,
-          updateError
-        })
+      const latest = await transaction.integration.findUnique({
+        where: { id: integration.id }
+      })
+      if (!latest) {
+        throw new Error('Garmin integration no longer exists')
       }
-    }
 
-    throw new Error(`Failed to refresh Garmin token: ${errorMessage}`)
+      // A caller that waited for the lock must reuse credentials written by the winner. In
+      // particular, it must not retry with the now-invalid refresh token it originally received.
+      if (
+        latest.accessToken !== integration.accessToken ||
+        latest.refreshToken !== integration.refreshToken
+      ) {
+        return { integration: latest }
+      }
+
+      if (!latest.refreshToken) {
+        throw new Error('No refresh token available for Garmin integration')
+      }
+
+      const response = await fetch('https://diauth.garmin.com/di-oauth2-service/oauth/token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: new URLSearchParams({
+          grant_type: 'refresh_token',
+          refresh_token: latest.refreshToken,
+          client_id: clientId,
+          client_secret: clientSecret
+        }).toString(),
+        signal: AbortSignal.timeout(GARMIN_TOKEN_REQUEST_TIMEOUT_MS)
+      })
+
+      if (!response.ok) {
+        const errorBody = await response.json().catch(() => ({}))
+        const errorMessage = extractGarminErrorMessage(response, errorBody)
+
+        if (response.status === 400 || response.status === 401) {
+          try {
+            await transaction.integration.update({
+              where: { id: integration.id },
+              data: {
+                syncStatus: 'FAILED',
+                errorMessage:
+                  'Garmin authorization expired or was revoked. Please reconnect Garmin.'
+              }
+            })
+          } catch (updateError) {
+            console.error('[Garmin] Failed to mark integration as reconnect required', {
+              integrationId: integration.id,
+              updateError
+            })
+          }
+        }
+
+        // Return the error so the transaction can commit the FAILED status before it is thrown.
+        return { errorMessage }
+      }
+
+      const tokenData: GarminTokenResponse = await response.json()
+
+      const updated = await transaction.integration.update({
+        where: { id: integration.id },
+        data: {
+          accessToken: tokenData.access_token,
+          refreshToken: tokenData.refresh_token,
+          expiresAt: new Date(Date.now() + tokenData.expires_in * 1000)
+        }
+      })
+      return { integration: updated }
+    },
+    { maxWait: GARMIN_TOKEN_TRANSACTION_TIMEOUT_MS, timeout: GARMIN_TOKEN_TRANSACTION_TIMEOUT_MS }
+  )
+
+  if ('errorMessage' in result) {
+    throw new Error(`Failed to refresh Garmin token: ${result.errorMessage}`)
   }
 
-  const tokenData: GarminTokenResponse = await response.json()
-
-  return await prisma.integration.update({
-    where: { id: integration.id },
-    data: {
-      accessToken: tokenData.access_token,
-      refreshToken: tokenData.refresh_token,
-      expiresAt: new Date(Date.now() + tokenData.expires_in * 1000)
-    }
-  })
+  return result.integration
 }
 
 /**
  * Ensures a valid token, refreshing if necessary
  */
-async function ensureValidToken(integration: Integration): Promise<Integration> {
+export async function ensureValidGarminToken(integration: Integration): Promise<Integration> {
   // Re-fetch to get the latest token from DB in case another parallel request refreshed it
   const latest = await prisma.integration.findUnique({
     where: { id: integration.id }
   })
   if (!latest) return integration
 
-  if (!latest.expiresAt || new Date() >= new Date(latest.expiresAt.getTime() - 300000)) {
+  if (
+    !latest.expiresAt ||
+    new Date() >= new Date(latest.expiresAt.getTime() - GARMIN_TOKEN_REFRESH_BUFFER_MS)
+  ) {
     return await refreshGarminToken(latest)
   }
   return latest
@@ -257,7 +298,7 @@ export async function fetchGarminData(
   const targetUrl = new URL(url)
   Object.entries(params).forEach(([key, value]) => targetUrl.searchParams.append(key, value))
 
-  let activeIntegration = await ensureValidToken(integration)
+  let activeIntegration = await ensureValidGarminToken(integration)
 
   try {
     for (let attempt = 0; attempt < 2; attempt++) {
@@ -429,7 +470,7 @@ export async function fetchGarminActivityFile(
   url.searchParams.set('id', fileId)
   if (pullToken) url.searchParams.set('token', pullToken)
 
-  let activeIntegration = await ensureValidToken(integration)
+  let activeIntegration = await ensureValidGarminToken(integration)
 
   for (let attempt = 0; attempt < 2; attempt++) {
     const response = await fetchWithRetry(url.toString(), {
@@ -461,7 +502,7 @@ export async function fetchGarminActivityFileByCallbackUrl(
   integration: Integration,
   callbackUrl: string
 ): Promise<Buffer> {
-  let activeIntegration = await ensureValidToken(integration)
+  let activeIntegration = await ensureValidGarminToken(integration)
 
   for (let attempt = 0; attempt < 2; attempt++) {
     const response = await fetchWithRetry(callbackUrl, {
@@ -506,7 +547,7 @@ export async function requestGarminBackfill(
   targetUrl.searchParams.append('summaryStartTimeInSeconds', startTimestamp.toString())
   targetUrl.searchParams.append('summaryEndTimeInSeconds', endTimestamp.toString())
 
-  let activeIntegration = await ensureValidToken(integration)
+  let activeIntegration = await ensureValidGarminToken(integration)
 
   for (let attempt = 0; attempt < 2; attempt++) {
     const response = await fetchWithRetry(targetUrl.toString(), {
@@ -536,7 +577,7 @@ export async function requestGarminBackfill(
  * De-register a Garmin user token from partner access.
  */
 export async function deRegisterGarminUser(integration: Integration) {
-  const validIntegration = await ensureValidToken(integration)
+  const validIntegration = await ensureValidGarminToken(integration)
   const url = 'https://apis.garmin.com/wellness-api/rest/user/registration'
 
   const response = await fetchWithRetry(url, {
@@ -562,7 +603,7 @@ export async function deRegisterGarminUser(integration: Integration) {
 export async function fetchGarminUserPermissions(integration: Integration): Promise<string[]> {
   const url = 'https://apis.garmin.com/wellness-api/rest/user/permissions'
 
-  let activeIntegration = await ensureValidToken(integration)
+  let activeIntegration = await ensureValidGarminToken(integration)
 
   for (let attempt = 0; attempt < 2; attempt++) {
     const response = await fetchWithRetry(url, {

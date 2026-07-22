@@ -1,8 +1,12 @@
 # Workout Details Generation — Issue Tracker
 
-> **Broader app review (039–348):** see [app-review-issues.md](./app-review-issues.md) and [REVIEW-PROGRESS.md](./REVIEW-PROGRESS.md) (~96% complete).
+> **Broader app review (039–368):** see [app-review-issues.md](./app-review-issues.md) and [REVIEW-PROGRESS.md](./REVIEW-PROGRESS.md) (~96% complete).
 >
 > **Coaching follow-up (2026-07-19):** invites/relationships/team UX batch **[327–348](./app-review-issues.md#issues-327348-coaching-invites-relationships-team-ux--2026-07-19)** (plus re-verified 263–275).
+>
+> **Email platform gaps (2026-07-22):** **[353–363](./app-review-issues.md#issues-353363-email-platform-gaps--2026-07-22)**.
+>
+> **Expo push gaps (2026-07-22):** **[364–368](./app-review-issues.md#issues-364368-expo-push-gaps--2026-07-22)**.
 
 Last reviewed: 2026-07-09 (structure-generation batch merged — PRs [#214](https://github.com/hdkiller/coach/pull/214)–[#222](https://github.com/hdkiller/coach/pull/222) on 2026-07-08)
 

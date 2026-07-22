@@ -1,15 +1,5 @@
 import type { Integration } from '@prisma/client'
-import { refreshGarminToken } from './garmin'
-
-/**
- * Ensures a valid token, refreshing if necessary
- */
-async function ensureValidToken(integration: Integration): Promise<Integration> {
-  if (!integration.expiresAt || new Date() >= new Date(integration.expiresAt.getTime() - 300000)) {
-    return await refreshGarminToken(integration)
-  }
-  return integration
-}
+import { ensureValidGarminToken } from './garmin'
 
 export type GarminTargetThresholds = {
   ftp?: number
@@ -471,7 +461,7 @@ async function fetchGarminWorkout(
 }
 
 export async function createGarminWorkout(integration: Integration, payload: any) {
-  const validIntegration = await ensureValidToken(integration)
+  const validIntegration = await ensureValidGarminToken(integration)
   // Create does not require ownerId. Never inject the wellness UUID.
   const numericExternalOwnerId = toGarminOwnerId(validIntegration.externalUserId)
   const body = stripInvalidOwnerId({
@@ -524,7 +514,7 @@ export async function updateGarminWorkout(
   workoutId: string,
   payload: any
 ) {
-  const validIntegration = await ensureValidToken(integration)
+  const validIntegration = await ensureValidGarminToken(integration)
   const numericWorkoutId = toGarminWorkoutId(workoutId)
   if (numericWorkoutId == null) {
     const err = new Error(
@@ -575,7 +565,7 @@ export async function createGarminWorkoutSchedule(
   integration: Integration,
   payload: { workoutId: number | string; date: string }
 ) {
-  const validIntegration = await ensureValidToken(integration)
+  const validIntegration = await ensureValidGarminToken(integration)
   const response = await fetch(GARMIN_TRAINING_SCHEDULE, {
     method: 'POST',
     headers: getGarminHeaders(validIntegration.accessToken),
@@ -606,7 +596,7 @@ export async function updateGarminWorkoutSchedule(
   scheduleId: string,
   payload: { workoutId: number | string; date: string }
 ) {
-  const validIntegration = await ensureValidToken(integration)
+  const validIntegration = await ensureValidGarminToken(integration)
   const response = await fetch(`${GARMIN_TRAINING_SCHEDULE}/${scheduleId}`, {
     method: 'PUT',
     headers: getGarminHeaders(validIntegration.accessToken),
@@ -655,7 +645,7 @@ function mapCourseActivityToGarmin(type: string): string {
 }
 
 export async function createGarminCourse(integration: Integration, payload: any) {
-  const validIntegration = await ensureValidToken(integration)
+  const validIntegration = await ensureValidGarminToken(integration)
   const response = await fetch('https://apis.garmin.com/training-api/courses/v1/course', {
     method: 'POST',
     headers: getGarminHeaders(validIntegration.accessToken),

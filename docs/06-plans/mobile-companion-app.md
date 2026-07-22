@@ -299,21 +299,35 @@ Prefer a thin **companion-oriented** BFF or curated existing endpoints. Do not f
 | Recent activities         | workouts list (limited, recent)                                               | Cap page size for mobile                                                                                        |
 | Chat                      | existing chat room / messages + WebSocket                                     | Bearer on chat REST + `GET /api/websocket-token`; poll is fallback only                                         |
 | Notifications list + read | existing `/api/notifications`                                                 | `GET` list (`profile:read`); `PATCH /api/notifications/read` (`profile:write`) with `{ id }` or `{ all: true }` |
-| Push device register      | `POST /api/mobile/devices` (`profile:write`)                                  | Body: `{ token, platform: 'ios'\|'android', appVersion? }` — upsert by token                                    |
+| Push device register      | `POST /api/mobile/devices` (`profile:write`)                                  | Body: `{ token, platform: 'ios'\|'android', appVersion?, preferences? }` — upsert by token                      |
 | Push device unregister    | `DELETE /api/mobile/devices` (`profile:write`)                                | Body: `{ token }` — remove for current user (sign-out)                                                          |
-| Push preferences          | reuse / extend communication prefs                                            | Align with email notification taxonomy where sensible                                                           |
+| Push preferences          | `GET/PUT /api/mobile/devices/preferences`                                     | Keys = `ExpoPushEventType`; stored in `MobilePushPreference` (independent of email prefs)                       |
 
 #### `POST /api/mobile/devices` contract
 
 ```json
 // request
-{ "token": "ExponentPushToken[…]", "platform": "ios", "appVersion": "0.1.0" }
+{ "token": "ExponentPushToken[…]", "platform": "ios", "appVersion": "0.1.0", "preferences": { "RECOMMENDATION_READY": true } }
 
 // 200 response
 { "id": "…", "token": "…", "platform": "ios", "appVersion": "0.1.0", "updatedAt": "…" }
 ```
 
-Idempotent upsert on `token`. Ownership moves to the current user if the token was previously registered to someone else. Send Expo pushes via `server/utils/expo-push.ts` (`sendExpoPushToUser`) with `data.type` from §8.3 and optional `data.path`.
+Idempotent upsert on `token`. Ownership moves to the current user if the token was previously registered to someone else. Optional `preferences` updates the same store as GET/PUT below. Send Expo pushes via `server/utils/expo-push.ts` (`sendExpoPushToUser`) with `data.type` from §8.3 and optional `data.path` — send honors server prefs.
+
+#### `GET/PUT /api/mobile/devices/preferences` contract
+
+```json
+// GET 200 / PUT 200 response (and PUT body.preferences)
+{
+  "RECOMMENDATION_READY": true,
+  "WORKOUT_ANALYSIS_READY": true,
+  "SYNC_COMPLETED": false,
+  "COACH_MESSAGE": true
+}
+```
+
+`GET` requires `profile:read`; `PUT` requires `profile:write`. PUT body may be `{ "preferences": { … } }` (mobile client) or a flat object. New users default `SYNC_COMPLETED` to **false** (policy-off). Inbox / Expo deep links use mobile-safe paths (`/today`, `/activities/:id`); web maps them via `inbox-link-compat` middleware.
 
 ### 8.2 Backend prerequisites before UI polish
 
@@ -324,14 +338,19 @@ Idempotent upsert on `token`. Ownership moves to the current user if the token w
 
 ### 8.3 Push event types (initial)
 
-| Event                           | Deep-link target              |
-| ------------------------------- | ----------------------------- |
-| `RECOMMENDATION_READY`          | Today / recommendation detail |
-| `WORKOUT_ANALYSIS_READY`        | Activity summary              |
-| `SYNC_COMPLETED`                | Today (refresh)               |
-| `COACH_MESSAGE` (if applicable) | Coach tab                     |
+| Event                           | Deep-link target                            |
+| ------------------------------- | ------------------------------------------- |
+| `RECOMMENDATION_READY`          | Today / recommendation detail               |
+| `WORKOUT_ANALYSIS_READY`        | Activity summary                            |
+| `SYNC_COMPLETED`                | Today (refresh) — **policy-off by default** |
+| `COACH_MESSAGE` (if applicable) | Coach tab                                   |
 
-Reuse the existing notification taxonomy where possible; extend rather than invent a parallel system.
+**Living taxonomy (channels, prefs bridges, ship gates):**  
+`~/Develop/watts-marketing/knowledge/push/inventory.md`  
+Coordinate with email catalog: `~/Develop/watts-marketing/knowledge/email/inventory.md`.  
+Engineering backlog: `docs/issues/app-review-issues.md` § **364–368**.
+
+Reuse the existing notification taxonomy where possible; extend rather than invent a parallel system. Do not enable a new Expo sender until the inventory row has channel mix, prefs, and a mobile-safe deep link.
 
 ---
 

@@ -111,7 +111,7 @@ export const thresholdDetectionService = {
               ? `We detected a new peak heart rate of ${workoutMaxHr} bpm for your ${sportName} profile during "${workout.title || workout.type || 'workout'}".`
               : `We detected a new peak heart rate of ${workoutMaxHr} bpm during "${workout.title || workout.type || 'workout'}".`,
             icon: 'i-heroicons-heart',
-            link: `/workouts/${workout.id}`
+            link: `/activities/${workout.id}`
           })
         }
       }
@@ -168,7 +168,7 @@ export const thresholdDetectionService = {
                   ? `Congratulations! Your ${sportName} profile threshold heart rate increased to ${estimatedLthr} bpm (previous: ${currentLthr} bpm) based on "${workout.title}".`
                   : `Congratulations! Your threshold heart rate increased to ${estimatedLthr} bpm (previous: ${currentLthr} bpm) based on "${workout.title}".`,
                 icon: 'i-heroicons-bolt',
-                link: `/workouts/${workout.id}`
+                link: `/activities/${workout.id}`
               })
             }
           }
@@ -219,7 +219,7 @@ export const thresholdDetectionService = {
                   ? `Great job! Your ${sportName} profile FTP increased to ${estimatedFtp}W (previous: ${currentFtp}W) based on "${workout.title || 'your workout'}".`
                   : `Great job! Your FTP increased to ${estimatedFtp}W (previous: ${currentFtp}W) based on "${workout.title || 'your workout'}".`,
                 icon: 'i-heroicons-fire',
-                link: `/workouts/${workout.id}`
+                link: `/activities/${workout.id}`
               })
             }
           }

@@ -1101,13 +1101,13 @@ Maintain your **${aiSettings.aiPersona}** persona throughout.`
             title: pushTitle,
             message: pushBody,
             icon: 'i-heroicons-bolt',
-            link: '/'
+            link: '/today'
           })
           await sendExpoPushToUser(userId, {
             title: pushTitle,
             body: pushBody,
             type: 'RECOMMENDATION_READY',
-            path: '/(app)/(tabs)/today',
+            path: '/today',
             notificationId: notification.id,
             extra: { recommendationId: recommendation.id }
           })

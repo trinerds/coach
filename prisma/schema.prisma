@@ -154,6 +154,7 @@ model User {
   bugReportComments                  BugReportComment[]
   notifications                      UserNotification[]
   mobilePushDevices                  MobilePushDevice[]
+  mobilePushPreference               MobilePushPreference?
   syncQueue                          SyncQueue[]
   trainingAvailability               TrainingAvailability[]
   trainingPlans                      TrainingPlan[]
@@ -185,6 +186,8 @@ model User {
   customFieldDefinitions             CustomFieldDefinition[]
   coachAthleteInvitesSent            CoachAthleteInvite[]
   partnerCampaignRedemptions         PartnerCampaignRedemption[]
+  providerSubscriptions              ProviderSubscription[]
+  subscriptionLifecycleEvents        SubscriptionLifecycleEvent[]
 
   @@index([createdAt])
   @@index([deactivatedAt])
@@ -2073,6 +2076,74 @@ enum SubscriptionStatus {
   CONTRIBUTOR
 }
 
+enum SubscriptionProvider {
+  STRIPE
+  APPLE
+  GOOGLE
+}
+
+enum ProviderSubscriptionStatus {
+  ACTIVE
+  CANCELED
+  GRACE_PERIOD
+  BILLING_RETRY
+  PAST_DUE
+  PAUSED
+  PENDING
+  EXPIRED
+  REVOKED
+  UNKNOWN
+}
+
+enum SubscriptionEnvironment {
+  SANDBOX
+  PRODUCTION
+}
+
+model ProviderSubscription {
+  id              String                     @id @default(uuid())
+  userId          String
+  provider        SubscriptionProvider
+  externalId      String
+  productId       String
+  tier            SubscriptionTier
+  status          ProviderSubscriptionStatus @default(UNKNOWN)
+  rawStatus       String?
+  entitlementEnd  DateTime?
+  autoRenew       Boolean?
+  environment     SubscriptionEnvironment    @default(PRODUCTION)
+  managementUrl   String?
+  lastEventId     String?
+  lastEventAt     DateTime?
+  metadata        Json?
+  createdAt       DateTime                   @default(now())
+  updatedAt       DateTime                   @updatedAt
+  user            User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lifecycleEvents SubscriptionLifecycleEvent[]
+
+  @@unique([provider, externalId])
+  @@index([userId, status])
+  @@index([userId, provider])
+}
+
+model SubscriptionLifecycleEvent {
+  id                     String                   @id @default(uuid())
+  externalEventId        String                   @unique
+  providerSubscriptionId String?
+  userId                 String?
+  provider               SubscriptionProvider?
+  eventType              String
+  eventAt                DateTime
+  environment            SubscriptionEnvironment
+  payload                Json?
+  createdAt              DateTime                 @default(now())
+  providerSubscription   ProviderSubscription?    @relation(fields: [providerSubscriptionId], references: [id], onDelete: SetNull)
+  user                   User?                    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, eventAt])
+  @@index([provider, eventAt])
+}
+
 model BugReport {
   id          String             @id @default(uuid())
   userId      String
@@ -2157,6 +2228,20 @@ model MobilePushDevice {
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+/// Per-user Expo push toggles (watts-mobile Settings). Keys match ExpoPushEventType.
+/// SYNC_COMPLETED defaults false (policy-off — see issue 367).
+model MobilePushPreference {
+  id                   String   @id @default(uuid())
+  userId               String   @unique
+  recommendationReady  Boolean  @default(true)
+  workoutAnalysisReady Boolean  @default(true)
+  syncCompleted        Boolean  @default(false)
+  coachMessage         Boolean  @default(true)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model AthleteJourneyEvent {

@@ -136,6 +136,7 @@
   },
   "private": true,
   "scripts": {
+    "backfill:provider-subscriptions": "tsx scripts/backfill-provider-subscriptions.ts",
     "backfill-scores": "tsx scripts/backfill-scores.ts",
     "test": "vitest",
     "test:unit": "vitest run",
