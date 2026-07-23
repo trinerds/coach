@@ -121,7 +121,7 @@ Daily athlete loop (implemented in `watts-mobile`; detail there):
 4. **Recent + Upcoming** — More lists (not calendar heatmaps)
 5. **Coach chat** — seeded Q&A, sessions, media, tool feedback lite
 6. **Notifications** — push + inbox
-7. **Account glue** — instance URL, sign-in, Settings hub, Open web session handoff
+7. **Account glue** — instance URL, sign-in, Settings hub (includes Nutrition settings), Open web session handoff
 8. **Athlete metrics** + Health Sync foundations
 
 ### 4.2 Next — Activation onboarding
@@ -144,12 +144,12 @@ Do **not** ship native equivalents of:
 - Full **plan architect** (PlanDashboard, block/week editor, adaptation wizard, drag-reschedule)
 - Analytics builder, performance explorer, workout comparison, calendar heatmaps
 - Multi-athlete coaching / teams
-- Nutrition planning / grocery lists
+- Nutrition planning / grocery lists (meal-plan generate, grocery, day regenerate)
 - Workout library editing
 - Billing, admin, developer portal
-- Full Profile Settings / sport zone editors
+- Full Profile Settings / sport zone editors — **except** Nutrition settings (Profile → Nutrition parity) and Sports thresholds lite
 
-**Narrowed:** goal capture, plan _kickoff_, Health Sync, and Connected Apps **lite** are **in scope**. Use Open web for depth.
+**Narrowed:** goal capture, plan _kickoff_, Health Sync, Connected Apps **lite**, and **Nutrition settings** are **in scope**. Use Open web for depth.
 
 ### 4.4 Later
 
@@ -176,17 +176,18 @@ Unread badge belongs on **More** (or a bell in the Today header) — not a fifth
 
 ### 5.2 Push / stack screens (not tabs)
 
-| Screen                       | Purpose                                          |
-| ---------------------------- | ------------------------------------------------ |
-| Activation wizard            | Consent → goal → plan lite → insight → connect   |
-| Goal lite                    | Create/edit primary goal                         |
-| Plan lite                    | Availability → generate → preview → activate     |
-| Recommendation detail        | Full reasoning + modifications                   |
-| Planned workout detail       | Intervals / zones / duration                     |
-| Activity summary             | Lightweight completed-session view               |
-| Notification detail / list   | Inbox when opened from More or push              |
-| Sign-up / sign-in / instance | First launch, new accounts, re-auth              |
-| Settings                     | Push, Health Sync, Connected Apps lite, open web |
+| Screen                       | Purpose                                                     |
+| ---------------------------- | ----------------------------------------------------------- |
+| Activation wizard            | Consent → goal → plan lite → insight → connect              |
+| Goal lite / Goals hub        | Activation + More → Goals list/detail/**create**            |
+| Events hub                   | Upcoming Events list/detail/**create** (edit/delete on web) |
+| Plan lite                    | Availability → generate → preview → activate                |
+| Recommendation detail        | Full reasoning + modifications                              |
+| Planned workout detail       | Intervals / zones / duration                                |
+| Activity summary             | Lightweight completed-session view                          |
+| Notification detail / list   | Inbox when opened from More or push                         |
+| Sign-up / sign-in / instance | First launch, new accounts, re-auth                         |
+| Settings                     | Push, Health Sync, Connected Apps lite, open web            |
 
 ### 5.3 Today screen composition (top → bottom)
 
@@ -223,8 +224,11 @@ Prefer starter prompts over an empty composer.
 Simple list rows:
 
 - Recent activities
+- Upcoming planned
+- **Goals** (list + detail + lite create; edit/delete/AI on web)
+- **Events** (Upcoming Events list + detail + lite create; edit/delete on web)
 - Notifications
-- Preferences
+- Preferences / Settings
 - Help / Open web app
 - Sign out
 
@@ -262,17 +266,17 @@ Coach Watts already exposes OAuth 2.0 + PKCE as an identity provider. The compan
 
 Use **REST** OAuth scope names from `REST_OAUTH_SCOPES` (e.g. `recommendation:read`, `plan:read`, `goal:read` — not MCP `recommendations:*` / `planning:*`).
 
-| Scope                                          | Why                                              |
-| ---------------------------------------------- | ------------------------------------------------ |
-| `profile:read` / `profile:write`               | Name, basics, athlete metrics                    |
-| `workout:read` / `workout:write`               | Recent/planned; analyze; complete/skip           |
-| `health:read` / `health:write`                 | Recovery, check-in                               |
-| `recommendation:read` / `recommendation:write` | Today + accept/dismiss / generate                |
-| `plan:read` / `plan:write`                     | Planned workouts + plan lite initialize/activate |
-| `goal:read` / `goal:write`                     | Events + goal lite capture                       |
-| `nutrition:read` / `nutrition:write`           | Nutrition quick-log                              |
-| `chat:read` / `chat:write`                     | Coach tab                                        |
-| `offline_access`                               | Refresh tokens                                   |
+| Scope                                          | Why                                                                                      |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `profile:read` / `profile:write`               | Name, basics, athlete metrics                                                            |
+| `workout:read` / `workout:write`               | Recent/planned; analyze; complete/skip                                                   |
+| `health:read` / `health:write`                 | Recovery, check-in                                                                       |
+| `recommendation:read` / `recommendation:write` | Today + accept/dismiss / generate                                                        |
+| `plan:read` / `plan:write`                     | Planned workouts + plan lite initialize/activate                                         |
+| `goal:read` / `goal:write`                     | Events list/detail + event lite create + goal lite (activation + hub create) + Goals hub |
+| `nutrition:read` / `nutrition:write`           | Nutrition quick-log + Profile nutrition settings                                         |
+| `chat:read` / `chat:write`                     | Coach tab                                                                                |
+| `offline_access`                               | Refresh tokens                                                                           |
 
 Public docs today: [developer/authentication.md](../developer/authentication.md), [developer/scopes.md](../developer/scopes.md).
 
@@ -292,7 +296,8 @@ Prefer a thin **companion-oriented** BFF or curated existing endpoints. Do not f
 | ------------------------- | ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
 | Bootstrap / home          | `GET /api/mobile/today` (new) **or** compose dashboard + today-recommendation | Single payload: recommendation, planned workout, recovery strip, unread count                                   |
 | Onboarding / consent      | `GET /api/user/onboarding-status` + consent write (Bearer)                    | Extend steps for goal/plan; shared soft vs full activation with web                                             |
-| Goal lite                 | `GET/POST/PATCH /api/goals` (+ optional suggest/review)                       | `goal:read` / `goal:write`                                                                                      |
+| Goal lite                 | `GET/POST/PATCH /api/goals` (+ optional suggest/review)                       | Activation + hub lite create; edit/delete/AI stay web; `goal:read` / `goal:write`                               |
+| Upcoming events           | `GET /api/events`, `GET /api/events/:id`, Bearer `POST /api/events`           | Lite create on mobile; edit/delete web; write scope prefer `goal:write`                                         |
 | Plan lite                 | `plans/initialize` + activate (Bearer)                                        | Preview first week; not full PlanDashboard                                                                      |
 | Recommendation actions    | existing accept / dismiss / today generate                                    | REST `recommendation:write`                                                                                     |
 | Wellness check-in         | existing wellness POST/PATCH                                                  | Map to `health:write`                                                                                           |

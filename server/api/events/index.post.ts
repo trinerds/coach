@@ -1,5 +1,5 @@
 import { z } from 'zod/v3'
-import { getServerSession } from '../../utils/session'
+import { requireAuth } from '../../utils/auth-guard'
 import { eventRepository } from '../../utils/repositories/eventRepository'
 import { syncEventToIntervals } from '../../utils/intervals-sync'
 import { prisma } from '../../utils/db'
@@ -29,6 +29,7 @@ defineRouteMeta({
   openAPI: {
     tags: ['Events'],
     summary: 'Create a new racing event',
+    description: 'Creates an event for the authenticated user (session or Bearer with goal:write).',
     requestBody: {
       content: {
         'application/json': {
@@ -50,8 +51,7 @@ defineRouteMeta({
 })
 
 export default defineEventHandler(async (event) => {
-  const session = await getServerSession(event)
-  if (!session?.user) throw createError({ statusCode: 401, message: 'Unauthorized' })
+  const user = await requireAuth(event, ['goal:write'])
 
   const body = await readBody(event)
   const result = eventSchema.safeParse(body)
@@ -60,7 +60,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Invalid input', data: result.error.issues })
   }
 
-  const userId = (session.user as any).id
+  const userId = user.id
 
   try {
     // 1. Determine initial sync status
