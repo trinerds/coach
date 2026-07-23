@@ -196,7 +196,12 @@ export default defineNuxtConfig({
     baseUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3099'
   },
 
-  nitro: {
+nitro: {
+    // ADD THIS PRERENDER BLOCK RIGHT HERE:
+    prerender: {
+      crawlLinks: false,
+      concurrency: 1
+    },
     experimental: {
       openAPI: true,
       websocket: true,
