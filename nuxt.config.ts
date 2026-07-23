@@ -197,12 +197,12 @@ export default defineNuxtConfig({
   },
 
 nitro: {
-    // ADD THIS PRERENDER BLOCK RIGHT HERE:
     prerender: {
       crawlLinks: false,
       concurrency: 1
     },
     experimental: {
+      legacyExternals: true, // <--- ADD THIS LINE HERE
       openAPI: true,
       websocket: true,
       tasks: true,
